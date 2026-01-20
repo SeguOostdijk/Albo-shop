@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Search, User, Heart, ShoppingBag, Menu, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -90,8 +91,8 @@ export function Header() {
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">ALBO</span>
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-primary flex items-center justify-center">
+                <Image src="/escudo.jpeg" alt="Escudo Albo" width={48} height={48} className="object-cover" />
               </div>
               <div className="hidden sm:block">
                 <span className="font-bold text-xl text-primary">Albo</span>

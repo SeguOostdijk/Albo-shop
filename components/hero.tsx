@@ -7,21 +7,21 @@ import { Button } from "@/components/ui/button"
 
 const heroSlides = [
   {
-    image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&h=800&fit=crop",
+    image: "/campeonato.jpg",
     title: "NUEVA CAMISETA",
     subtitle: "Temporada 2025/26 ya disponible",
     cta: "COMPRAR AHORA",
     href: "/product/camiseta-titular-2025",
   },
   {
-    image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1920&h=800&fit=crop",
-    title: "BOCA BASQUET",
+    image: "/salida.png",
+    title: "ALBO BASQUET",
     subtitle: "Nueva indumentaria de juego ya disponible",
     cta: "COMPRAR AHORA",
     href: "/category/basquet",
   },
   {
-    image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=1920&h=800&fit=crop",
+    image: "/vuelta.png",
     title: "ENTRENAMIENTO",
     subtitle: "La misma ropa que usan los jugadores",
     cta: "VER COLECCION",
@@ -43,30 +43,29 @@ export function Hero() {
 
   return (
     <section className="relative h-[500px] md:h-[550px] overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        {heroSlides.map((s, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <Image
-              src={s.image || "/placeholder.svg"}
-              alt={s.title}
-              fill
-              className="object-cover"
-              priority={index === 0}
-            />
-          </div>
-        ))}
-      </div>
+      {/* Left image panel (shows full image within left area) */}
 
       {/* Content Panel */}
       <div className="absolute inset-0 flex">
         {/* Left side - image visible */}
-        <div className="flex-1" />
+        <div className="flex-1 relative overflow-hidden">
+          {heroSlides.map((s, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-700 ${
+                index === currentSlide ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <Image
+                src={s.image || "/placeholder.svg"}
+                alt={s.title}
+                fill
+                className="object-cover object-center"
+                priority={index === 0}
+              />
+            </div>
+          ))}
+        </div>
         
         {/* Right side - White panel */}
         <div className="w-full md:w-[45%] bg-background flex items-center justify-center p-8 md:p-12">
