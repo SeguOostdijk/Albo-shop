@@ -1,5 +1,4 @@
 import { Hero } from "@/components/hero"
-import { CategoryIcons } from "@/components/category-icons"
 import { ProductCarousel } from "@/components/product-carousel"
 import { CategoryBanner } from "@/components/category-banner"
 import { BenefitsBar } from "@/components/benefits-bar"
@@ -16,26 +15,13 @@ export default function HomePage() {
       {/* Hero Slider */}
       <Hero />
 
-      {/* Category Icons Row */}
-      <CategoryIcons />
-
       {/* Category Banners - Hombre, Mujer, Ninos */}
       <CategoryBanner />
 
-      {/* Oportunidades Unicas - Sale Products */}
-      <ProductCarousel
-        title="Unicas"
-        subtitle="OPORTUNIDADES"
-        products={saleProducts.length > 0 ? saleProducts : featuredProducts}
-        viewAllHref="/category/oportunidades"
-      />
-
-      {/* Benefits Bar */}
-      <BenefitsBar />
 
       {/* New Products */}
       <ProductCarousel
-        title="Novedades"
+        title="Destacado"
         subtitle="NUEVA TEMPORADA"
         products={newProducts}
         viewAllHref="/category/novedades"
@@ -47,20 +33,17 @@ export default function HomePage() {
           <div className="flex items-start gap-0 mb-6">
             <div className="w-1 h-14 bg-primary mr-4" />
             <div>
-              <p className="text-sm text-primary font-medium uppercase tracking-wider">LO MAS</p>
-              <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">Vendido</h2>
+              <p className="text-sm text-primary font-medium uppercase tracking-wider">EXTRAS</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">ACCESORIOS</h2>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {products.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+      <ProductCarousel
+            products={products.filter((product) => product.categorySlug === "accesorios")}
+            viewAllHref="/category/accesorios"
+            showDots={false}
+          />
         </div>
       </section>
-
-      {/* Second Benefits Bar */}
-      <BenefitsBar />
     </>
   )
 }
