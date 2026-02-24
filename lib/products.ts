@@ -32,7 +32,7 @@ export const products: Product[] = [
     price: 89999,
     originalPrice: 109999,
     images: [
-      "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&h=800&fit=crop",
+      "/titularFemenino.png",
       "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&h=800&fit=crop",
     ],
     variants: [
@@ -169,14 +169,14 @@ export const products: Product[] = [
   },
   {
     id: "9",
-    slug: "campera-rompevientos",
-    name: "Campera Rompevientos",
+    slug: "Buzo de entrenamiento",
+    name: "Buzo de Entrenamiento",
     category: "Hombre",
     categorySlug: "hombre",
     price: 99999,
     originalPrice: 124999,
     images: [
-      "https://images.unsplash.com/photo-1544923246-77307dd628b9?w=600&h=800&fit=crop",
+      "/buzoMasculino.png",
     ],
     variants: [
       { color: "Azul Oscuro", colorHex: "#1a365d", sizes: ["S", "M", "L", "XL", "XXL"], sku: "CR-AO", stockMock: 20 },
