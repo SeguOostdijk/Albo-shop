@@ -23,7 +23,77 @@ export interface Product {
 }
 
 export const products: Product[] = [
-  // Nuevos productos para Hombre
+  // Nuevos productos para Mujer
+  {
+    id: "m1",
+    slug: "camiseta-blanca-mujer",
+    name: "Camiseta Blanca",
+    category: "Mujer",
+    categorySlug: "mujer",
+    price: 59999,
+    images: ["/camiseta-blanca-mujer.png"],
+    variants: [
+      { color: "Blanco", colorHex: "#ffffff", sizes: ["S", "M", "L", "XL"], sku: "CB-M", stockMock: 30 },
+    ],
+    tags: ["camisetas"],
+    description: "Camiseta blanca para mujer.",
+  },
+  {
+    id: "m2",
+    slug: "camiseta-azul-mujer",
+    name: "Camiseta Azul",
+    category: "Mujer",
+    categorySlug: "mujer",
+    price: 59999,
+    images: ["/camiseta-azul-mujer.png"],
+    variants: [
+      { color: "Azul", colorHex: "#1a365d", sizes: ["S", "M", "L", "XL"], sku: "CAZ-M", stockMock: 30 },
+    ],
+    tags: ["camisetas"],
+    description: "Camiseta azul para mujer.",
+  },
+  {
+    id: "m3",
+    slug: "camiseta-rosa-mujer",
+    name: "Camiseta Rosa",
+    category: "Mujer",
+    categorySlug: "mujer",
+    price: 59999,
+    images: ["/camiseta-rosa-mujer.png"],
+    variants: [
+      { color: "Rosa", colorHex: "#ff69b4", sizes: ["S", "M", "L", "XL"], sku: "CR-M", stockMock: 30 },
+    ],
+    tags: ["camisetas"],
+    description: "Camiseta rosa para mujer.",
+  },
+  {
+    id: "m4",
+    slug: "calza-larga-mujer",
+    name: "Calza Larga",
+    category: "Mujer",
+    categorySlug: "mujer",
+    price: 49999,
+    images: ["/calza-larga-mujer.png"],
+    variants: [
+      { color: "Negro", colorHex: "#000000", sizes: ["S", "M", "L", "XL"], sku: "CL-M", stockMock: 25 },
+    ],
+    tags: ["calzas"],
+    description: "Calza larga deportiva para mujer.",
+  },
+  {
+    id: "m5",
+    slug: "short-azul-mujer",
+    name: "Short Azul",
+    category: "Mujer",
+    categorySlug: "mujer",
+    price: 39999,
+    images: ["/short-azul-mujer.png"],
+    variants: [
+      { color: "Azul", colorHex: "#1a365d", sizes: ["S", "M", "L", "XL"], sku: "SAZ-M", stockMock: 25 },
+    ],
+    tags: ["shorts"],
+    description: "Short azul deportivo para mujer.",
+  },
   {
     id: "h1",
     slug: "camiseta-blanca",
