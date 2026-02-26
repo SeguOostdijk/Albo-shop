@@ -5,17 +5,17 @@ const categoryBanners = [
   {
     title: "  ",
     image: "/PrimeraDivision.png",
-    href: "/category/hombre",
+    href: "/category/primera-division",
   },
   {
     title: " ",
     image: "/Femenino.png",
-    href: "/category/mujer",
+    href: "/category/femenino",
   },
   {
     title: "",
     image: "/Infantiles.png",
-    href: "/category/ninos",
+    href: "/category/infantiles",
   },
 ]
 
