@@ -177,19 +177,6 @@ export default function CategoryPage() {
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-
-          {/* Pagination */}
-          {filteredProducts.length > 0 && (
-            <div className="flex justify-center gap-2 mt-8">
-              <Button variant="outline" disabled>
-                Anterior
-              </Button>
-              <Button variant="secondary">1</Button>
-              <Button variant="outline">2</Button>
-              <Button variant="outline">3</Button>
-              <Button variant="outline">Siguiente</Button>
-            </div>
-          )}
         </div>
       </div>
     </div>

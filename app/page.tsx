@@ -22,8 +22,8 @@ export default function HomePage() {
       {/* New Products */}
       <ProductCarousel
         title="Destacado"
-        subtitle="NUEVA TEMPORADA"
-        products={newProducts}
+        subtitle="PRODUCTOS DESTACADOS"
+        products={featuredProducts}
         viewAllHref="/category/novedades"
       />
 

@@ -35,8 +35,9 @@ export const products: Product[] = [
     variants: [
       { color: "Blanco", colorHex: "#ffffff", sizes: ["S", "M", "L", "XL"], sku: "CB-M", stockMock: 30 },
     ],
-    tags: ["camisetas"],
+    tags: ["camisetas", "nueva-temporada"],
     description: "Camiseta blanca para mujer.",
+    isFeatured: true,
   },
   {
     id: "m2",
@@ -95,7 +96,7 @@ export const products: Product[] = [
     description: "Short azul para mujer.",
   },
   
-  // Nuevos productos para Hombre
+  //Hombre
 
   {
     id: "h1",
@@ -108,8 +109,9 @@ export const products: Product[] = [
       variants: [
         { color: "Blanco", colorHex: "#ffffff", sizes: ["S", "M", "L", "XL", "XXL"], sku: "CB-H", stockMock: 50 },
       ],
-      tags: ["camisetas"],
+      tags: ["camisetas", "nueva-temporada"],
       description: "Camiseta blanca 2026",
+      isFeatured: true,
     },
     {
       id: "h2",
@@ -166,6 +168,7 @@ export const products: Product[] = [
       ],
       tags: ["camperas"],
       description: "Campera liviana azul.",
+      isFeatured: true,
     },
     {
       id: "h6",
@@ -222,6 +225,7 @@ export const products: Product[] = [
       ],
       tags: ["buzos"],
       description: "Buzo gris de algodón.",
+      isFeatured: true,
     },
     {
       id: "h10",
@@ -237,11 +241,143 @@ export const products: Product[] = [
       tags: ["buzos"],
       description: "Buzo azul de algodón.",
     },
+        {
+      id: "h11",
+      slug: "short-negro-y-azul",
+      name: "Short Negro y Azul - Primera Division",
+      category: "Hombre",
+      categorySlug: "hombre",
+      price: 59999,
+      images: ["/Short Negro y Azul - Primera Division.png"],
+      variants: [
+        { color: "Azul", colorHex: "#1a365d", sizes: ["S", "M", "L", "XL", "XXL"], sku: "BA-H", stockMock: 35 },
+      ],
+      tags: ["pantalones"],
+      description: "Short negro y azul de algodón.",
+      isFeatured: true,
+    },
 
-    // Nuevos productos para Accesorios
-    
+  // Nuevos productos para Infantil
+
   {
-    id: "7",
+    id: "i1",
+    slug: "camiseta-azul-y-celeste-infantil",
+    name: "Camiseta Azul y Celeste - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 45999,
+    images: ["/Camiseta Azul y Celeste.png"],
+    variants: [
+      { color: "Azul y Celeste", colorHex: "#1a365d", sizes: ["2", "4", "6", "8", "10", "12"], sku: "CAZC-I", stockMock: 25 },
+    ],
+    tags: ["camisetas", "infantil"],
+    description: "Camiseta azul y celeste para niños.",
+    isFeatured: true,
+  },
+  {
+    id: "i2",
+    slug: "camiseta-azul-celeste-y-blanco-infantil",
+    name: "Camiseta Azul Celeste y Blanco - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 45999,
+    images: ["/Camiseta Azul Celeste y Blanca.png"],
+    variants: [
+      { color: "Azul Celeste y Blanco", colorHex: "#1a365d", sizes: ["2", "4", "6", "8", "10", "12"], sku: "CACB-I", stockMock: 25 },
+    ],
+    tags: ["camisetas", "infantil"],
+    description: "Camiseta azul celeste y blanco para niños.",
+  },
+  {
+    id: "i3",
+    slug: "pantalon-azul-infantil",
+    name: "Pantalon Azul - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 32999,
+    images: ["/Pantalon Azul.png"],
+    variants: [
+      { color: "Azul", colorHex: "#1a365d", sizes: ["2", "4", "6", "8", "10", "12"], sku: "PA-I", stockMock: 20 },
+    ],
+    tags: ["pantalones", "infantil"],
+    description: "Pantalon azul para niños.",
+    isFeatured: true,
+  },
+  {
+    id: "i4",
+    slug: "pantalon-negro-y-azul-infantil",
+    name: "Pantalon Negro y Azul - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 32999,
+    images: ["/Pantalon Negro y Azul.png"],
+    variants: [
+      { color: "Negro y Azul", colorHex: "#000000", sizes: ["2", "4", "6", "8", "10", "12"], sku: "PNA-I", stockMock: 20 },
+    ],
+    tags: ["pantalones", "infantil"],
+    description: "Pantalon negro y azul para niños.",
+  },
+  {
+    id: "i5",
+    slug: "short-negro-infantil",
+    name: "Short Negro - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 27999,
+    images: ["/Short Negro.png"],
+    variants: [
+      { color: "Negro", colorHex: "#000000", sizes: ["2", "4", "6", "8", "10", "12"], sku: "SN-I", stockMock: 25 },
+    ],
+    tags: ["shorts", "infantil"],
+    description: "Short negro para niños.",
+  },
+  {
+    id: "i6",
+    slug: "short-azul-infantil",
+    name: "Short Azul - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 27999,
+    images: ["/Short Azul.png"],
+    variants: [
+      { color: "Azul", colorHex: "#1a365d", sizes: ["2", "4", "6", "8", "10", "12"], sku: "SA-I", stockMock: 25 },
+    ],
+    tags: ["shorts", "infantil"],
+    description: "Short azul para niños.",
+  },
+  {
+    id: "i7",
+    slug: "short-blanco-y-azul-infantil",
+    name: "Short Blanco y Azul - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 27999,
+    images: ["/Short Blanco y Azul.png"],
+    variants: [
+      { color: "Blanco y Azul", colorHex: "#ffffff", sizes: ["2", "4", "6", "8", "10", "12"], sku: "SBA-I", stockMock: 25 },
+    ],
+    tags: ["shorts", "infantil"],
+    description: "Short blanco y azul para niños.",
+  },
+  {
+    id: "i8",
+    slug: "buzo-cierre-negro-y-azul-infantil",
+    name: "Buzo Cierre Negro y Azul - Infantil",
+    category: "Niños",
+    categorySlug: "ninos",
+    price: 54999,
+    images: ["/Buzo Cierre Negro y Azul.png"],
+    variants: [
+      { color: "Negro y Azul", colorHex: "#000000", sizes: ["2", "4", "6", "8", "10", "12"], sku: "BCNA-I", stockMock: 20 },
+    ],
+    tags: ["buzos", "infantil"],
+    description: "Buzo con cierre negro y azul para niños.",
+  },
+
+      //Accesorios
+
+  {
+    id: "a1",
     slug: "gorra-oficial",
     name: "Gorra Oficial",
     category: "Accesorios",
@@ -256,10 +392,9 @@ export const products: Product[] = [
     ],
     tags: ["accesorios", "destacados"],
     description: "Gorra oficial con escudo bordado. Ajuste trasero de velcro.",
-    isFeatured: true,
   },
   {
-    id: "8",
+    id: "a2",
     slug: "piluso-gris",
     name: "Piluso Gris",
     category: "Accesorios",
@@ -275,25 +410,7 @@ export const products: Product[] = [
     description: "Bufanda tejida con los colores del club. Ideal para los días de partido.",
   },
   {
-    id: "9",
-    slug: "Buzo de entrenamiento",
-    name: "Buzo de Entrenamiento",
-    category: "Infantil",
-    categorySlug: "infantil",
-    price: 99999,
-    originalPrice: 124999,
-    images: [
-      "/buzoMasculino.png",
-    ],
-    variants: [
-      { color: "Azul Oscuro", colorHex: "#1a365d", sizes: ["S", "M", "L", "XL", "XXL"], sku: "CR-AO", stockMock: 20 },
-    ],
-    tags: ["entrenamiento", "destacados"],
-    description: "Campera rompevientos impermeable. Cierre frontal y puños ajustables.",
-    isFeatured: true,
-  },
-  {
-    id: "10",
+    id: "a3",
     slug: "canilleras",
     name: "Canilleras",
     category: "Accesorios",
@@ -303,32 +420,13 @@ export const products: Product[] = [
       "/Canilleras.png",
     ],
     variants: [
-      { color: "Azul", colorHex: "#1a365d", sizes: ["35-38", "39-42", "43-46"], sku: "MO-AZ", stockMock: 200 },
-      { color: "Blanco", colorHex: "#ffffff", sizes: ["35-38", "39-42", "43-46"], sku: "MO-BL", stockMock: 180 },
+      { color: "Blanco", colorHex: "#ffffff", sizes: [], sku: "MO-BL", stockMock: 180 },
     ],
-    tags: ["accesorios", "nueva-temporada"],
+    tags: ["accesorios"],
     description: "Medias oficiales con refuerzo en talón y puntera. Diseño ergonómico.",
-    isNew: true,
   },
   {
-    id: "11",
-    slug: "remera-retro-1986",
-    name: "Remera Retro 1986",
-    category: "Colecciones",
-    categorySlug: "colecciones",
-    price: 69999,
-    images: [
-      "https://images.unsplash.com/photo-1551854838-212c50b4c184?w=600&h=800&fit=crop",
-    ],
-    variants: [
-      { color: "Azul Vintage", colorHex: "#2d3748", sizes: ["S", "M", "L", "XL"], sku: "RR86-AV", stockMock: 15 },
-    ],
-    tags: ["colecciones", "retro", "destacados"],
-    description: "Edición especial conmemorativa. Réplica del diseño histórico de 1986.",
-    isFeatured: true,
-  },
-  {
-    id: "12",
+    id: "a4",
     slug: "llavero",
     name: "Llavero",
     category: "Accesorios",
@@ -344,7 +442,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
     {
-    id: "13",
+    id: "a5",
     slug: "piluso-azul",
     name: "Piluso Azul",
     category: "Accesorios",
@@ -360,7 +458,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
     {
-    id: "14",
+    id: "a6",
     slug: "gorro",
     name: "Gorro",
     category: "Accesorios",
@@ -376,7 +474,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
     {
-    id: "15",
+    id: "a7",
     slug: "taza",
     name: "Taza",
     category: "Accesorios",
@@ -392,7 +490,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
       {
-    id: "16",
+    id: "a8",
     slug: "cartuchera",
     name: "Cartuchera",
     category: "Accesorios",
@@ -408,7 +506,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
       {
-    id: "17",
+    id: "a9",
     slug: "mousepad tricampeon redondo",
     name: "Mousepad tricampeon redondo",
     category: "Accesorios",
@@ -424,7 +522,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
         {
-    id: "18",
+    id: "a10",
     slug: "medias azules",
     name: "Medias Azules",
     category: "Accesorios",
@@ -440,7 +538,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
           {
-    id: "19",
+    id: "a11",
     slug: "medias negras",
     name: "Medias Negras",
     category: "Accesorios",
@@ -455,8 +553,8 @@ export const products: Product[] = [
     tags: ["accesorios"],
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
-            {
-    id: "20",
+          {
+    id: "a12",
     slug: "Llavero estuche",
     name: "Llavero estuche",
     category: "Accesorios",
@@ -471,8 +569,8 @@ export const products: Product[] = [
     tags: ["accesorios"],
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
-              {
-    id: "21",
+          {
+    id: "a13",
     slug: "mousepad tricampeon ovalado",
     name: "Mousepad Tricampeon Ovalado",
     category: "Accesorios",
@@ -487,8 +585,8 @@ export const products: Product[] = [
     tags: ["accesorios"],
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
-                    {
-    id: "22",
+      {
+    id: "a14",
     slug: "Mousepad 98 años",
     name: "Mousepad 98 Años",
     category: "Accesorios",
@@ -503,8 +601,8 @@ export const products: Product[] = [
     tags: ["accesorios"],
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
-                {
-    id: "23",
+            {
+    id: "a15",
     slug: "libro el gigante dormido",
     name: "Libro El Gigante Dormido",
     category: "Accesorios",
@@ -520,7 +618,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
                     {
-    id: "24",
+    id: "a16",
     slug: "yerbera",
     name: "Yerbera",
     category: "Accesorios",
@@ -536,7 +634,7 @@ export const products: Product[] = [
     description: "Mochila oficial con compartimento para laptop. Múltiples bolsillos.",
   },
                       {
-    id: "25",
+    id: "a17",
     slug: "bermuda negra",
     name: "Bermuda Negra",
     category: "Accesorios",
