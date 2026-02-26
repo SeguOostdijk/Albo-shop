@@ -37,7 +37,7 @@ export default function HomePage() {
               <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">ACCESORIOS</h2>
             </div>
           </div>
-      <ProductCarousel
+        <ProductCarousel
             products={products.filter((product) => product.categorySlug === "accesorios")}
             viewAllHref="/category/accesorios"
             showDots={false}

@@ -14,7 +14,7 @@ import { CartDrawer } from "@/components/cart-drawer"
 import { SearchResults } from "@/components/search-results"
 
 const mainNavCategories = categories.filter(
-  (cat) => ["hombre", "mujer", "ninos", "accesorios"].includes(cat.slug)
+  (cat) => ["primera-division", "femenino", "infantiles", "accesorios"].includes(cat.slug)
 )
 
 export function Header() {
