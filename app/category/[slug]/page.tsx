@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 import { SlidersHorizontal, Grid3X3, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,14 +20,16 @@ import {
 } from "@/components/ui/sheet"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { Filters } from "@/components/filters"
-import { ProductGrid } from "@/components/product-grid"
+import { ProductCard } from "@/components/product-card"
 import { products, categories } from "@/lib/products"
 
 type SortOption = "relevance" | "price-asc" | "price-desc" | "newest"
 
 export default function CategoryPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const slug = params.slug as string
+  const tipo = searchParams.get("tipo") as string | null
 
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortBy, setSortBy] = useState<SortOption>("relevance")
@@ -41,6 +43,13 @@ export default function CategoryPage() {
     let result = slug === "all"
       ? products
       : products.filter((p) => p.categorySlug === slug)
+
+    // Filter by subcategory (tipo)
+    if (tipo) {
+      result = result.filter((p) => 
+        p.tags.some((tag) => tag.toLowerCase() === tipo.toLowerCase())
+      )
+    }
 
     // Apply sorting
     switch (sortBy) {
@@ -59,16 +68,14 @@ export default function CategoryPage() {
     }
 
     return result
-  }, [slug, sortBy])
+  }, [slug, tipo, sortBy])
 
   const handleFilterChange = (groupId: string, optionId: string, checked: boolean) => {
-    setSelectedFilters((prev) => {
-      const current = prev[groupId] || []
-      if (checked) {
-        return { ...prev, [groupId]: [...current, optionId] }
-      }
-      return { ...prev, [groupId]: current.filter((id) => id !== optionId) }
-    })
+    const current = selectedFilters[groupId] || []
+    const newFilters = checked
+      ? [...current, optionId]
+      : current.filter((id) => id !== optionId)
+    setSelectedFilters({ ...selectedFilters, [groupId]: newFilters })
   }
 
   const clearFilters = () => {
@@ -182,5 +189,3 @@ export default function CategoryPage() {
     </div>
   )
 }
-
-import { ProductCard } from "@/components/product-card"

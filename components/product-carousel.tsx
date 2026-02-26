@@ -67,7 +67,7 @@ export function ProductCarousel({ title, subtitle, products, viewAllHref, showDo
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 h-12 w-12 rounded-full bg-background shadow-lg border border-border hover:bg-muted hidden md:flex"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 h-12 w-12 rounded-full bg-background shadow-lg border border-border hover:bg-muted hidden md:flex cursor-pointer"
             onClick={() => scroll("left")}
           >
             <ChevronLeft className="h-6 w-6" />
@@ -94,7 +94,7 @@ export function ProductCarousel({ title, subtitle, products, viewAllHref, showDo
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 h-12 w-12 rounded-full bg-background shadow-lg border border-border hover:bg-muted hidden md:flex"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 h-12 w-12 rounded-full bg-background shadow-lg border border-border hover:bg-muted hidden md:flex cursor-pointer"
             onClick={() => scroll("right")}
           >
             <ChevronRight className="h-6 w-6" />

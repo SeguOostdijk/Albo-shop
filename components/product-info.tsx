@@ -13,19 +13,19 @@ export function ProductInfo({ description }: ProductInfoProps) {
       <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0">
         <TabsTrigger
           value="description"
-          className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent px-4 pb-2"
+          className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent px-4 pb-2 cursor-pointer"
         >
           Descripcion
         </TabsTrigger>
         <TabsTrigger
           value="sizes"
-          className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent px-4 pb-2"
+          className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent px-4 pb-2 cursor-pointer"
         >
           Guia de Talles
         </TabsTrigger>
         <TabsTrigger
           value="shipping"
-          className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent px-4 pb-2"
+          className="rounded-none border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:bg-transparent px-4 pb-2 cursor-pointer"
         >
           Envios
         </TabsTrigger>

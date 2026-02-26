@@ -116,7 +116,7 @@ export default function ProductPage() {
           <div className="flex gap-3">
             <Button
               size="lg"
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={handleAddToCart}
             >
               <ShoppingBag className="h-5 w-5 mr-2" />
@@ -125,15 +125,18 @@ export default function ProductPage() {
             <Button
               size="lg"
               variant="outline"
-              className={cn(inWishlist && "text-destructive border-destructive")}
+              className={cn(
+                inWishlist ? "text-destructive border-destructive" : "text-foreground",
+                "cursor-pointer"
+              )}
               onClick={() => toggleItem(product)}
             >
-              <Heart className={cn("h-5 w-5", inWishlist && "fill-current")} />
+              <Heart className={cn("h-5 w-5", inWishlist ? "fill-current" : "fill-none stroke-current")} />
               <span className="sr-only">
                 {inWishlist ? "Quitar de favoritos" : "Agregar a favoritos"}
               </span>
             </Button>
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" className="cursor-pointer">
               <Share2 className="h-5 w-5" />
               <span className="sr-only">Compartir</span>
             </Button>

@@ -34,7 +34,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
     e.stopPropagation()
     const defaultVariant = product.variants?.[0]
     const defaultColor = defaultVariant?.color || "Unico"
-    const defaultSize = defaultVariant?.sizes?.[0]?.size || "Unico"
+    const defaultSize = defaultVariant?.sizes?.[0] || "Unico"
     addItem(product, defaultColor, defaultSize)
     toast.success(`${product.name} agregado al carrito`)
   }
@@ -77,38 +77,25 @@ export function ProductCard({ product, className }: ProductCardProps) {
             variant="secondary"
             size="icon"
             className={cn(
-              "h-10 w-10 rounded-full shadow-lg backdrop-blur-sm bg-card/90 hover:bg-card hover:scale-110 transition-transform",
-              inWishlist && "text-destructive bg-destructive/10"
+              "h-10 w-10 rounded-full shadow-lg backdrop-blur-sm bg-card/90 hover:bg-card hover:scale-110 transition-transform cursor-pointer",
+              inWishlist ? "text-destructive bg-destructive/10" : "text-foreground"
             )}
             onClick={(e) => {
               e.preventDefault()
               toggleItem(product)
             }}
           >
-            <Heart className={cn("h-5 w-5", inWishlist && "fill-current")} />
+            <Heart className={cn("h-5 w-5", inWishlist ? "fill-current" : "fill-none stroke-current")} />
             <span className="sr-only">
               {inWishlist ? "Quitar de favoritos" : "Agregar a favoritos"}
             </span>
-          </Button>
-          
-          <Button
-            variant="secondary"
-            size="icon"
-            className="h-10 w-10 rounded-full shadow-lg backdrop-blur-sm bg-card/90 hover:bg-card hover:scale-110 transition-transform"
-            onClick={(e) => {
-              e.preventDefault()
-              window.location.href = `/product/${product.slug}`
-            }}
-          >
-            <Eye className="h-5 w-5" />
-            <span className="sr-only">Ver detalles</span>
           </Button>
         </div>
 
         {/* Quick Add Button - Appears on hover */}
         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
           <Button 
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-semibold shadow-xl gap-2"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-semibold shadow-xl gap-2 cursor-pointer"
             onClick={handleAddToCart}
           >
             <ShoppingBag className="h-4 w-4" />

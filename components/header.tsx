@@ -64,18 +64,20 @@ export function Header() {
                       >
                         {cat.name.toUpperCase()}
                       </Link>
-                      <div className="flex flex-col gap-1 pl-4">
-                        {subcategories.map((sub) => (
-                          <Link
-                            key={sub.slug}
-                            href={`/category/${cat.slug}?tipo=${sub.slug}`}
-                            className="text-sm text-primary-foreground/80 hover:text-accent transition-colors py-1"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {sub.name}
-                          </Link>
-                        ))}
-                      </div>
+                      {cat.slug !== "accesorios" && (
+                        <div className="flex flex-col gap-1 pl-4">
+                          {subcategories.map((sub) => (
+                            <Link
+                              key={sub.slug}
+                              href={`/category/${cat.slug}?tipo=${sub.slug}`}
+                              className="text-sm text-primary-foreground/80 hover:text-accent transition-colors py-1"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                   <Link
@@ -112,7 +114,7 @@ export function Header() {
                   onFocus={() => setSearchOpen(true)}
                   onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
                 />
-                <Button className="rounded-l-none rounded-r-sm bg-background border-2 border-l-0 border-border hover:bg-muted">
+                <Button className="rounded-l-none rounded-r-sm bg-background border-2 border-l-0 border-border hover:bg-muted cursor-pointer">
                   <Search className="h-5 w-5 text-foreground" />
                 </Button>
                 {searchOpen && searchResults.length > 0 && (
@@ -127,7 +129,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden text-primary hover:bg-primary/10"
+                className="md:hidden text-primary hover:bg-primary/10 cursor-pointer"
                 onClick={() => setSearchOpen(!searchOpen)}
               >
                 <Search className="h-5 w-5" />
@@ -136,7 +138,7 @@ export function Header() {
 
               {/* Wishlist */}
               <Link href="/wishlist">
-                <Button variant="ghost" size="icon" className="relative text-primary hover:bg-primary/10">
+                <Button variant="ghost" size="icon" className="relative text-primary hover:bg-primary/10 cursor-pointer">
                   <Heart className="h-5 w-5" />
                   {wishlistItems > 0 && (
                     <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
@@ -148,7 +150,7 @@ export function Header() {
               </Link>
 
               {/* Account */}
-              <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+              <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 cursor-pointer">
                 <User className="h-5 w-5" />
                 <span className="sr-only">Mi cuenta</span>
               </Button>
@@ -157,7 +159,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative text-primary hover:bg-primary/10"
+                className="relative text-primary hover:bg-primary/10 cursor-pointer"
                 onClick={openCart}
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -183,7 +185,7 @@ export function Header() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
                 />
-                <Button className="rounded-l-none rounded-r-sm bg-background border-2 border-l-0 border-border hover:bg-muted">
+                <Button className="rounded-l-none rounded-r-sm bg-background border-2 border-l-0 border-border hover:bg-muted cursor-pointer">
                   <Search className="h-5 w-5 text-foreground" />
                 </Button>
                 {searchResults.length > 0 && (
@@ -215,19 +217,21 @@ export function Header() {
                   <ChevronDown className="h-4 w-4" />
                 </Link>
                 {/* Dropdown */}
-                <div className="absolute left-0 top-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="bg-background text-foreground shadow-lg border border-border min-w-[200px] py-2">
-                    {subcategories.map((sub) => (
-                      <Link
-                        key={sub.slug}
-                        href={`/category/${cat.slug}?tipo=${sub.slug}`}
-                        className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
+                {cat.slug !== "accesorios" && (
+                  <div className="absolute left-0 top-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="bg-background text-foreground shadow-lg border border-border min-w-[200px] py-2">
+                      {subcategories.map((sub) => (
+                        <Link
+                          key={sub.slug}
+                          href={`/category/${cat.slug}?tipo=${sub.slug}`}
+                          className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ))}
             <Link

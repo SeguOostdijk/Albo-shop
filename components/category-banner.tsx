@@ -5,7 +5,7 @@ const categoryBanners = [
   {
     title: "  ",
     image: "/PrimeraDivision.png",
-    href: "/category/primera-division",
+    href: "/category/primera-division", 
   },
   {
     title: " ",

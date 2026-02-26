@@ -78,7 +78,7 @@ export const products: Product[] = [
     variants: [
       { color: "Negro", colorHex: "#000000", sizes: ["S", "M", "L", "XL"], sku: "CL-M", stockMock: 25 },
     ],
-    tags: ["calzas"],
+    tags: ["pantalones"],
     description: "Calza larga deportiva para mujer.",
   },
   {
@@ -92,7 +92,7 @@ export const products: Product[] = [
     variants: [
       { color: "Azul", colorHex: "#1a365d", sizes: ["S", "M", "L", "XL"], sku: "SAZ-M", stockMock: 25 },
     ],
-    tags: ["shorts"],
+    tags: ["pantalones"],
     description: "Short azul para mujer.",
   },
   
@@ -652,7 +652,7 @@ export const products: Product[] = [
 ]
 
 export const subcategories = [
-  { name: "Remeras", slug: "remeras" },
+  { name: "Remeras", slug: "camisetas" },
   { name: "Buzos", slug: "buzos" },
   { name: "Camperas", slug: "camperas" },
   { name: "Pantalones", slug: "pantalones" },

@@ -35,7 +35,7 @@ export function VariantSelector({
               key={variant.sku}
               onClick={() => onColorChange(variant.color)}
               className={cn(
-                "w-10 h-10 rounded-full border-2 transition-all relative",
+                "w-10 h-10 rounded-full border-2 transition-all relative cursor-pointer",
                 selectedColor === variant.color
                   ? "border-secondary ring-2 ring-secondary ring-offset-2"
                   : "border-border hover:border-secondary"
@@ -56,7 +56,7 @@ export function VariantSelector({
       <div>
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium">Talle</span>
-          <button className="text-sm text-secondary hover:underline">
+          <button className="text-sm text-secondary hover:underline cursor-pointer">
             Guia de talles
           </button>
         </div>
@@ -66,7 +66,7 @@ export function VariantSelector({
               key={size}
               onClick={() => onSizeChange(size)}
               className={cn(
-                "min-w-[48px] h-12 px-4 rounded-md border font-medium text-sm transition-all",
+                "min-w-[48px] h-12 px-4 rounded-md border font-medium text-sm transition-all cursor-pointer",
                 selectedSize === size
                   ? "border-secondary bg-secondary text-secondary-foreground"
                   : "border-border hover:border-secondary"

@@ -56,13 +56,15 @@ export function Hero() {
                 index === currentSlide ? "opacity-100" : "opacity-0"
               }`}
             >
-              <Image
-                src={s.image || "/placeholder.svg"}
-                alt={s.title}
-                fill
-                className="object-cover object-center"
-                priority={index === 0}
-              />
+              <Link href={s.href}>
+                <Image
+                  src={s.image || "/placeholder.svg"}
+                  alt={s.title}
+                  fill
+                  className="object-cover object-center cursor-pointer"
+                  priority={index === 0}
+                />
+              </Link>
             </div>
           ))}
         </div>
@@ -93,7 +95,7 @@ export function Hero() {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-colors ${
+            className={`w-3 h-3 rounded-full transition-colors cursor-pointer ${
               index === currentSlide ? "bg-primary" : "bg-primary/30"
             }`}
             aria-label={`Ir a slide ${index + 1}`}
