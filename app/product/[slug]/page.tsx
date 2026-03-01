@@ -1,58 +1,27 @@
-"use client"
-
-import { useState } from "react"
-import { useParams } from "next/navigation"
 import { notFound } from "next/navigation"
-import { Heart, ShoppingBag, Share2 } from "lucide-react"
-import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { ProductGallery } from "@/components/product-gallery"
-import { VariantSelector } from "@/components/variant-selector"
 import { ProductInfo } from "@/components/product-info"
 import { ProductCarousel } from "@/components/product-carousel"
-import { getProductBySlug, products } from "@/lib/products"
+import { getProductBySlugFromDb, getProductsByCategoryFromDb } from "@/lib/products-db"
 import { formatCurrency, calculateInstallments } from "@/lib/currency"
-import { useCartStore } from "@/lib/cart-store"
-import { useWishlistStore } from "@/lib/wishlist-store"
-import { cn } from "@/lib/utils"
+import { ProductVariantSection } from "@/components/product-variant-section"
 
-export default function ProductPage() {
-  const params = useParams()
-  const slug = params.slug as string
-  const product = getProductBySlug(slug)
+interface ProductPageProps {
+  params: Promise<{ slug: string }>
+}
 
-  const [selectedColor, setSelectedColor] = useState(product?.variants[0]?.color || "")
-  const [selectedSize, setSelectedSize] = useState("")
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params
 
-  const addToCart = useCartStore((state) => state.addItem)
-  const openCart = useCartStore((state) => state.openCart)
-  const { isInWishlist, toggleItem } = useWishlistStore()
-
+  const product = await getProductBySlugFromDb(slug)
   if (!product) {
     notFound()
   }
 
-  const inWishlist = isInWishlist(product.id)
-
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      toast.error("Por favor selecciona un talle")
-      return
-    }
-
-    addToCart(product, selectedColor, selectedSize)
-    toast.success("Producto agregado al carrito", {
-      action: {
-        label: "Ver carrito",
-        onClick: () => openCart(),
-      },
-    })
-  }
-
-  const relatedProducts = products
-    .filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id)
+  const relatedProducts = (await getProductsByCategoryFromDb(product.categorySlug))
+    .filter((p) => p.id !== product.id)
     .slice(0, 4)
 
   return (
@@ -100,48 +69,13 @@ export default function ProductPage() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-secondary">{calculateInstallments(product.price)}</p>
+            <p className="text-sm text-secondary">
+              {calculateInstallments(product.price)}
+            </p>
           </div>
 
           {/* Variants */}
-          <VariantSelector
-            variants={product.variants}
-            selectedColor={selectedColor}
-            selectedSize={selectedSize}
-            onColorChange={setSelectedColor}
-            onSizeChange={setSelectedSize}
-          />
-
-          {/* Actions */}
-          <div className="flex gap-3">
-            <Button
-              size="lg"
-              className="flex-1 cursor-pointer"
-              onClick={handleAddToCart}
-            >
-              <ShoppingBag className="h-5 w-5 mr-2" />
-              Agregar al Carrito
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className={cn(
-                inWishlist ? "text-destructive border-destructive" : "text-foreground",
-                "cursor-pointer"
-              )}
-              onClick={() => toggleItem(product)}
-            >
-              <Heart className={cn("h-5 w-5", inWishlist ? "fill-current" : "fill-none stroke-current")} />
-              <span className="sr-only">
-                {inWishlist ? "Quitar de favoritos" : "Agregar a favoritos"}
-              </span>
-            </Button>
-            <Button size="lg" variant="outline" className="cursor-pointer">
-              <Share2 className="h-5 w-5" />
-              <span className="sr-only">Compartir</span>
-            </Button>
-          </div>
-
+         <ProductVariantSection variants={product.variants} />
           {/* Product Info Tabs */}
           <ProductInfo description={product.description} />
         </div>

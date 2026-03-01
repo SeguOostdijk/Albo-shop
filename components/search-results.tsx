@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import type { Product } from "@/lib/products"
+import type { Product } from "@/lib/types/products"
 import { formatCurrency } from "@/lib/currency"
 
 interface SearchResultsProps {
