@@ -124,14 +124,14 @@ export default function ProductPage() {
             onSizeChange={setSelectedSize}
           />
 
-          {/* Actions */}
+{/* Actions */}
           <div className="flex gap-3">
             <Button
               size="lg"
               className={cn(
                 "flex-1 cursor-pointer gap-2",
                 inCart 
-                  ? "bg-green-500 text-white hover:bg-green-600" 
+                  ? "bg-muted text-muted-foreground hover:bg-muted/80" 
                   : ""
               )}
               onClick={handleCartAction}
