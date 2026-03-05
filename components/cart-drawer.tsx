@@ -23,7 +23,7 @@ export function CartDrawer() {
         {items.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <p className="text-muted-foreground">Tu carrito esta vacio</p>
-            <Button onClick={closeCart} asChild>
+            <Button onClick={closeCart} asChild className="cursor-pointer">
               <Link href="/category/hombre">Explorar productos</Link>
             </Button>
           </div>
@@ -54,7 +54,7 @@ export function CartDrawer() {
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8 bg-transparent"
+                        className="h-8 w-8 bg-transparent cursor-pointer"
                         onClick={() =>
                           updateQuantity(
                             item.product.id,
@@ -71,7 +71,7 @@ export function CartDrawer() {
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8 bg-transparent"
+                        className="h-8 w-8 bg-transparent cursor-pointer"
                         onClick={() =>
                           updateQuantity(
                             item.product.id,
@@ -87,7 +87,7 @@ export function CartDrawer() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 ml-auto text-destructive hover:text-destructive"
+                        className="h-8 w-8 ml-auto text-destructive hover:text-destructive cursor-pointer"
                         onClick={() =>
                           removeItem(item.product.id, item.selectedColor, item.selectedSize)
                         }
@@ -116,10 +116,10 @@ export function CartDrawer() {
               </div>
 
               <div className="space-y-2">
-                <Button className="w-full" size="lg" asChild onClick={closeCart}>
+                <Button className="w-full cursor-pointer" size="lg" asChild onClick={closeCart}>
                   <Link href="/checkout">Iniciar Checkout</Link>
                 </Button>
-                <Button variant="outline" className="w-full bg-transparent" asChild onClick={closeCart}>
+                <Button variant="outline" className="w-full bg-transparent cursor-pointer" asChild onClick={closeCart}>
                   <Link href="/cart">Ver Carrito</Link>
                 </Button>
               </div>

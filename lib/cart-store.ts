@@ -22,6 +22,7 @@ interface CartStore {
   closeCart: () => void
   getTotalItems: () => number
   getTotalPrice: () => number
+  isInCart: (productId: string, color: string, size: string) => boolean
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({
@@ -97,6 +98,15 @@ export const useCartStore = create<CartStore>((set, get) => ({
     return get().items.reduce(
       (total, item) => total + item.product.price * item.quantity,
       0
+    )
+  },
+
+  isInCart: (productId, color, size) => {
+    return get().items.some(
+      (item) =>
+        item.product.id === productId &&
+        item.selectedColor === color &&
+        item.selectedSize === size
     )
   },
 }))

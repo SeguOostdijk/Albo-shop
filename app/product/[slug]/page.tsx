@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useParams } from "next/navigation"
 import { notFound } from "next/navigation"
-import { Heart, ShoppingBag, Share2 } from "lucide-react"
+import { Heart, ShoppingBag, Share2, Check } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -27,6 +27,8 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState("")
 
   const addToCart = useCartStore((state) => state.addItem)
+  const removeItem = useCartStore((state) => state.removeItem)
+  const items = useCartStore((state) => state.items)
   const openCart = useCartStore((state) => state.openCart)
   const { isInWishlist, toggleItem } = useWishlistStore()
 
@@ -35,20 +37,30 @@ export default function ProductPage() {
   }
 
   const inWishlist = isInWishlist(product.id)
+  
+  // Check if current selected variant is in cart
+  const inCart = items.some(
+    (item) =>
+      item.product.id === product.id &&
+      item.selectedColor === selectedColor &&
+      item.selectedSize === selectedSize
+  )
 
-  const handleAddToCart = () => {
-    if (!selectedSize) {
+  const handleCartAction = () => {
+    if (!selectedSize && !inCart) {
       toast.error("Por favor selecciona un talle")
       return
     }
 
-    addToCart(product, selectedColor, selectedSize)
-    toast.success("Producto agregado al carrito", {
-      action: {
-        label: "Ver carrito",
-        onClick: () => openCart(),
-      },
-    })
+    if (inCart) {
+      // Remove from cart
+      removeItem(product.id, selectedColor, selectedSize)
+      toast.success(`${product.name} eliminado del carrito`)
+    } else {
+      // Add to cart
+      addToCart(product, selectedColor, selectedSize)
+      openCart()
+    }
   }
 
   const relatedProducts = products
@@ -116,11 +128,21 @@ export default function ProductPage() {
           <div className="flex gap-3">
             <Button
               size="lg"
-              className="flex-1 cursor-pointer"
-              onClick={handleAddToCart}
+              className={cn(
+                "flex-1 cursor-pointer gap-2",
+                inCart 
+                  ? "bg-green-500 text-white hover:bg-green-600" 
+                  : ""
+              )}
+              onClick={handleCartAction}
             >
-              <ShoppingBag className="h-5 w-5 mr-2" />
-              Agregar al Carrito
+              <div className="relative">
+                <ShoppingBag className="h-5 w-5" />
+                {inCart && (
+                  <Check className="h-2.5 w-2.5 absolute -top-1 -right-1 text-green-500 bg-white rounded-full" />
+                )}
+              </div>
+              {inCart ? "EN EL CARRITO" : "Agregar al Carrito"}
             </Button>
             <Button
               size="lg"
@@ -160,3 +182,4 @@ export default function ProductPage() {
     </div>
   )
 }
+

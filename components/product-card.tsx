@@ -4,7 +4,7 @@ import React from "react"
 
 import Link from "next/link"
 import Image from "next/image"
-import { Heart, ShoppingBag, Eye } from "lucide-react"
+import { Heart, ShoppingBag, Eye, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Product } from "@/lib/products"
 import { formatCurrency } from "@/lib/currency"
@@ -21,6 +21,9 @@ interface ProductCardProps {
 export function ProductCard({ product, className }: ProductCardProps) {
   const { isInWishlist, toggleItem } = useWishlistStore()
   const addItem = useCartStore((state) => state.addItem)
+  const removeItem = useCartStore((state) => state.removeItem)
+  const items = useCartStore((state) => state.items)
+  const openCart = useCartStore((state) => state.openCart)
   const inWishlist = isInWishlist(product.id)
   
   const discountPercent = product.originalPrice 
@@ -29,14 +32,32 @@ export function ProductCard({ product, className }: ProductCardProps) {
   
   const installmentPrice = product.price / 3
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  // Get default variant values
+  const defaultVariant = product.variants?.[0]
+  const defaultColor = defaultVariant?.color || "Unico"
+  const defaultSize = defaultVariant?.sizes?.[0] || "Unico"
+
+  // Check if product is in cart with default variant
+  const inCart = items.some(
+    (item) =>
+      item.product.id === product.id &&
+      item.selectedColor === defaultColor &&
+      item.selectedSize === defaultSize
+  )
+
+  const handleCartAction = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    const defaultVariant = product.variants?.[0]
-    const defaultColor = defaultVariant?.color || "Unico"
-    const defaultSize = defaultVariant?.sizes?.[0] || "Unico"
-    addItem(product, defaultColor, defaultSize)
-    toast.success(`${product.name} agregado al carrito`)
+    
+    if (inCart) {
+      // Remove from cart
+      removeItem(product.id, defaultColor, defaultSize)
+      toast.success(`${product.name} eliminado del carrito`)
+    } else {
+      // Add to cart
+      addItem(product, defaultColor, defaultSize)
+      openCart() // Open cart drawer
+    }
   }
 
   return (
@@ -92,14 +113,24 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </Button>
         </div>
 
-        {/* Quick Add Button - Appears on hover */}
+{/* Quick Add Button - Appears on hover */}
         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
           <Button 
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-semibold shadow-xl gap-2 cursor-pointer"
-            onClick={handleAddToCart}
+            className={cn(
+              "w-full rounded-full font-semibold shadow-xl gap-2 cursor-pointer",
+              inCart 
+                ? "bg-green-500 text-white hover:bg-green-600" 
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={handleCartAction}
           >
-            <ShoppingBag className="h-4 w-4" />
-            AGREGAR AL CARRITO
+            <div className="relative">
+              <ShoppingBag className="h-4 w-4" />
+              {inCart && (
+                <Check className="h-2.5 w-2.5 absolute -top-1 -right-1 text-green-500 bg-white rounded-full" />
+              )}
+            </div>
+            {inCart ? "EN EL CARRITO" : "AGREGAR AL CARRITO"}
           </Button>
         </div>
       </Link>
