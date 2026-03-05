@@ -101,7 +101,7 @@ export function CartDrawer() {
               ))}
             </div>
 
-            <div className="border-t border-border pt-4 space-y-4">
+            <div className="border-t border-border pt-4 space-y-4 px-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span>{formatCurrency(getTotalPrice())}</span>
@@ -115,7 +115,7 @@ export function CartDrawer() {
                 <span>{formatCurrency(getTotalPrice())}</span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 pt-2 px-1">
                 <Button className="w-full cursor-pointer" size="lg" asChild onClick={closeCart}>
                   <Link href="/checkout">Iniciar Checkout</Link>
                 </Button>

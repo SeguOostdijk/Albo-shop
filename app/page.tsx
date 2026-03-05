@@ -27,7 +27,7 @@ export default function HomePage() {
         viewAllHref="/category/novedades"
       />
 
-      {/* More Products Grid */}
+      {/* Accessories Section */}
       <section className="py-12 bg-muted">
         <div className="container mx-auto px-4">
           <div className="flex items-start gap-0 mb-6">
@@ -44,6 +44,9 @@ export default function HomePage() {
           />
         </div>
       </section>
+
+      {/* Benefits Bar */}
+      <BenefitsBar />
     </>
   )
 }
