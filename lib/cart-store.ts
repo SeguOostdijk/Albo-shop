@@ -1,7 +1,7 @@
 "use client"
 
 import { create } from "zustand"
-import type { Product } from "./products"
+import type { Product } from "./types/products"
 
 export interface CartItem {
   product: Product
@@ -13,7 +13,7 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[]
   isOpen: boolean
-  addItem: (product: Product, color: string, size: string) => void
+  addItem: (product: Product, color: string, size: string, quantity?: number) => void
   removeItem: (productId: string, color: string, size: string) => void
   updateQuantity: (productId: string, color: string, size: string, quantity: number) => void
   clearCart: () => void
@@ -22,13 +22,15 @@ interface CartStore {
   closeCart: () => void
   getTotalItems: () => number
   getTotalPrice: () => number
+  isInCart: (productId: string, color: string, size: string) => boolean
+  getItemQuantity: (productId: string, color: string, size: string) => number
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
   isOpen: false,
 
-  addItem: (product, color, size) => {
+  addItem: (product, color, size, quantity = 1) => {
     set((state) => {
       const existingItem = state.items.find(
         (item) =>
@@ -43,14 +45,14 @@ export const useCartStore = create<CartStore>((set, get) => ({
             item.product.id === product.id &&
             item.selectedColor === color &&
             item.selectedSize === size
-              ? { ...item, quantity: item.quantity + 1 }
+              ? { ...item, quantity: item.quantity + quantity }
               : item
           ),
         }
       }
 
       return {
-        items: [...state.items, { product, quantity: 1, selectedColor: color, selectedSize: size }],
+        items: [...state.items, { product, quantity, selectedColor: color, selectedSize: size }],
       }
     })
   },
@@ -98,5 +100,24 @@ export const useCartStore = create<CartStore>((set, get) => ({
       (total, item) => total + item.product.price * item.quantity,
       0
     )
+  },
+
+  isInCart: (productId: string, color: string, size: string) => {
+    return get().items.some(
+      (item) =>
+        item.product.id === productId &&
+        item.selectedColor === color &&
+        item.selectedSize === size
+    )
+  },
+
+  getItemQuantity: (productId: string, color: string, size: string) => {
+    const item = get().items.find(
+      (item) =>
+        item.product.id === productId &&
+        item.selectedColor === color &&
+        item.selectedSize === size
+    )
+    return item?.quantity || 0
   },
 }))

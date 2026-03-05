@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 
 import Link from "next/link"
 import Image from "next/image"
-import { Heart, ShoppingBag, Eye } from "lucide-react"
+import { Heart, ShoppingBag, Eye, Check, Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Product } from "@/lib/products"
 import { formatCurrency } from "@/lib/currency"
@@ -21,7 +21,28 @@ interface ProductCardProps {
 export function ProductCard({ product, className }: ProductCardProps) {
   const { isInWishlist, toggleItem } = useWishlistStore()
   const addItem = useCartStore((state) => state.addItem)
+  const isInCartFn = useCartStore((state) => state.isInCart)
+  const getItemQuantityFn = useCartStore((state) => state.getItemQuantity)
+  const updateQuantity = useCartStore((state) => state.updateQuantity)
+  const openCart = useCartStore((state) => state.openCart)
   const inWishlist = isInWishlist(product.id)
+  
+  const [quantity, setQuantity] = useState(1)
+  const [isInCart, setIsInCart] = useState(false)
+  const [cartQuantity, setCartQuantity] = useState(0)
+  
+  const defaultVariant = product.variants?.[0]
+  const defaultColor = defaultVariant?.color || "Unico"
+  const defaultSize = defaultVariant?.sizes?.[0] || "Unico"
+  
+  // Check cart status
+  useEffect(() => {
+    const inCart = isInCartFn(product.id, defaultColor, defaultSize)
+    setIsInCart(inCart)
+    if (inCart) {
+      setCartQuantity(getItemQuantityFn(product.id, defaultColor, defaultSize))
+    }
+  }, [product.id, defaultColor, defaultSize, isInCartFn, getItemQuantityFn])
   
   const discountPercent = product.originalPrice 
     ? Math.round((1 - product.price / product.originalPrice) * 100) 
@@ -32,11 +53,34 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    const defaultVariant = product.variants?.[0]
-    const defaultColor = defaultVariant?.color || "Unico"
-    const defaultSize = defaultVariant?.sizes?.[0] || "Unico"
-    addItem(product, defaultColor, defaultSize)
-    toast.success(`${product.name} agregado al carrito`)
+    addItem(product, defaultColor, defaultSize, quantity)
+    setIsInCart(true)
+    setCartQuantity(quantity)
+    toast.success(`${quantity} ${quantity === 1 ? 'unidad' : 'unidades'} de ${product.name} agregadas al carrito`)
+    openCart()
+  }
+
+  const handleIncreaseQuantity = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const newQty = cartQuantity + 1
+    if (newQty <= 10) {
+      updateQuantity(product.id, defaultColor, defaultSize, newQty)
+      setCartQuantity(newQty)
+    }
+  }
+
+  const handleDecreaseQuantity = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const newQty = cartQuantity - 1
+    if (newQty <= 0) {
+      setIsInCart(false)
+      setCartQuantity(0)
+    } else {
+      updateQuantity(product.id, defaultColor, defaultSize, newQty)
+      setCartQuantity(newQty)
+    }
   }
 
   return (
@@ -94,13 +138,34 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
         {/* Quick Add Button - Appears on hover */}
         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <Button 
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-semibold shadow-xl gap-2 cursor-pointer"
-            onClick={handleAddToCart}
-          >
-            <ShoppingBag className="h-4 w-4" />
-            AGREGAR AL CARRITO
-          </Button>
+          {isInCart ? (
+            /* Added to Cart - Button to remove */
+            <Button 
+              className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full font-semibold shadow-xl cursor-pointer relative"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                useCartStore.getState().removeItem(product.id, defaultColor, defaultSize)
+                setIsInCart(false)
+                setCartQuantity(0)
+                toast.info(`${product.name} eliminado del carrito`)
+              }}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span className="absolute -top-1 -right-1 bg-white text-green-500 rounded-full p-0.5">
+                <Check className="h-3 w-3" />
+              </span>
+            </Button>
+          ) : (
+            /* Add to Cart Button */
+            <Button 
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 hover:brightness-110 rounded-full font-semibold shadow-xl gap-2 cursor-pointer"
+              onClick={handleAddToCart}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              AGREGAR AL CARRITO
+            </Button>
+          )}
         </div>
       </Link>
 

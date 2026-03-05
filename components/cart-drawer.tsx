@@ -54,7 +54,7 @@ export function CartDrawer() {
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8 bg-transparent"
+                        className="h-8 w-8 bg-transparent cursor-pointer"
                         onClick={() =>
                           updateQuantity(
                             item.product.id,
@@ -71,7 +71,7 @@ export function CartDrawer() {
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8 bg-transparent"
+                        className="h-8 w-8 bg-transparent cursor-pointer"
                         onClick={() =>
                           updateQuantity(
                             item.product.id,
@@ -87,7 +87,7 @@ export function CartDrawer() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 ml-auto text-destructive hover:text-destructive"
+                        className="h-8 w-8 ml-auto text-destructive hover:text-destructive cursor-pointer"
                         onClick={() =>
                           removeItem(item.product.id, item.selectedColor, item.selectedSize)
                         }
