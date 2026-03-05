@@ -151,9 +151,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 toast.info(`${product.name} eliminado del carrito`)
               }}
             >
-              <ShoppingBag className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 bg-white text-green-500 rounded-full p-0.5">
-                <Check className="h-3 w-3" />
+              <span className="relative">
+                <ShoppingBag className="h-4 w-4" />
+                <span className="absolute -top-2 -right-2 bg-white text-green-500 rounded-full p-0.5">
+                  <Check className="h-2 w-2" />
+                </span>
               </span>
             </Button>
           ) : (

@@ -57,6 +57,43 @@ export function CategoryPageClient({
       )
     }
 
+    // Apply selected filters
+    Object.entries(selectedFilters).forEach(([groupId, selectedOptions]) => {
+      if (selectedOptions.length > 0) {
+        result = result.filter((p) => {
+          // Size filter
+          if (groupId === "size") {
+            return p.variants.some((v) =>
+              v.sizes.some((s) => selectedOptions.includes(s.toLowerCase()))
+            )
+          }
+          // Color filter
+          if (groupId === "color") {
+            return p.variants.some((v) =>
+              selectedOptions.includes(v.color.toLowerCase())
+            )
+          }
+          // Price filter
+          if (groupId === "price") {
+            return selectedOptions.some((priceRange) => {
+              const [min, max] = priceRange.split("-").map((v) => (v === "+" ? Infinity : Number(v)))
+              if (max === Infinity) {
+                return p.price >= min
+              }
+              return p.price >= min && p.price <= max
+            })
+          }
+          // Collection filter
+          if (groupId === "collection") {
+            return p.tags.some((tag) =>
+              selectedOptions.includes(tag.toLowerCase())
+            )
+          }
+          return true
+        })
+      }
+    })
+
     // Apply sorting
     switch (sortBy) {
       case "price-asc":
@@ -73,7 +110,7 @@ export function CategoryPageClient({
     }
 
     return result
-  }, [products, tipo, sortBy])
+  }, [products, tipo, sortBy, selectedFilters])
 
   const handleFilterChange = (groupId: string, optionId: string, checked: boolean) => {
     const current = selectedFilters[groupId] || []
@@ -98,7 +135,7 @@ export function CategoryPageClient({
         <div className="flex items-center gap-3">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="lg:hidden bg-transparent">
+              <Button variant="outline" className="lg:hidden bg-transparent cursor-pointer">
                 <SlidersHorizontal className="h-4 w-4 mr-2" />
                 Filtros
               </Button>
@@ -109,6 +146,7 @@ export function CategoryPageClient({
               </SheetHeader>
               <div className="mt-6">
                 <Filters
+                  products={products}
                   selectedFilters={selectedFilters}
                   onFilterChange={handleFilterChange}
                   onClearFilters={clearFilters}
@@ -118,14 +156,14 @@ export function CategoryPageClient({
           </Sheet>
 
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] cursor-pointer">
               <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="relevance">Relevancia</SelectItem>
-              <SelectItem value="price-asc">Precio: menor a mayor</SelectItem>
-              <SelectItem value="price-desc">Precio: mayor a menor</SelectItem>
-              <SelectItem value="newest">Mas nuevos</SelectItem>
+              <SelectItem value="relevance" className="cursor-pointer">Relevancia</SelectItem>
+              <SelectItem value="price-asc" className="cursor-pointer">Precio: menor a mayor</SelectItem>
+              <SelectItem value="price-desc" className="cursor-pointer">Precio: mayor a menor</SelectItem>
+              <SelectItem value="newest" className="cursor-pointer">Mas nuevos</SelectItem>
             </SelectContent>
           </Select>
 
@@ -133,7 +171,7 @@ export function CategoryPageClient({
             <Button
               variant={gridCols === 2 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-r-none"
+              className="rounded-r-none cursor-pointer"
               onClick={() => setGridCols(2)}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -142,7 +180,7 @@ export function CategoryPageClient({
             <Button
               variant={gridCols === 3 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-l-none"
+              className="rounded-l-none cursor-pointer"
               onClick={() => setGridCols(3)}
             >
               <Grid3X3 className="h-4 w-4" />
@@ -155,6 +193,7 @@ export function CategoryPageClient({
       <div className="flex gap-8">
         <aside className="hidden lg:block w-64 flex-shrink-0">
           <Filters
+            products={products}
             selectedFilters={selectedFilters}
             onFilterChange={handleFilterChange}
             onClearFilters={clearFilters}

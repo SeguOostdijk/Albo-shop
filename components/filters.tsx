@@ -11,6 +11,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
+import type { Product } from "@/lib/types/products"
 
 interface FilterOption {
   id: string
@@ -24,69 +25,109 @@ interface FilterGroup {
   options: FilterOption[]
 }
 
-const filterGroups: FilterGroup[] = [
-  {
-    id: "size",
-    name: "Talle",
-    options: [
-      { id: "xs", label: "XS", count: 5 },
-      { id: "s", label: "S", count: 12 },
-      { id: "m", label: "M", count: 15 },
-      { id: "l", label: "L", count: 14 },
-      { id: "xl", label: "XL", count: 10 },
-      { id: "xxl", label: "XXL", count: 6 },
-    ],
-  },
-  {
-    id: "color",
-    name: "Color",
-    options: [
-      { id: "azul", label: "Azul", count: 20 },
-      { id: "blanco", label: "Blanco", count: 15 },
-      { id: "celeste", label: "Celeste", count: 8 },
-      { id: "gris", label: "Gris", count: 5 },
-    ],
-  },
-  {
-    id: "price",
-    name: "Precio",
-    options: [
-      { id: "0-30000", label: "Hasta $30.000" },
-      { id: "30000-60000", label: "$30.000 - $60.000" },
-      { id: "60000-90000", label: "$60.000 - $90.000" },
-      { id: "90000+", label: "Mas de $90.000" },
-    ],
-  },
-  {
-    id: "type",
-    name: "Tipo de Producto",
-    options: [
-      { id: "camisetas", label: "Camisetas", count: 8 },
-      { id: "shorts", label: "Shorts", count: 4 },
-      { id: "buzos", label: "Buzos", count: 3 },
-      { id: "camperas", label: "Camperas", count: 2 },
-      { id: "accesorios", label: "Accesorios", count: 6 },
-    ],
-  },
-  {
-    id: "collection",
-    name: "Coleccion",
-    options: [
-      { id: "nueva-temporada", label: "Nueva Temporada", count: 10 },
-      { id: "entrenamiento", label: "Entrenamiento", count: 5 },
-      { id: "retro", label: "Retro", count: 2 },
-    ],
-  },
-]
+function getFilterGroups(products: Product[]): FilterGroup[] {
+  // Count sizes
+  const sizeCounts: Record<string, number> = {}
+  // Count colors
+  const colorCounts: Record<string, number> = {}
+  // Count price ranges
+  const priceRanges = [
+    { id: "0-30000", label: "Hasta $30.000", min: 0, max: 30000 },
+    { id: "30000-60000", label: "$30.000 - $60.000", min: 30000, max: 60000 },
+    { id: "60000-90000", label: "$60.000 - $90.000", min: 60000, max: 90000 },
+    { id: "90000+", label: "Mas de $90.000", min: 90000, max: Infinity },
+  ]
+  const priceCounts: Record<string, number> = {}
+  // Count collections
+  const collectionCounts: Record<string, number> = {}
+
+  products.forEach((product) => {
+    // Count sizes from variants
+    product.variants.forEach((variant) => {
+      variant.sizes.forEach((size) => {
+        const s = size.toLowerCase()
+        sizeCounts[s] = (sizeCounts[s] || 0) + 1
+      })
+    })
+
+    // Count colors from variants
+    product.variants.forEach((variant) => {
+      const c = variant.color.toLowerCase()
+      colorCounts[c] = (colorCounts[c] || 0) + 1
+    })
+
+    // Count price ranges
+    priceRanges.forEach((range) => {
+      if (product.price >= range.min && product.price <= range.max) {
+        priceCounts[range.id] = (priceCounts[range.id] || 0) + 1
+      }
+    })
+
+    // Count collections from tags
+    product.tags.forEach((tag) => {
+      const t = tag.toLowerCase()
+      if (t.includes("retro") || t.includes("entrenamiento") || t.includes("nueva")) {
+        collectionCounts[t] = (collectionCounts[t] || 0) + 1
+      }
+    })
+  })
+
+  return [
+    {
+      id: "size",
+      name: "Talle",
+      options: [
+        { id: "xs", label: "XS", count: sizeCounts["xs"] || 0 },
+        { id: "s", label: "S", count: sizeCounts["s"] || 0 },
+        { id: "m", label: "M", count: sizeCounts["m"] || 0 },
+        { id: "l", label: "L", count: sizeCounts["l"] || 0 },
+        { id: "xl", label: "XL", count: sizeCounts["xl"] || 0 },
+        { id: "xxl", label: "XXL", count: sizeCounts["xxl"] || 0 },
+      ].filter(o => o.count > 0),
+    },
+    {
+      id: "color",
+      name: "Color",
+      options: Object.entries(colorCounts).map(([color, count]) => ({
+        id: color,
+        label: color.charAt(0).toUpperCase() + color.slice(1),
+        count,
+      })).filter(o => o.count > 0),
+    },
+    {
+      id: "price",
+      name: "Precio",
+      options: priceRanges
+        .map((range) => ({
+          id: range.id,
+          label: range.label,
+          count: priceCounts[range.id] || 0,
+        }))
+        .filter(o => o.count > 0),
+    },
+    {
+      id: "collection",
+      name: "Coleccion",
+      options: Object.entries(collectionCounts).map(([collection, count]) => ({
+        id: collection,
+        label: collection.charAt(0).toUpperCase() + collection.slice(1),
+        count,
+      })).filter(o => o.count > 0),
+    },
+  ]
+}
 
 interface FiltersProps {
+  products: Product[]
   selectedFilters: Record<string, string[]>
   onFilterChange: (groupId: string, optionId: string, checked: boolean) => void
   onClearFilters: () => void
 }
 
-export function Filters({ selectedFilters, onFilterChange, onClearFilters }: FiltersProps) {
+export function Filters({ products, selectedFilters, onFilterChange, onClearFilters }: FiltersProps) {
   const [openGroups, setOpenGroups] = useState<string[]>(["size", "color"])
+  
+  const filterGroups = getFilterGroups(products)
 
   const toggleGroup = (groupId: string) => {
     setOpenGroups((prev) =>
@@ -103,7 +144,7 @@ export function Filters({ selectedFilters, onFilterChange, onClearFilters }: Fil
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Filtros</h3>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={onClearFilters}>
+          <Button variant="ghost" size="sm" onClick={onClearFilters} className="cursor-pointer">
             Limpiar
           </Button>
         )}
@@ -115,7 +156,7 @@ export function Filters({ selectedFilters, onFilterChange, onClearFilters }: Fil
           open={openGroups.includes(group.id)}
           onOpenChange={() => toggleGroup(group.id)}
         >
-          <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-medium hover:text-secondary transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-medium hover:text-secondary transition-colors cursor-pointer">
             {group.name}
             <ChevronDown
               className={cn(
@@ -133,6 +174,7 @@ export function Filters({ selectedFilters, onFilterChange, onClearFilters }: Fil
                   onCheckedChange={(checked) =>
                     onFilterChange(group.id, option.id, checked as boolean)
                   }
+                  className="cursor-pointer"
                 />
                 <Label
                   htmlFor={`${group.id}-${option.id}`}
