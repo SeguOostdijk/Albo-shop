@@ -60,8 +60,8 @@ export function ProductVariantSection({
     }
   }
 
-  const selectedVariant = variants.find((v) => v.color === selectedColor)
-  const isDisabled = !selectedColor || !selectedSize || (selectedVariant?.stockMock === 0)
+  // Button is never disabled - let user click and we'll show error messages if needed
+  const isDisabled = false
 
   return (
     <div className="space-y-6">

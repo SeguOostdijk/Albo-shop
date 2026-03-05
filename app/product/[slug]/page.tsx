@@ -75,7 +75,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           {/* Variants */}
-         <ProductVariantSection variants={product.variants} />
+          <ProductVariantSection variants={product.variants} product={product} />
           {/* Product Info Tabs */}
           <ProductInfo description={product.description} />
         </div>

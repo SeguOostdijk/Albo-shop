@@ -15,3 +15,65 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Perfil de usuario (se crea automáticamente cuando el usuario se registra en Supabase Auth)
+model profiles {
+  id           String    @id // Coincide con auth.users.id
+  email        String    @unique
+  full_name    String?
+  phone        String?
+  dni          String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  orders       orders[]
+
+  @@map("profiles")
+}
+
+// Órdenes del usuario
+model orders {
+  id              String    @id @default(cuid())
+  user_id         String    // ID del usuario en Supabase Auth
+  profile         profiles  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  total           Float
+  status          String    @default("pending") // pending, processing, shipped, delivered, cancelled
+  shipping_name   String?
+  shipping_phone  String?
+  shipping_address String?
+  shipping_city   String?
+  shipping_postal String?
+  
+  payment_method  String    @default("mercadopago")
+  payment_id      String?   // ID de MercadoPago
+  payment_status  String?   // approved, pending, rejected, etc.
+  
+  items           order_items[]
+  
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([user_id])
+  @@map("orders")
+}
+
+// Items de cada orden
+model order_items {
+  id              String    @id @default(cuid())
+  order           orders    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  order_id        String
+  
+  product_id      String
+  product_name    String
+  product_image   String?
+  variant_color   String
+  variant_size    String
+  quantity        Int
+  unit_price      Float
+  
+  created_at      DateTime  @default(now())
+
+  @@index([order_id])
+  @@map("order_items")
+}
+

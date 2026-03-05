@@ -3,12 +3,13 @@
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, User, Heart, ShoppingBag, Menu, ChevronDown } from "lucide-react"
+import { Search, User, Heart, ShoppingBag, Menu, ChevronDown, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useCartStore } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
+import { useAuthStore } from "@/hooks/use-auth"
 import { categories, subcategories } from "@/lib/types/products"
 import type { Product } from "@/lib/types/products"
 import { CartDrawer } from "@/components/cart-drawer"
@@ -32,7 +33,9 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const accountRef = useRef<HTMLDivElement>(null)
 
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
@@ -40,12 +43,17 @@ export function Header() {
   const cartItems = useCartStore((state) => state.getTotalItems())
   const wishlistItems = useWishlistStore((state) => state.items.length)
   const openCart = useCartStore((state) => state.openCart)
+  
+  const { user, profile, signOut } = useAuthStore()
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpenDropdown(null)
+      }
+      if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
+        setAccountMenuOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -86,6 +94,11 @@ export function Header() {
 
   const handleMouseLeave = () => {
     setOpenDropdown(null)
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    setAccountMenuOpen(false)
   }
 
   return (
@@ -168,15 +181,84 @@ export function Header() {
             {/* Icons */}
             <div className="flex items-center gap-1">
               {/* Mi Cuenta */}
-              <Link href="/account">
+              <div className="relative" ref={accountRef}>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   className="cursor-pointer hover:bg-[#0f2f98]/10"
+                  onClick={() => setAccountMenuOpen(!accountMenuOpen)}
                 >
-                  <User className="h-5 w-5" />
+                  {user ? (
+                    <div className="w-6 h-6 rounded-full bg-[#0f2f98] text-white flex items-center justify-center text-xs font-bold">
+                      {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
+                    </div>
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
                 </Button>
-              </Link>
+                
+                {/* Account Dropdown */}
+                {accountMenuOpen && (
+                  <div className="absolute top-full right-0 bg-white shadow-lg border rounded-md py-2 min-w-[200px] z-50 mt-1">
+                    {user ? (
+                      <>
+                        <div className="px-4 py-2 border-b">
+                          <p className="font-medium text-sm truncate">{profile?.full_name || user.email}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        </div>
+                        <Link
+                          href="/account"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#0f2f98]/5 cursor-pointer"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          Mi Cuenta
+                        </Link>
+                        <Link
+                          href="/account/orders"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#0f2f98]/5 cursor-pointer"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          Mis Pedidos
+                        </Link>
+                        <Link
+                          href="/wishlist"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#0f2f98]/5 cursor-pointer"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          Favoritos
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
+                        >
+                          Cerrar Sesión
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="px-4 py-2 text-sm text-muted-foreground">
+                          ¿Ya tenés cuenta?
+                        </p>
+                        <Link
+                          href="/account/login"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-[#0f2f98] hover:bg-[#0f2f98]/5 cursor-pointer"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          <LogIn className="h-4 w-4" />
+                          Iniciar Sesión
+                        </Link>
+                        <Link
+                          href="/account/register"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#0f2f98]/5 cursor-pointer"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          Crear Cuenta
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <Link href="/wishlist" className="relative">
                 <Button 

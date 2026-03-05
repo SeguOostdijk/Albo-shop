@@ -1,11 +1,33 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { User, Package, Heart, CreditCard, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Breadcrumbs } from "@/components/breadcrumbs"
+import { useAuthStore } from "@/hooks/use-auth"
 
 export default function AccountPage() {
+  const router = useRouter()
+  const { user, profile, initialized, signOut, loading } = useAuthStore()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (initialized && !user) {
+      router.push("/account/login")
+    }
+  }, [initialized, user, router])
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push("/")
+  }
+
   const accountSections = [
     {
       title: "Mis Datos",
@@ -39,11 +61,34 @@ export default function AccountPage() {
     },
   ]
 
+  if (!mounted || !initialized || loading) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <Breadcrumbs items={[{ label: "Mi Cuenta" }]} />
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0f2f98]"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <div className="container mx-auto px-4 py-6">
       <Breadcrumbs items={[{ label: "Mi Cuenta" }]} />
 
-      <h1 className="text-3xl font-bold mt-4 mb-8">Mi Cuenta</h1>
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-16 h-16 rounded-full bg-[#0f2f98] text-white flex items-center justify-center text-2xl font-bold">
+          {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold">Mi Cuenta</h1>
+          <p className="text-muted-foreground">{profile?.full_name || user.email}</p>
+        </div>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {accountSections.map((section) => (
@@ -80,7 +125,7 @@ export default function AccountPage() {
       </div>
 
       <div className="mt-4">
-        <Button variant="destructive" className="w-full md:w-auto">
+        <Button variant="destructive" onClick={handleSignOut} className="w-full md:w-auto cursor-pointer">
           <LogOut className="h-4 w-4 mr-2" />
           Cerrar Sesión
         </Button>
