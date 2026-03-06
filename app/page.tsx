@@ -1,25 +1,30 @@
 import { Hero } from "@/components/hero"
 import { ProductCarousel } from "@/components/product-carousel"
 import { CategoryBanner } from "@/components/category-banner"
-import { BenefitsBar } from "@/components/benefits-bar"
-import { getFeaturedProducts, getNewProducts, products } from "@/lib/products"
-import { ProductCard } from "@/components/product-card"
+import {
+  getFeaturedProductsFromDb,
+  getNewProductsFromDb,
+  getAllProductsFromDb,
+} from "@/lib/products-db"
 
-export default function HomePage() {
-  const featuredProducts = getFeaturedProducts()
-  const newProducts = getNewProducts()
-  const saleProducts = products.filter(p => p.originalPrice)
+export default async function HomePage() {
+  const [featuredProducts, newProducts, allProducts] = await Promise.all([
+    getFeaturedProductsFromDb(),
+    getNewProductsFromDb(),
+    getAllProductsFromDb(),
+  ])
+
+  const saleProducts = allProducts.filter((p) => p.originalPrice)
 
   return (
     <>
       {/* Hero Slider */}
       <Hero />
 
-      {/* Category Banners - Hombre, Mujer, Ninos */}
+      {/* Category Banners */}
       <CategoryBanner />
 
-
-      {/* New Products */}
+      {/* Featured Products */}
       <ProductCarousel
         title="Destacado"
         subtitle="PRODUCTOS DESTACADOS"
@@ -27,18 +32,23 @@ export default function HomePage() {
         viewAllHref="/category/novedades"
       />
 
-      {/* More Products Grid */}
+      {/* Extras / Accesorios */}
       <section className="py-12 bg-muted">
         <div className="container mx-auto px-4">
           <div className="flex items-start gap-0 mb-6">
             <div className="w-1 h-14 bg-primary mr-4" />
             <div>
-              <p className="text-sm text-primary font-medium uppercase tracking-wider">EXTRAS</p>
-              <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">ACCESORIOS</h2>
+              <p className="text-sm text-primary font-medium uppercase tracking-wider">
+                EXTRAS
+              </p>
+              <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">
+                ACCESORIOS
+              </h2>
             </div>
           </div>
-        <ProductCarousel
-            products={products.filter((product) => product.categorySlug === "accesorios")}
+
+          <ProductCarousel
+            products={allProducts.filter((product) => product.categorySlug === "accesorios")}
             viewAllHref="/category/accesorios"
             showDots={false}
           />
