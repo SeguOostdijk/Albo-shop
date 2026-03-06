@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/product-card"
-import type { Product } from "@/lib/products"
+import type { Product } from "@/lib/type/products"
 
 interface ProductCarouselProps {
   title?: string

@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import type { ProductVariant } from "@/lib/products"
+import type { ProductVariant } from "@/lib/type/products"
 
 interface VariantSelectorProps {
   variants: ProductVariant[]

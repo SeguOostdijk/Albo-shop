@@ -92,18 +92,12 @@ export function CategoryPageClient({
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <Breadcrumbs
-        items={[
-          { label: categoryName },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: categoryName }]} />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold">{categoryName}</h1>
-          <p className="text-muted-foreground mt-1">
-            {filteredProducts.length} productos
-          </p>
+          <p className="text-muted-foreground mt-1">{filteredProducts.length} productos</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -148,7 +142,6 @@ export function CategoryPageClient({
               onClick={() => setGridCols(2)}
             >
               <LayoutGrid className="h-4 w-4" />
-              <span className="sr-only">Vista de 2 columnas</span>
             </Button>
             <Button
               variant={gridCols === 3 ? "secondary" : "ghost"}
@@ -157,7 +150,6 @@ export function CategoryPageClient({
               onClick={() => setGridCols(3)}
             >
               <Grid3X3 className="h-4 w-4" />
-              <span className="sr-only">Vista de 3 columnas</span>
             </Button>
           </div>
         </div>
