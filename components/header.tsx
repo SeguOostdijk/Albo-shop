@@ -278,7 +278,7 @@ export function Header() {
                   className="flex items-center gap-1 px-5 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors"
                 >
                   {cat.name.toUpperCase()}
-                  <ChevronDown className="h-4 w-4" />
+                  {cat.slug !== "accesorios" && <ChevronDown className="h-4 w-4" />}
                 </Link>
 
                 {cat.slug !== "accesorios" && (

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram } from "lucide-react"
+import { Facebook, Instagram, Twitter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -47,14 +47,17 @@ export function Footer() {
       <div className="bg-background border-t border-border">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Seguinos */}
+{/* Seguinos */}
             <div>
               <h3 className="font-semibold text-lg text-primary mb-4">Seguinos</h3>
               <div className="flex gap-4">
-                <a href="#" className="text-foreground hover:text-primary transition-colors" aria-label="Facebook">
+                <a href="https://www.facebook.com/cai.sancayetano"  target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors" aria-label="Facebook">
                   <Facebook className="h-6 w-6" />
                 </a>
-                <a href="#" className="text-foreground hover:text-primary transition-colors" aria-label="Instagram">
+                <a href="https://www.x.com/CAI_SanCayetano" target="_blank" className="text-foreground hover:text-primary transition-colors" aria-label="X (Twitter)">
+                  <Twitter className="h-6 w-6" />
+                </a>
+                <a href="https://www.instagram.com/cai_sancayetano/" target="_blank" className="text-foreground hover:text-primary transition-colors" aria-label="Instagram">
                   <Instagram className="h-6 w-6" />
                 </a>
               </div>
@@ -97,24 +100,23 @@ export function Footer() {
                   </Link>
                 </li>
               </ul>
-              <Button className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 text-xs px-4 py-2 h-auto">
-                BOTON DE ARREPENTIMIENTO
-              </Button>
+              <Link href="/policies/returns">
+                <Button className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 text-xs px-4 py-2 h-auto cursor-pointer">
+                  BOTON DE ARREPENTIMIENTO
+                </Button>
+              </Link>
               <p className="text-xs text-accent mt-2">* Solicitud de cancelacion de compra</p>
             </div>
 
-            {/* Contacto */}
+{/* Contacto */}
             <div>
               <h3 className="font-semibold text-lg text-primary mb-4">Contacto</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>Telefono:<br></br>
-                  <Link href="/contact" className="hover:text-primary transition-colors">
-                    +54 9 2983 000000
-                  </Link>
-                </li>
-                <li>Direccion: <br></br>Rivadavia 105 - San Cayetano</li>
-                <li>Club Atletico Independiente de San Cayetano</li>
-              </ul>
+              <p className="text-sm text-muted-foreground mb-4">Club Independiente San Cayetano</p>
+              <Link href="/contact">
+                <Button className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer uppercase text-xs px-4 py-2 h-auto w-full">
+                  Contactanos
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

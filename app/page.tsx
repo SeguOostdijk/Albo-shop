@@ -6,6 +6,7 @@ import {
   getNewProductsFromDb,
   getAllProductsFromDb,
 } from "@/lib/products-db"
+import { BenefitsBar } from "@/components/benefits-bar"
 
 export default async function HomePage() {
   const [featuredProducts, newProducts, allProducts] = await Promise.all([
@@ -54,6 +55,9 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      {/* Benefits Bar */}
+      <BenefitsBar />
     </>
   )
 }

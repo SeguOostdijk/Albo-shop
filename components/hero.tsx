@@ -15,17 +15,17 @@ const heroSlides = [
   },
   {
     image: "/salida.png",
-    title: "ALBO BASQUET",
-    subtitle: "Nueva indumentaria de juego ya disponible",
+    title: "PRIMERA DIVISION",
+    subtitle: "La misma ropa que usan los jugadores",
     cta: "COMPRAR AHORA",
-    href: "/category/basquet",
+    href: "/category/primera-division",
   },
   {
-    image: "/vuelta.png",
-    title: "ENTRENAMIENTO",
-    subtitle: "La misma ropa que usan los jugadores",
+    image: "/FutbolFemeninoHero.png",
+    title: "FEMENINO",
+    subtitle: "La misma ropa que usan las jugadoras",
     cta: "VER COLECCION",
-    href: "/category/entrenamiento",
+    href: "/category/femenino",
   },
 ]
 
@@ -56,15 +56,13 @@ export function Hero() {
                 index === currentSlide ? "opacity-100" : "opacity-0"
               }`}
             >
-              <Link href={s.href}>
-                <Image
-                  src={s.image || "/placeholder.svg"}
-                  alt={s.title}
-                  fill
-                  className="object-cover object-center cursor-pointer"
-                  priority={index === 0}
-                />
-              </Link>
+              <Image
+                src={s.image || "/placeholder.svg"}
+                alt={s.title}
+                fill
+                className="object-cover object-center"
+                priority={index === 0}
+              />
             </div>
           ))}
         </div>

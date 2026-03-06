@@ -119,7 +119,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             className={cn(
               "w-full rounded-full font-semibold shadow-xl gap-2 cursor-pointer",
               inCart 
-                ? "bg-green-500 text-white hover:bg-green-600" 
+                ? "bg-muted text-muted-foreground hover:bg-muted/80" 
                 : "bg-primary text-primary-foreground hover:bg-primary/90"
             )}
             onClick={handleCartAction}
