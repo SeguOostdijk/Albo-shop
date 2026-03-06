@@ -1,3 +1,5 @@
+export const revalidate = 60
+
 import { CategoryPageClient } from "@/components/category-page-client"
 import { getAllProductsFromDb, getProductsByCategoryFromDb } from "@/lib/products-db"
 import { categories } from "@/lib/type/products"

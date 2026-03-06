@@ -1,3 +1,5 @@
+export const revalidate = 60
+
 import { notFound } from "next/navigation"
 import { ProductPageClient } from "@/components/product-page-client"
 import { getProductBySlugFromDb, getProductsByCategoryFromDb } from "@/lib/products-db"
