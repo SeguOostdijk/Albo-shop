@@ -1,3 +1,5 @@
+export const revalidate = 60
+
 import { Hero } from "@/components/hero"
 import { ProductCarousel } from "@/components/product-carousel"
 import { CategoryBanner } from "@/components/category-banner"
