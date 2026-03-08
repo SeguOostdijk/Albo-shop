@@ -40,7 +40,7 @@ export default function ContactPage() {
                 <label className="block text-sm font-medium mb-2">Mensaje</label>
                 <Textarea placeholder="¿En qué podemos ayudarte?" rows={5} />
               </div>
-              <Button className="w-full">Enviar mensaje</Button>
+<Button className="w-full cursor-pointer">Enviar mensaje</Button>
             </form>
           </div>
 
@@ -121,21 +121,27 @@ export default function ContactPage() {
               <h3 className="font-semibold mb-4">Seguinos en redes</h3>
               <div className="flex gap-4">
                 <a 
-                  href="#" 
+                  href="https://www.facebook.com/cai.sancayetano" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
                   className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary/20 transition-colors"
                   aria-label="Facebook"
                 >
                   <Facebook className="h-5 w-5 text-primary" />
                 </a>
                 <a 
-                  href="#" 
+                  href="https://www.x.com/CAI_SanCayetano" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
                   className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary/20 transition-colors"
                   aria-label="X (Twitter)"
                 >
                   <Twitter className="h-5 w-5 text-primary" />
                 </a>
                 <a 
-                  href="#" 
+                  href="https://www.instagram.com/cai_sancayetano/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
                   className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary/20 transition-colors"
                   aria-label="Instagram"
                 >
