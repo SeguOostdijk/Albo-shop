@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -35,11 +36,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="font-sans antialiased">
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <Toaster />
-        <Analytics />
+        <AuthProvider>
+          <Header />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <Toaster />
+          <Analytics />
+        </AuthProvider>
       </body>
     </html>
   )

@@ -15,3 +15,36 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Supabase Auth tables (managed by Supabase)
+// Users are authenticated via Supabase Auth
+
+model orders {
+  id              String      @id @default(cuid())
+  user_id         String?
+  guest_email     String?
+  guest_name      String?
+  status          String      @default("pending")
+  total           Float
+  shipping_cost   Float
+  shipping_method String
+  shipping_address Json
+  payment_info    Json?
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  items           order_items[]
+}
+
+model order_items {
+  id            String   @id @default(cuid())
+  order_id      String
+  product_id    String
+  product_name  String
+  product_image String?
+  quantity      Int
+  price         Float
+  color         String
+  size          String
+  created_at    DateTime @default(now())
+  order         orders   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+}
+

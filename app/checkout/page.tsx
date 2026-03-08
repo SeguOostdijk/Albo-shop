@@ -35,17 +35,56 @@ export default function CheckoutPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call to /api/checkout
+    // Get form data
+    const formData = new FormData(e.currentTarget)
+    const firstName = formData.get("firstName") as string
+    const lastName = formData.get("lastName") as string
+    const email = formData.get("email") as string
+    const phone = formData.get("phone") as string
+    const address = formData.get("address") as string
+    const city = formData.get("city") as string
+    const province = formData.get("province") as string
+    const postalCode = formData.get("postalCode") as string
+
+    // Payment info (in real app, this would be handled by payment processor)
+    const paymentInfo = {
+      last4: "1234", // This would come from payment processor
+      brand: "Visa"
+    }
+
     try {
-      // This is where you would integrate with your payment API
-      // await fetch('/api/checkout', { method: 'POST', body: JSON.stringify({...}) })
-      
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      
-      toast.success("Pedido realizado con exito!")
-      clearCart()
-      // Redirect to confirmation page
-      window.location.href = "/"
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items,
+          email,
+          phone,
+          firstName,
+          lastName,
+          address,
+          city,
+          province,
+          postalCode,
+          shippingMethod,
+          shippingCost,
+          total,
+          paymentInfo
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success("Pedido realizado con exito!")
+        clearCart()
+        // If user is logged in, redirect to orders
+        window.location.href = "/account/orders"
+      } else {
+        toast.error(data.error || "Error al procesar el pago. Intenta nuevamente.")
+      }
     } catch {
       toast.error("Error al procesar el pago. Intenta nuevamente.")
     } finally {

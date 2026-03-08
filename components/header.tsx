@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, User, Heart, ShoppingBag, Menu, ChevronDown } from "lucide-react"
+import { Search, User, Heart, ShoppingBag, Menu, ChevronDown, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useCartStore } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
+import { useAuth } from "@/lib/auth-context"
 import { categories, subcategories } from "@/lib/type/products"
 import type { Product } from "@/lib/type/products"
 import { CartDrawer } from "@/components/cart-drawer"
@@ -25,6 +26,7 @@ export function Header() {
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
 
+  const { user, signOut } = useAuth()
   const cartItems = useCartStore((state) => state.getTotalItems())
   const wishlistItems = useWishlistStore((state) => state.items.length)
   const openCart = useCartStore((state) => state.openCart)
@@ -53,6 +55,10 @@ export function Header() {
 
     return () => clearTimeout(id)
   }, [searchQuery])
+
+  const handleSignOut = async () => {
+    await signOut()
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -200,10 +206,56 @@ export function Header() {
               </Link>
 
               {/* Account */}
-              <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 cursor-pointer">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Mi cuenta</span>
-              </Button>
+              {user ? (
+                <div className="relative group">
+                  <Link href="/account">
+                    <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 cursor-pointer">
+                      <User className="h-5 w-5" />
+                      <span className="sr-only">Mi cuenta</span>
+                    </Button>
+                  </Link>
+                  {/* Dropdown */}
+                  <div className="absolute right-0 top-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="bg-background text-foreground shadow-lg border border-border min-w-[180px] py-2 rounded-md">
+                      <div className="px-4 py-2 border-b border-border">
+                        <p className="text-sm font-medium truncate">{user.email}</p>
+                      </div>
+                      <Link
+                        href="/account/orders"
+                        className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                      >
+                        Mis Pedidos
+                      </Link>
+                      <Link
+                        href="/wishlist"
+                        className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                      >
+                        Mis Favoritos
+                      </Link>
+                      <Link
+                        href="/account"
+                        className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                      >
+                        Mi Cuenta
+                      </Link>
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors text-red-500"
+                      >
+                        <LogOut className="h-4 w-4 inline mr-2" />
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Link href="/account">
+                  <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 cursor-pointer">
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">Mi cuenta</span>
+                  </Button>
+                </Link>
+              )}
 
               {/* Cart */}
               <Button

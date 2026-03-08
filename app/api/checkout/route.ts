@@ -1,27 +1,93 @@
 import { NextResponse } from "next/server"
-
-// Placeholder for checkout API integration
-// This is where you would integrate with your payment provider (Stripe, MercadoPago, etc.)
+import { supabase } from "@/lib/supabase/auth"
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     
-    // TODO: Validate request body
-    // TODO: Create order in database
-    // TODO: Process payment with payment provider
-    // TODO: Send confirmation email
-    // TODO: Update inventory
+    const { 
+      items, 
+      email, 
+      phone,
+      firstName, 
+      lastName, 
+      address, 
+      city, 
+      province, 
+      postalCode,
+      shippingMethod,
+      shippingCost,
+      total,
+      paymentInfo
+    } = body
+
+    // Get current user session if logged in
+    const { data: { session } } = await supabase.auth.getSession()
     
-    console.log("Checkout request received:", body)
+    const userId = session?.user?.id || null
+    const guestEmail = userId ? null : email
+    const guestName = userId ? null : `${firstName} ${lastName}`
 
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Create shipping address object
+    const shippingAddress = {
+      firstName,
+      lastName,
+      address,
+      city,
+      province,
+      postalCode,
+      phone
+    }
 
-    // Return success response
+    // Create the order
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        user_id: userId,
+        guest_email: guestEmail,
+        guest_name: guestName,
+        status: "pending",
+        total: total,
+        shipping_cost: shippingCost,
+        shipping_method: shippingMethod,
+        shipping_address: shippingAddress,
+        payment_info: paymentInfo
+      })
+      .select()
+      .single()
+
+    if (orderError) {
+      console.error("Error creating order:", orderError)
+      return NextResponse.json(
+        { success: false, error: "Error al crear el pedido" },
+        { status: 500 }
+      )
+    }
+
+    // Create order items
+    const orderItems = items.map((item: any) => ({
+      order_id: order.id,
+      product_id: item.product.id,
+      product_name: item.product.name,
+      product_image: item.product.images?.[0] || null,
+      quantity: item.quantity,
+      price: item.product.price,
+      color: item.selectedColor,
+      size: item.selectedSize
+    }))
+
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems)
+
+    if (itemsError) {
+      console.error("Error creating order items:", itemsError)
+      // Still return success since order was created
+    }
+
     return NextResponse.json({
       success: true,
-      orderId: `ORD-${Date.now()}`,
+      orderId: order.id,
       message: "Pedido procesado exitosamente",
     })
   } catch (error) {
