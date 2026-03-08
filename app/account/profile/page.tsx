@@ -66,16 +66,16 @@ export default function ProfilePage() {
         ]}
       />
 
-      <h1 className="text-3xl font-bold mt-6 mb-8">Información de Cuenta</h1>
+      <h1 className="text-3xl font-bold mt-6 mb-8 text-center">Información de Cuenta</h1>
 
-      <div className="max-w-2xl">
+      <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center justify-center gap-2">
               <User className="h-5 w-5" />
               Datos Personales
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-center">
               Actualiza tu información personal
             </CardDescription>
           </CardHeader>
@@ -127,7 +127,7 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <Button type="submit" disabled={isSaving} className="w-full">
+              <Button type="submit" disabled={isSaving} className="w-full cursor-pointer">
                 {isSaving ? (
                   "Guardando..."
                 ) : (
@@ -143,11 +143,11 @@ export default function ProfilePage() {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center justify-center gap-2">
               <Mail className="h-5 w-5" />
               Cambiar Contraseña
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-center">
               Actualiza tu contraseña de acceso
             </CardDescription>
           </CardHeader>
@@ -165,7 +165,7 @@ export default function ProfilePage() {
                 <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
                 <Input id="confirmPassword" type="password" placeholder="••••••••" />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full cursor-pointer">
                 <Save className="h-4 w-4 mr-2" />
                 Cambiar Contraseña
               </Button>

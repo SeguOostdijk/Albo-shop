@@ -72,7 +72,7 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={() => setEmailNotifications(!emailNotifications)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${emailNotifications ? 'bg-primary' : 'bg-muted'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${emailNotifications ? 'bg-primary' : 'bg-muted'}`}
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
@@ -84,7 +84,7 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={() => setSmsNotifications(!smsNotifications)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${smsNotifications ? 'bg-primary' : 'bg-muted'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${smsNotifications ? 'bg-primary' : 'bg-muted'}`}
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${smsNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
@@ -96,12 +96,12 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={() => setMarketingEmails(!marketingEmails)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${marketingEmails ? 'bg-primary' : 'bg-muted'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${marketingEmails ? 'bg-primary' : 'bg-muted'}`}
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${marketingEmails ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
-            <Button onClick={handleSaveNotifications} className="w-full mt-4">
+            <Button onClick={handleSaveNotifications} className="w-full mt-4 cursor-pointer">
               Guardar Preferencias
             </Button>
           </CardContent>
@@ -124,21 +124,21 @@ export default function SettingsPage() {
                 <p className="font-medium">Autenticación de dos factores</p>
                 <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad</p>
               </div>
-              <Button variant="outline" size="sm">Activar</Button>
+              <Button variant="outline" size="sm" className="cursor-pointer">Activar</Button>
             </div>
             <div className="flex items-center justify-between py-2 border-b">
               <div>
                 <p className="font-medium">Sesiones activas</p>
                 <p className="text-sm text-muted-foreground">Gestiona tus sesiones iniciadas</p>
               </div>
-              <Button variant="outline" size="sm">Ver</Button>
+              <Button variant="outline" size="sm" className="cursor-pointer">Ver</Button>
             </div>
             <div className="flex items-center justify-between py-2">
               <div>
                 <p className="font-medium">Eliminar cuenta</p>
                 <p className="text-sm text-muted-foreground">Borra todos tus datos de forma permanente</p>
               </div>
-              <Button variant="destructive" size="sm">Eliminar</Button>
+              <Button variant="destructive" size="sm" className="cursor-pointer">Eliminar</Button>
             </div>
           </CardContent>
         </Card>
@@ -155,13 +155,13 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" asChild>
+            <Button variant="outline" className="w-full justify-start cursor-pointer" asChild>
               <a href="/help/faq">Preguntas Frecuentes</a>
             </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
+            <Button variant="outline" className="w-full justify-start cursor-pointer" asChild>
               <a href="/contact">Contactanos</a>
             </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
+            <Button variant="outline" className="w-full justify-start cursor-pointer" asChild>
               <a href="/policies/returns">Política de Devoluciones</a>
             </Button>
           </CardContent>
