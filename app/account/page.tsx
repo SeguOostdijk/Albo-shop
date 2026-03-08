@@ -48,7 +48,7 @@ export default function AccountPage() {
                     </div>
                     <h2 className="text-xl font-semibold mb-2">Ya tengo cuenta</h2>
                     <p className="text-muted-foreground mb-4">Ingresá para ver tus pedidos y gestionar tu cuenta</p>
-                    <Button>Iniciar Sesión</Button>
+                    <Button className="cursor-pointer">Iniciar Sesión</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -62,7 +62,7 @@ export default function AccountPage() {
                     </div>
                     <h2 className="text-xl font-semibold mb-2">Soy nuevo</h2>
                     <p className="text-muted-foreground mb-4">Creá una cuenta y disfrutá de una experiencia más rápida</p>
-                    <Button variant="outline">Crear Cuenta</Button>
+                    <Button variant="outline" className="cursor-pointer">Crear Cuenta</Button>
                   </div>
                 </CardContent>
               </Card>

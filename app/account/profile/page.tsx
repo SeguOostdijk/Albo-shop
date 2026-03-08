@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { User, Mail, Phone, Save } from "lucide-react"
@@ -12,27 +12,88 @@ import { Breadcrumbs } from "@/components/breadcrumbs"
 import { useAuth } from "@/lib/auth-context"
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth()
+  const { user, loading, updateProfile, updatePassword } = useAuth()
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [formData, setFormData] = useState({
-    firstName: user?.user_metadata?.first_name || "",
-    lastName: user?.user_metadata?.last_name || "",
-    phone: user?.user_metadata?.phone || "",
+    firstName: "",
+    lastName: "",
+    phone: "",
   })
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+
+  // Update form data when user loads
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.user_metadata?.first_name || "",
+        lastName: user.user_metadata?.last_name || "",
+        phone: user.user_metadata?.phone || "",
+      })
+    }
+  }, [user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
 
     try {
-      // In a real app, you would update the user profile via API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      toast.success("Perfil actualizado correctamente")
+      const { error } = await updateProfile({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
+      })
+
+      if (error) {
+        toast.error("Error al actualizar el perfil")
+      } else {
+        toast.success("Perfil actualizado correctamente")
+        router.refresh()
+      }
     } catch {
       toast.error("Error al actualizar el perfil")
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Las contraseñas no coinciden")
+      return
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres")
+      return
+    }
+
+    setIsChangingPassword(true)
+
+    try {
+      const { error } = await updatePassword(passwordData.newPassword)
+
+      if (error) {
+        toast.error("Error al cambiar la contraseña")
+      } else {
+        toast.success("Contraseña actualizada correctamente")
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        })
+      }
+    } catch {
+      toast.error("Error al cambiar la contraseña")
+    } finally {
+      setIsChangingPassword(false)
     }
   }
 
@@ -152,22 +213,46 @@ export default function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
+            <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Contraseña Actual</Label>
-                <Input id="currentPassword" type="password" placeholder="••••••••" />
+                <Input 
+                  id="currentPassword" 
+                  type="password" 
+                  placeholder="••••••••"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">Nueva Contraseña</Label>
-                <Input id="newPassword" type="password" placeholder="••••••••" />
+                <Input 
+                  id="newPassword" 
+                  type="password" 
+                  placeholder="••••••••"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-                <Input id="confirmPassword" type="password" placeholder="••••••••" />
+                <Input 
+                  id="confirmPassword" 
+                  type="password" 
+                  placeholder="••••••••"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                />
               </div>
-              <Button type="submit" className="w-full cursor-pointer">
-                <Save className="h-4 w-4 mr-2" />
-                Cambiar Contraseña
+              <Button type="submit" disabled={isChangingPassword} className="w-full cursor-pointer">
+                {isChangingPassword ? (
+                  "Cambiando..."
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Cambiar Contraseña
+                  </>
+                )}
               </Button>
             </form>
           </CardContent>

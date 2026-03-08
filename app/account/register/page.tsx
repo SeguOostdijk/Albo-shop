@@ -44,7 +44,7 @@ toast.error("La contraseña debe tener al menos 6 caracteres")
     }
 
     try {
-      const { error } = await signUp(email, password, firstName, lastName)
+      const { error } = await signUp(email, password, firstName, lastName, phone)
 
       if (error) {
         toast.error(error.message || "Error al registrarse")

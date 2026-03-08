@@ -10,11 +10,12 @@ import { Breadcrumbs } from "@/components/breadcrumbs"
 import { useAuth } from "@/lib/auth-context"
 
 export default function SettingsPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, deleteAccount } = useAuth()
   const router = useRouter()
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [smsNotifications, setSmsNotifications] = useState(false)
   const [marketingEmails, setMarketingEmails] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   if (loading) {
     return (
@@ -39,6 +40,30 @@ export default function SettingsPage() {
 
   const handleSaveNotifications = () => {
     toast.success("Preferencias guardadas correctamente")
+  }
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.")
+    
+    if (!confirmed) return
+
+    setIsDeleting(true)
+
+    try {
+      const { error } = await deleteAccount()
+
+      if (error) {
+        toast.error("Error al eliminar la cuenta")
+      } else {
+        toast.success("Cuenta eliminada correctamente")
+        router.push("/")
+        router.refresh()
+      }
+    } catch {
+      toast.error("Error al eliminar la cuenta")
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -138,7 +163,9 @@ export default function SettingsPage() {
                 <p className="font-medium">Eliminar cuenta</p>
                 <p className="text-sm text-muted-foreground">Borra todos tus datos de forma permanente</p>
               </div>
-              <Button variant="destructive" size="sm" className="cursor-pointer">Eliminar</Button>
+              <Button variant="destructive" size="sm" className="cursor-pointer" onClick={handleDeleteAccount} disabled={isDeleting}>
+                {isDeleting ? "Eliminando..." : "Eliminar"}
+              </Button>
             </div>
           </CardContent>
         </Card>
