@@ -50,17 +50,17 @@ export default function SettingsPage() {
         ]}
       />
 
-      <h1 className="text-3xl font-bold mt-6 mb-8">Configuración</h1>
+      <h1 className="text-3xl font-bold mt-6 mb-8 text-center">Configuración</h1>
 
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6 text-center">
         {/* Notifications Settings */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center justify-center gap-2">
               <Bell className="h-5 w-5" />
               Notificaciones
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-center">
               Configura cómo quieres recibir notificaciones
             </CardDescription>
           </CardHeader>
@@ -110,11 +110,11 @@ export default function SettingsPage() {
         {/* Privacy & Security */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center justify-center gap-2">
               <Shield className="h-5 w-5" />
               Privacidad y Seguridad
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-center">
               Gestiona la seguridad de tu cuenta
             </CardDescription>
           </CardHeader>
@@ -146,11 +146,11 @@ export default function SettingsPage() {
         {/* Help */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center justify-center gap-2">
               <HelpCircle className="h-5 w-5" />
               Ayuda
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-center">
               ¿Necesitas ayuda con tu cuenta?
             </CardDescription>
           </CardHeader>
