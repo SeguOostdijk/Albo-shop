@@ -240,7 +240,7 @@ export function Header() {
                       </Link>
                       <button
                         onClick={handleSignOut}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors text-red-500"
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors text-red-500 cursor-pointer"
                       >
                         <LogOut className="h-4 w-4 inline mr-2" />
                         Cerrar Sesión

@@ -111,7 +111,7 @@ export default function AccountPage() {
                 <p className="opacity-90">{user.email}</p>
               </div>
             </div>
-            <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20" onClick={handleSignOut}>
+<Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-red-600 cursor-pointer" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" /> Cerrar Sesión
             </Button>
           </div>
