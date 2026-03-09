@@ -1,4 +1,4 @@
-import { supabase } from "./supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import type { Product } from "@/lib/type/products"
 
 type DbProductVariant = {
@@ -57,6 +57,8 @@ function mapDbToProduct(p: DbProduct): Product {
 }
 
 export async function getAllProductsFromDb(): Promise<Product[]> {
+  const supabase = await createClient()
+
   const { data, error } = await supabase
     .from("products")
     .select(`
@@ -90,6 +92,8 @@ export async function getAllProductsFromDb(): Promise<Product[]> {
 }
 
 export async function getFeaturedProductsFromDb(): Promise<Product[]> {
+  const supabase = await createClient()
+
   const { data, error } = await supabase
     .from("products")
     .select(`
@@ -124,6 +128,8 @@ export async function getFeaturedProductsFromDb(): Promise<Product[]> {
 }
 
 export async function getNewProductsFromDb(): Promise<Product[]> {
+  const supabase = await createClient()
+
   const { data, error } = await supabase
     .from("products")
     .select(`
@@ -158,6 +164,8 @@ export async function getNewProductsFromDb(): Promise<Product[]> {
 }
 
 export async function getProductBySlugFromDb(slug: string): Promise<Product | null> {
+  const supabase = await createClient()
+
   const { data, error } = await supabase
     .from("products")
     .select(`
@@ -194,6 +202,8 @@ export async function getProductBySlugFromDb(slug: string): Promise<Product | nu
 }
 
 export async function getProductsByCategoryFromDb(categorySlug: string): Promise<Product[]> {
+  const supabase = await createClient()
+
   const { data, error } = await supabase
     .from("products")
     .select(`
