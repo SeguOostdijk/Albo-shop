@@ -26,21 +26,21 @@ export default function ContactPage() {
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <label className="block text-sm font-medium mb-2">Nombre completo</label>
-                <Input placeholder="Tu nombre" />
+                <Input placeholder="Tu nombre" className="placeholder:text-muted-foreground/60" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
-                <Input type="email" placeholder="tu@email.com" />
+                <Input type="email" placeholder="tu@email.com" className="placeholder:text-muted-foreground/60" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Teléfono</label>
-                <Input type="tel" placeholder="+54 9 2983 000000" />
+                <Input type="tel" placeholder="+54 9 2983 000000" className="placeholder:text-muted-foreground/60" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Mensaje</label>
-                <Textarea placeholder="¿En qué podemos ayudarte?" rows={5} />
+                <Textarea placeholder="¿En qué podemos ayudarte?" rows={5} className="placeholder:text-muted-foreground/60" />
               </div>
-<Button className="w-full cursor-pointer">Enviar mensaje</Button>
+              <Button className="w-full cursor-pointer">Enviar mensaje</Button>
             </form>
           </div>
 

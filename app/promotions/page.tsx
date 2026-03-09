@@ -97,7 +97,7 @@ export default function PromotionsPage() {
               <input
                 type="email"
                 placeholder="Tu email"
-                className="flex-1 px-4 py-3 rounded-l-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                className="flex-1 px-4 py-3 rounded-l-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-muted-foreground/60"
               />
               <button
                 type="submit"

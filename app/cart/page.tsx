@@ -147,7 +147,7 @@ export default function CartPage() {
 
             {/* Coupon Code */}
             <div className="flex gap-2 mb-6">
-              <Input placeholder="Codigo de descuento" className="flex-1" />
+<Input placeholder="Codigo de descuento" className="flex-1 placeholder:text-muted-foreground/60" />
               <Button variant="outline">Aplicar</Button>
             </div>
 
