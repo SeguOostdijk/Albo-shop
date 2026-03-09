@@ -5,8 +5,47 @@ import Image from "next/image"
 import { Facebook, Instagram, Twitter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { toast } from "sonner"
 
 export function Footer() {
+  const [email, setEmail] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!email || !email.includes("@")) {
+      toast.error("Por favor ingresa un email válido")
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success(data.message || "Te suscribiste correctamente al newsletter")
+        setEmail("")
+      } else {
+        toast.error(data.error || "Error al procesar la suscripción")
+      }
+    } catch {
+      toast.error("Error al procesar la suscripción")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <footer>
       {/* Newsletter Section with Stadium Background */}
@@ -30,14 +69,21 @@ export function Footer() {
           <p className="text-primary-foreground/80 mb-6 uppercase text-sm tracking-wider">
             Para recibir ofertas y novedades en tu mail
           </p>
-          <form className="flex max-w-md mx-auto gap-0" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex max-w-md mx-auto gap-0" onSubmit={handleNewsletterSubmit}>
             <Input
               type="email"
               placeholder="Ingresa tu email"
               className="flex-1 rounded-r-none bg-primary-foreground text-foreground border-0"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
             />
-            <Button type="submit" className="rounded-l-none bg-accent text-accent-foreground hover:bg-accent/90 font-bold px-6">
-              OK
+            <Button 
+              type="submit" 
+              className="rounded-l-none bg-accent text-accent-foreground hover:bg-accent/90 font-bold px-6 cursor-pointer"
+              disabled={isLoading}
+            >
+              {isLoading ? "..." : "OK"}
             </Button>
           </form>
         </div>
