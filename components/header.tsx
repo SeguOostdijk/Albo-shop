@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, User, Heart, ShoppingBag, Menu, ChevronDown, LogOut } from "lucide-react"
+import { Search, User, Heart, ShoppingBag, Menu, ChevronDown, LogOut, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useCartStore } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
 import { useAuth } from "@/lib/auth-context"
+import { createClient } from "@/lib/supabase/client"
 import { categories, subcategories } from "@/lib/type/products"
 import type { Product } from "@/lib/type/products"
 import { CartDrawer } from "@/components/cart-drawer"
@@ -25,6 +26,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+  const [isAdminUser, setIsAdminUser] = useState(false)
 
   const { user, signOut } = useAuth()
   const cartItems = useCartStore((state) => state.getTotalItems())
@@ -56,22 +58,41 @@ export function Header() {
     return () => clearTimeout(id)
   }, [searchQuery])
 
+  useEffect(() => {
+    const checkAdmin = async () => {
+      setIsAdminUser(false)
+
+      if (!user) return
+
+      const supabase = createClient()
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+
+      if (!error && data?.role === "admin") {
+        setIsAdminUser(true)
+      }
+    }
+
+    checkAdmin()
+  }, [user])
+
   const handleSignOut = async () => {
     await signOut()
   }
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Top Yellow Banner */}
       <div className="bg-accent text-accent-foreground text-center py-2 text-sm font-medium">
         <p>25% de reintegro + 3 cuotas sin interes pagando con tarjetas de credito Visa BBVA</p>
       </div>
 
-      {/* Main Header */}
       <div className="bg-background border-b border-border">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 gap-4">
-            {/* Mobile Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild className="lg:hidden">
                 <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
@@ -123,11 +144,20 @@ export function Header() {
                   >
                     OPORTUNIDADES
                   </Link>
+
+                  {isAdminUser && (
+                    <Link
+                      href="/admin"
+                      className="text-lg font-medium text-white hover:text-accent transition-colors block py-2 border-t border-primary-foreground/20 mt-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      EDITAR CATÁLOGO
+                    </Link>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>
 
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
               <div className="w-12 h-12 rounded-full overflow-hidden bg-primary flex items-center justify-center">
                 <Image
@@ -144,40 +174,55 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex relative flex-1 max-w-lg">
-              <div className="relative w-full flex">
-                <Input
-                  type="search"
-                  placeholder="Buscar"
-                  className="w-full border-2 border-border rounded-l-sm rounded-r-none focus-visible:ring-0 focus-visible:border-primary"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchOpen(true)}
-                  onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
-                />
-                <Button className="rounded-l-none rounded-r-sm bg-background border-2 border-l-0 border-border hover:bg-muted cursor-pointer">
-                  <Search className="h-5 w-5 text-foreground" />
-                </Button>
+{/* Search + Admin Button - Desktop */}
+<div className="hidden md:flex flex-1 relative items-center">
 
-                {searchOpen && searchLoading && (
-                  <div className="absolute top-full left-0 right-0 bg-background border border-border mt-1 rounded-md p-3 text-sm text-muted-foreground z-50">
-                    Buscando...
-                  </div>
-                )}
+  {/* Search Bar */}
+  <div className="relative mx-auto w-full max-w-lg flex">
+    <Input
+      type="search"
+      placeholder="Buscar"
+      className="w-full border-2 border-border rounded-l-sm rounded-r-none focus-visible:ring-0 focus-visible:border-primary"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      onFocus={() => setSearchOpen(true)}
+      onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
+    />
 
-                {searchOpen && searchResults.length > 0 && (
-                  <SearchResults
-                    results={searchResults.slice(0, 5)}
-                    onSelect={() => setSearchQuery("")}
-                  />
-                )}
-              </div>
-            </div>
+    <Button className="rounded-l-none rounded-r-sm bg-background border-2 border-l-0 border-border hover:bg-muted cursor-pointer">
+      <Search className="h-5 w-5 text-foreground" />
+    </Button>
 
-            {/* Icons */}
+    {searchOpen && searchLoading && (
+      <div className="absolute top-full left-0 right-0 bg-background border border-border mt-1 rounded-md p-3 text-sm text-muted-foreground z-50">
+        Buscando...
+      </div>
+    )}
+
+    {searchOpen && searchResults.length > 0 && (
+      <SearchResults
+        results={searchResults.slice(0, 5)}
+        onSelect={() => setSearchQuery("")}
+      />
+    )}
+  </div>
+
+  {/* Admin Button */}
+  {isAdminUser && (
+    <Link href="/admin" className="absolute right-0">
+      <Button
+        variant="outline"
+        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
+      >
+        <Pencil className="h-4 w-4 mr-2" />
+        Editar catálogo
+      </Button>
+    </Link>
+  )}
+
+</div>
+
             <div className="flex items-center gap-1">
-              {/* Mobile Search Toggle */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -188,7 +233,6 @@ export function Header() {
                 <span className="sr-only">Buscar</span>
               </Button>
 
-              {/* Wishlist */}
               <Link href="/wishlist">
                 <Button
                   variant="ghost"
@@ -205,7 +249,6 @@ export function Header() {
                 </Button>
               </Link>
 
-              {/* Account */}
               {user ? (
                 <div className="relative group">
                   <Link href="/account">
@@ -214,30 +257,43 @@ export function Header() {
                       <span className="sr-only">Mi cuenta</span>
                     </Button>
                   </Link>
-                  {/* Dropdown */}
+
                   <div className="absolute right-0 top-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="bg-background text-foreground shadow-lg border border-border min-w-[180px] py-2 rounded-md">
                       <div className="px-4 py-2 border-b border-border">
                         <p className="text-sm font-medium truncate">{user.email}</p>
                       </div>
+
                       <Link
                         href="/account/orders"
                         className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
                       >
                         Mis Pedidos
                       </Link>
+
                       <Link
                         href="/wishlist"
                         className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
                       >
                         Mis Favoritos
                       </Link>
+
                       <Link
                         href="/account"
                         className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
                       >
                         Mi Cuenta
                       </Link>
+
+                      {isAdminUser && (
+                        <Link
+                          href="/admin"
+                          className="block px-4 py-2 text-sm hover:bg-muted transition-colors text-primary font-medium"
+                        >
+                          Editar catálogo
+                        </Link>
+                      )}
+
                       <button
                         onClick={handleSignOut}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors text-red-500 cursor-pointer"
@@ -257,7 +313,6 @@ export function Header() {
                 </Link>
               )}
 
-              {/* Cart */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -275,7 +330,6 @@ export function Header() {
             </div>
           </div>
 
-          {/* Mobile Search */}
           {searchOpen && (
             <div className="md:hidden pb-4 relative">
               <div className="relative flex">
@@ -312,7 +366,6 @@ export function Header() {
         </div>
       </div>
 
-      {/* Navigation Bar */}
       <nav className="hidden lg:block bg-primary">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-0">

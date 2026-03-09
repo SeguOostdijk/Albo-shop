@@ -51,12 +51,6 @@ export default async function AdminPage() {
           Administrar productos
         </Link>
 
-        <Link
-          href="/"
-          className="rounded-md border px-4 py-2"
-        >
-          Volver a la tienda
-        </Link>
       </div>
     </div>
   )

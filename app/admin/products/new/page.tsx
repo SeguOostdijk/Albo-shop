@@ -70,6 +70,8 @@ export default function NewProductPage() {
   const [variantSizes, setVariantSizes] = useState("")
   const [variantStock, setVariantStock] = useState("")
 
+  const [imageFile, setImageFile] = useState<File | null>(null)
+
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
@@ -92,13 +94,36 @@ export default function NewProductPage() {
     const finalSlug = slug || generatedSlug
 
     if (!name || !finalSlug || !categorySlug || !price || !variantColor || !variantStock) {
-       setErrorMsg("Nombre, slug, categoría, precio, color y stock son obligatorios.")
-       return
+      setErrorMsg("Nombre, slug, categoría, precio, color y stock son obligatorios.")
+      return
     }
 
     setLoading(true)
 
     const tags = subcategorySlug ? [subcategorySlug] : []
+
+    let uploadedImageUrl: string | null = null
+
+    if (imageFile) {
+      const fileExt = imageFile.name.split(".").pop()
+      const filePath = `${finalSlug}/${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, imageFile)
+
+      if (uploadError) {
+        setLoading(false)
+        setErrorMsg(uploadError.message)
+        return
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath)
+
+      uploadedImageUrl = publicUrlData.publicUrl
+    }
 
     const { data: insertedProduct, error } = await supabase
       .from("products")
@@ -112,7 +137,7 @@ export default function NewProductPage() {
         is_featured: isFeatured,
         is_new: isNew,
         tags,
-        images: [],
+        images: uploadedImageUrl ? [uploadedImageUrl] : [],
       })
       .select("id")
       .single()
@@ -123,28 +148,26 @@ export default function NewProductPage() {
       return
     }
 
-    if (variantColor) {
-      const sizesArray = variantSizes
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
+    const sizesArray = variantSizes
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
 
-      const { error: variantError } = await supabase
-        .from("product_variants")
-        .insert({
-          product_id: insertedProduct.id,
-          color: variantColor,
-          color_hex: generatedColorHex,
-          sizes: sizesArray,
-          sku: generatedSku,
-          stock: variantStock ? Number(variantStock) : 0,
-        })
+    const { error: variantError } = await supabase
+      .from("product_variants")
+      .insert({
+        product_id: insertedProduct.id,
+        color: variantColor,
+        color_hex: generatedColorHex,
+        sizes: sizesArray,
+        sku: generatedSku,
+        stock: variantStock ? Number(variantStock) : 0,
+      })
 
-      if (variantError) {
-        setLoading(false)
-        setErrorMsg(variantError.message)
-        return
-      }
+    if (variantError) {
+      setLoading(false)
+      setErrorMsg(variantError.message)
+      return
     }
 
     setLoading(false)
@@ -261,6 +284,16 @@ export default function NewProductPage() {
             onChange={(e) => setDescription(e.target.value)}
             className="min-h-[120px] w-full rounded-md border px-3 py-2"
             placeholder="Descripción del producto"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">Imagen principal</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-md border px-3 py-2"
           />
         </div>
 

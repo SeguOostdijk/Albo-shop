@@ -85,6 +85,9 @@ export default function EditProductPage() {
   const [variantSizes, setVariantSizes] = useState("")
   const [variantStock, setVariantStock] = useState("")
 
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [currentImages, setCurrentImages] = useState<string[]>([])
+
   const generatedSlug = useMemo(() => slugify(name), [name])
   const generatedColorHex = useMemo(() => getColorHex(variantColor), [variantColor])
   const generatedSku = useMemo(() => {
@@ -111,6 +114,7 @@ export default function EditProductPage() {
           is_featured,
           is_new,
           tags,
+          images,
           product_variants (
             id,
             color,
@@ -137,6 +141,7 @@ export default function EditProductPage() {
       setDescription(data.description ?? "")
       setIsFeatured(!!data.is_featured)
       setIsNew(!!data.is_new)
+      setCurrentImages(Array.isArray(data.images) ? data.images : [])
 
       const tags = Array.isArray(data.tags) ? data.tags : []
       setSubcategorySlug(tags[0] ?? "")
@@ -186,6 +191,29 @@ export default function EditProductPage() {
 
     const tags = subcategorySlug ? [subcategorySlug] : []
 
+    let finalImages = currentImages
+
+    if (imageFile) {
+      const fileExt = imageFile.name.split(".").pop()
+      const filePath = `${finalSlug}/${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, imageFile)
+
+      if (uploadError) {
+        setSaving(false)
+        setErrorMsg(uploadError.message)
+        return
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath)
+
+      finalImages = [publicUrlData.publicUrl]
+    }
+
     const { error: productError } = await supabase
       .from("products")
       .update({
@@ -198,6 +226,7 @@ export default function EditProductPage() {
         is_featured: isFeatured,
         is_new: isNew,
         tags,
+        images: finalImages,
       })
       .eq("id", id)
 
@@ -364,6 +393,27 @@ export default function EditProductPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="min-h-[120px] w-full rounded-md border px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">Imagen principal</label>
+
+          {currentImages.length > 0 && (
+            <div className="mb-3">
+              <img
+                src={currentImages[0]}
+                alt={name}
+                className="h-32 w-32 rounded-md border object-cover"
+              />
+            </div>
+          )}
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-md border px-3 py-2"
           />
         </div>
 
