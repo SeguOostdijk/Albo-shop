@@ -1,6 +1,4 @@
-q2w32e3r45t6yu78io90p'´¿
-use client"
-]{ñd>X
+"use client"
 
 import React from "react"
 
