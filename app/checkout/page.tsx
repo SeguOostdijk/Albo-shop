@@ -26,6 +26,7 @@ export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCartStore()
   const [isLoading, setIsLoading] = useState(false)
   const [shippingMethod, setShippingMethod] = useState("standard")
+  const [paymentMethod, setPaymentMethod] = useState("credit-card")
 
   const subtotal = getTotalPrice()
   const shippingCost = shippingMethod === "express" ? 9999 : subtotal >= 75000 ? 0 : 5999
@@ -45,11 +46,23 @@ export default function CheckoutPage() {
     const city = formData.get("city") as string
     const province = formData.get("province") as string
     const postalCode = formData.get("postalCode") as string
-
-    // Payment info (in real app, this would be handled by payment processor)
-    const paymentInfo = {
-      last4: "1234", // This would come from payment processor
-      brand: "Visa"
+    
+    // Payment info - only get card details if credit or debit card is selected
+    let paymentInfo: { method: string; last4?: string; brand?: string; cardName?: string; dni?: string } = {
+      method: paymentMethod,
+    }
+    
+    if (paymentMethod === "credit-card" || paymentMethod === "debit-card") {
+      const cardNumber = formData.get("cardNumber") as string
+      const cardName = formData.get("cardName") as string
+      const dni = formData.get("dni") as string
+      paymentInfo = {
+        method: paymentMethod,
+        last4: cardNumber ? cardNumber.replace(/\s/g, "").slice(-4) : "",
+        brand: "Visa",
+        cardName: cardName,
+        dni: dni,
+      }
     }
 
     try {
@@ -142,6 +155,7 @@ export default function CheckoutPage() {
                     id="email"
                     type="email"
                     placeholder="tu@email.com"
+                    className="placeholder:text-muted-foreground/60"
                     required
                   />
                 </div>
@@ -151,6 +165,7 @@ export default function CheckoutPage() {
                     id="phone"
                     type="tel"
                     placeholder="+54 11 1234-5678"
+                    className="placeholder:text-muted-foreground/60"
                     required
                   />
                 </div>
@@ -166,23 +181,24 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nombre</Label>
-                  <Input id="firstName" placeholder="Juan" required />
+                  <Input id="firstName" placeholder="Juan" className="placeholder:text-muted-foreground/60" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Apellido</Label>
-                  <Input id="lastName" placeholder="Perez" required />
+                  <Input id="lastName" placeholder="Perez" className="placeholder:text-muted-foreground/60" required />
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="address">Direccion</Label>
                   <Input
                     id="address"
                     placeholder="Av. Corrientes 1234, Piso 5, Depto A"
+                    className="placeholder:text-muted-foreground/60"
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="city">Ciudad</Label>
-                  <Input id="city" placeholder="Buenos Aires" required />
+                  <Input id="city" placeholder="Buenos Aires" className="placeholder:text-muted-foreground/60" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="province">Provincia</Label>
@@ -201,7 +217,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">Codigo Postal</Label>
-                  <Input id="postalCode" placeholder="1000" required />
+                  <Input id="postalCode" placeholder="1000" className="placeholder:text-muted-foreground/60" required />
                 </div>
               </div>
 
@@ -249,30 +265,124 @@ export default function CheckoutPage() {
                 <CreditCard className="h-5 w-5 text-secondary" />
                 <h2 className="text-lg font-semibold">Informacion de Pago</h2>
               </div>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cardNumber">Numero de Tarjeta</Label>
-                  <Input
-                    id="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="expiry">Vencimiento</Label>
-                    <Input id="expiry" placeholder="MM/AA" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cvv">CVV</Label>
-                    <Input id="cvv" placeholder="123" required />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cardName">Nombre en la Tarjeta</Label>
-                  <Input id="cardName" placeholder="JUAN PEREZ" required />
-                </div>
+              
+              {/* Payment Method Selection */}
+              <div className="space-y-2 mb-6">
+                <Label className="text-sm font-medium">Metodo de Pago</Label>
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={setPaymentMethod}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  <label
+                    htmlFor="credit-card"
+                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
+                      paymentMethod === "credit-card" 
+                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <RadioGroupItem value="credit-card" id="credit-card" className="sr-only" />
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Credito</span>
+                  </label>
+                  <label
+                    htmlFor="debit-card"
+                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
+                      paymentMethod === "debit-card" 
+                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <RadioGroupItem value="debit-card" id="debit-card" className="sr-only" />
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Debito</span>
+                  </label>
+                  <label
+                    htmlFor="mercadopago"
+                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
+                      paymentMethod === "mercadopago" 
+                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <RadioGroupItem value="mercadopago" id="mercadopago" className="sr-only" />
+                    <span className="text-sm font-medium text-[#00B4E6]">MercadoPago</span>
+                  </label>
+                  <label
+                    htmlFor="transfer"
+                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
+                      paymentMethod === "transfer" 
+                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <RadioGroupItem value="transfer" id="transfer" className="sr-only" />
+                    <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span className="text-sm font-medium">Transferencia</span>
+                  </label>
+                </RadioGroup>
               </div>
+
+              {/* Card Details - Only show for credit/debit cards */}
+              {(paymentMethod === "credit-card" || paymentMethod === "debit-card") && (
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <div className="space-y-2">
+                    <Label htmlFor="cardNumber">Numero de Tarjeta</Label>
+                    <Input
+                      id="cardNumber"
+                      placeholder="1234 5678 9012 3456"
+                      className="placeholder:text-muted-foreground/60"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="expiry">Vencimiento</Label>
+                      <Input id="expiry" placeholder="MM/AA" className="placeholder:text-muted-foreground/60" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cvv">CVV</Label>
+                      <Input id="cvv" placeholder="123" className="placeholder:text-muted-foreground/60" required />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cardName">Nombre en la Tarjeta</Label>
+                    <Input id="cardName" placeholder="JUAN PEREZ" className="placeholder:text-muted-foreground/60" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dni">DNI del titular</Label>
+                    <Input id="dni" placeholder="12.345.678" className="placeholder:text-muted-foreground/60" required />
+                  </div>
+                </div>
+              )}
+
+              {/* Mercado Pago - Show instructions */}
+              {paymentMethod === "mercadopago" && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Instrucciones de pago:</strong> Seras redirigido a Mercado Pago para completar tu pago de forma segura.
+                  </p>
+                </div>
+              )}
+
+              {/* Bank Transfer - Show instructions */}
+              {paymentMethod === "transfer" && (
+                <div className="mt-4 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                  <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                    <strong>Datos para transferencia:</strong>
+                  </p>
+                  <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                    <p>Banco: Banco Provincia de Buenos Aires</p>
+                    <p>Cuenta: CA $ 1234-5678-9012</p>
+                    <p>CBU: 0140 5999 1234 5678 9012</p>
+                    <p>Alias: ALBOSHOP.COM</p>
+                    <p className="mt-2">Una vez realizada la transferencia, envianos el comprobante a <strong>alboshop@example.com</strong></p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
                 <Lock className="h-4 w-4" />

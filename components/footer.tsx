@@ -73,7 +73,7 @@ export function Footer() {
             <Input
               type="email"
               placeholder="Ingresa tu email"
-              className="flex-1 rounded-r-none bg-primary-foreground text-foreground border-0"
+              className="flex-1 rounded-r-none bg-primary-foreground text-foreground border-0 placeholder:text-foreground/60"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
