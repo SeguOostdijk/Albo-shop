@@ -5,19 +5,21 @@ import { ProductCarousel } from "@/components/product-carousel"
 import { CategoryBanner } from "@/components/category-banner"
 import {
   getFeaturedProductsFromDb,
-  getNewProductsFromDb,
+  getSaleProductsFromDb,
   getAllProductsFromDb,
 } from "@/lib/products-db"
 import { BenefitsBar } from "@/components/benefits-bar"
 
 export default async function HomePage() {
-  const [featuredProducts, newProducts, allProducts] = await Promise.all([
+  const [featuredProducts, saleProducts, allProducts] = await Promise.all([
     getFeaturedProductsFromDb(),
-    getNewProductsFromDb(),
+    getSaleProductsFromDb(),
     getAllProductsFromDb(),
   ])
 
-  const saleProducts = allProducts.filter((p) => p.originalPrice)
+  const accessoriesProducts = allProducts.filter(
+    (product) => product.categorySlug === "accesorios"
+  )
 
   return (
     <>
@@ -35,6 +37,16 @@ export default async function HomePage() {
         viewAllHref="/category/novedades"
       />
 
+      {/* Sale Products */}
+      {saleProducts.length > 0 && (
+        <ProductCarousel
+          title="Ofertas"
+          subtitle="PRODUCTOS EN OFERTA"
+          products={saleProducts}
+          viewAllHref="/category/oportunidades"
+        />
+      )}
+
       {/* Extras / Accesorios */}
       <section className="py-12 bg-muted">
         <div className="container mx-auto px-4">
@@ -51,7 +63,7 @@ export default async function HomePage() {
           </div>
 
           <ProductCarousel
-            products={allProducts.filter((product) => product.categorySlug === "accesorios")}
+            products={accessoriesProducts}
             viewAllHref="/category/accesorios"
             showDots={false}
           />

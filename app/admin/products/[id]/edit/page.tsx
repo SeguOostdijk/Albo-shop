@@ -75,10 +75,12 @@ export default function EditProductPage() {
   const [categorySlug, setCategorySlug] = useState("")
   const [subcategorySlug, setSubcategorySlug] = useState("")
   const [price, setPrice] = useState("")
-  const [originalPrice, setOriginalPrice] = useState("")
   const [description, setDescription] = useState("")
   const [isFeatured, setIsFeatured] = useState(false)
   const [isNew, setIsNew] = useState(false)
+
+  const [isOnSale, setIsOnSale] = useState(false)
+  const [salePercentage, setSalePercentage] = useState("")
 
   const [variantId, setVariantId] = useState<string | null>(null)
   const [variantColor, setVariantColor] = useState("")
@@ -95,6 +97,12 @@ export default function EditProductPage() {
     if (!variantColor) return ""
     return generateSku(slug || generatedSlug, variantColor)
   }, [slug, generatedSlug, variantColor])
+
+  const basePrice = Number(price || 0)
+  const discountValue = Number(salePercentage || 0)
+  const previewFinalPrice = isOnSale
+    ? Math.round(basePrice * (1 - discountValue / 100))
+    : basePrice
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -113,6 +121,8 @@ export default function EditProductPage() {
           description,
           is_featured,
           is_new,
+          is_on_sale,
+          sale_percentage,
           tags,
           images,
           product_variants (
@@ -136,12 +146,18 @@ export default function EditProductPage() {
       setName(data.name ?? "")
       setSlug(data.slug ?? "")
       setCategorySlug(data.category_slug ?? "")
-      setPrice(String(data.price ?? ""))
-      setOriginalPrice(data.original_price ? String(data.original_price) : "")
       setDescription(data.description ?? "")
       setIsFeatured(!!data.is_featured)
       setIsNew(!!data.is_new)
+      setIsOnSale(!!data.is_on_sale)
+      setSalePercentage(data.sale_percentage ? String(data.sale_percentage) : "")
       setCurrentImages(Array.isArray(data.images) ? data.images : [])
+
+      if (data.is_on_sale && data.original_price) {
+        setPrice(String(data.original_price))
+      } else {
+        setPrice(String(data.price ?? ""))
+      }
 
       const tags = Array.isArray(data.tags) ? data.tags : []
       setSubcategorySlug(tags[0] ?? "")
@@ -187,6 +203,20 @@ export default function EditProductPage() {
       return
     }
 
+    if (isOnSale) {
+      const percentage = Number(salePercentage)
+
+      if (!salePercentage) {
+        setErrorMsg("Debes indicar el porcentaje de descuento.")
+        return
+      }
+
+      if (Number.isNaN(percentage) || percentage <= 0 || percentage >= 100) {
+        setErrorMsg("El porcentaje de descuento debe estar entre 1 y 99.")
+        return
+      }
+    }
+
     setSaving(true)
 
     const tags = subcategorySlug ? [subcategorySlug] : []
@@ -214,17 +244,25 @@ export default function EditProductPage() {
       finalImages = [publicUrlData.publicUrl]
     }
 
+    const finalPrice = isOnSale
+      ? Math.round(Number(price) * (1 - Number(salePercentage) / 100))
+      : Number(price)
+
+    const originalPrice = isOnSale ? Number(price) : null
+
     const { error: productError } = await supabase
       .from("products")
       .update({
         name,
         slug: finalSlug,
         category_slug: categorySlug,
-        price: Number(price),
-        original_price: originalPrice ? Number(originalPrice) : null,
+        price: finalPrice,
+        original_price: originalPrice,
         description,
         is_featured: isFeatured,
         is_new: isNew,
+        is_on_sale: isOnSale,
+        sale_percentage: isOnSale ? Number(salePercentage) : null,
         tags,
         images: finalImages,
       })
@@ -362,29 +400,52 @@ export default function EditProductPage() {
           </select>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium">Precio</label>
-            <input
-              required
-              type="number"
-              min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full rounded-md border px-3 py-2"
-            />
-          </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium">Precio base</label>
+          <input
+            required
+            type="number"
+            min="0"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-full rounded-md border px-3 py-2"
+          />
+        </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium">Precio original</label>
+        <div className="rounded-md border p-4 space-y-3">
+          <label className="flex items-center gap-2">
             <input
-              type="number"
-              min="0"
-              value={originalPrice}
-              onChange={(e) => setOriginalPrice(e.target.value)}
-              className="w-full rounded-md border px-3 py-2"
+              type="checkbox"
+              checked={isOnSale}
+              onChange={(e) => {
+                setIsOnSale(e.target.checked)
+                if (!e.target.checked) setSalePercentage("")
+              }}
             />
-          </div>
+            En oferta
+          </label>
+
+          {isOnSale && (
+            <>
+              <div>
+                <label className="mb-2 block text-sm font-medium">% de descuento</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={salePercentage}
+                  onChange={(e) => setSalePercentage(e.target.value)}
+                  className="w-full rounded-md border px-3 py-2"
+                  placeholder="20"
+                />
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                <p>Precio base: ${basePrice || 0}</p>
+                <p>Precio final: ${previewFinalPrice || 0}</p>
+              </div>
+            </>
+          )}
         </div>
 
         <div>

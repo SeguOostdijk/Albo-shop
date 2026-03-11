@@ -20,6 +20,8 @@ export interface Product {
   description: string
   isNew?: boolean
   isFeatured?: boolean
+  isOnSale?: boolean
+  salePercentage?: number
 }
 
 export const subcategories = [

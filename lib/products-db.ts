@@ -26,6 +26,8 @@ type DbProduct = {
   description: string
   is_featured: boolean | null
   is_new: boolean | null
+  is_on_sale: boolean | null
+  sale_percentage: number | null
   product_variants?: DbProductVariant[]
   categories?: DbCategory | DbCategory[] | null
 }
@@ -46,6 +48,8 @@ function mapDbToProduct(p: DbProduct): Product {
     description: p.description,
     isNew: p.is_new ?? undefined,
     isFeatured: p.is_featured ?? undefined,
+    isOnSale: p.is_on_sale ?? undefined,
+    salePercentage: p.sale_percentage ?? undefined,
     variants: (p.product_variants ?? []).map((v) => ({
       color: v.color,
       colorHex: v.color_hex,
@@ -56,35 +60,39 @@ function mapDbToProduct(p: DbProduct): Product {
   }
 }
 
+const PRODUCT_SELECT = `
+  id,
+  slug,
+  name,
+  category_slug,
+  price,
+  original_price,
+  images,
+  tags,
+  description,
+  is_featured,
+  is_new,
+  is_on_sale,
+  sale_percentage,
+  product_variants (
+    color,
+    color_hex,
+    sizes,
+    sku,
+    stock
+  ),
+  categories!products_category_slug_fkey (
+    slug,
+    name
+  )
+`
+
 export async function getAllProductsFromDb(): Promise<Product[]> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
     .from("products")
-    .select(`
-      id,
-      slug,
-      name,
-      category_slug,
-      price,
-      original_price,
-      images,
-      tags,
-      description,
-      is_featured,
-      is_new,
-      product_variants (
-        color,
-        color_hex,
-        sizes,
-        sku,
-        stock
-      ),
-      categories!products_category_slug_fkey (
-        slug,
-        name
-      )
-    `)
+    .select(PRODUCT_SELECT)
 
   if (error) throw new Error(error.message)
 
@@ -96,30 +104,7 @@ export async function getFeaturedProductsFromDb(): Promise<Product[]> {
 
   const { data, error } = await supabase
     .from("products")
-    .select(`
-      id,
-      slug,
-      name,
-      category_slug,
-      price,
-      original_price,
-      images,
-      tags,
-      description,
-      is_featured,
-      is_new,
-      product_variants (
-        color,
-        color_hex,
-        sizes,
-        sku,
-        stock
-      ),
-      categories!products_category_slug_fkey (
-        slug,
-        name
-      )
-    `)
+    .select(PRODUCT_SELECT)
     .eq("is_featured", true)
 
   if (error) throw new Error(error.message)
@@ -132,31 +117,21 @@ export async function getNewProductsFromDb(): Promise<Product[]> {
 
   const { data, error } = await supabase
     .from("products")
-    .select(`
-      id,
-      slug,
-      name,
-      category_slug,
-      price,
-      original_price,
-      images,
-      tags,
-      description,
-      is_featured,
-      is_new,
-      product_variants (
-        color,
-        color_hex,
-        sizes,
-        sku,
-        stock
-      ),
-      categories!products_category_slug_fkey (
-        slug,
-        name
-      )
-    `)
+    .select(PRODUCT_SELECT)
     .eq("is_new", true)
+
+  if (error) throw new Error(error.message)
+
+  return ((data ?? []) as DbProduct[]).map(mapDbToProduct)
+}
+
+export async function getSaleProductsFromDb(): Promise<Product[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("is_on_sale", true)
 
   if (error) throw new Error(error.message)
 
@@ -168,30 +143,7 @@ export async function getProductBySlugFromDb(slug: string): Promise<Product | nu
 
   const { data, error } = await supabase
     .from("products")
-    .select(`
-      id,
-      slug,
-      name,
-      category_slug,
-      price,
-      original_price,
-      images,
-      tags,
-      description,
-      is_featured,
-      is_new,
-      product_variants (
-        color,
-        color_hex,
-        sizes,
-        sku,
-        stock
-      ),
-      categories!products_category_slug_fkey (
-        slug,
-        name
-      )
-    `)
+    .select(PRODUCT_SELECT)
     .eq("slug", slug)
     .maybeSingle()
 
@@ -206,30 +158,7 @@ export async function getProductsByCategoryFromDb(categorySlug: string): Promise
 
   const { data, error } = await supabase
     .from("products")
-    .select(`
-      id,
-      slug,
-      name,
-      category_slug,
-      price,
-      original_price,
-      images,
-      tags,
-      description,
-      is_featured,
-      is_new,
-      product_variants (
-        color,
-        color_hex,
-        sizes,
-        sku,
-        stock
-      ),
-      categories!products_category_slug_fkey (
-        slug,
-        name
-      )
-    `)
+    .select(PRODUCT_SELECT)
     .eq("category_slug", categorySlug)
 
   if (error) throw new Error(error.message)
