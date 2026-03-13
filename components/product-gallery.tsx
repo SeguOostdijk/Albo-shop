@@ -42,7 +42,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 src={image || "/placeholder.svg"}
                 alt={`${productName} - Vista ${index + 1}`}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </button>
           ))}
@@ -55,7 +55,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           src={images[selectedIndex] || "/placeholder.svg"}
           alt={productName}
           fill
-          className="object-cover"
+          className="object-contain"
           priority
         />
 

@@ -7,10 +7,7 @@ export async function GET() {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session?.user) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      )
+      return NextResponse.json({ orders: [] })
     }
 
     // Fetch orders for the current user

@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { useAuth } from "@/lib/auth-context"
+import { useEffect } from "react"
+
 
 export default function SettingsPage() {
   const { user, loading, deleteAccount } = useAuth()
@@ -33,10 +35,12 @@ export default function SettingsPage() {
     )
   }
 
-  if (!user) {
-    router.push("/account/login")
-    return null
-  }
+  useEffect(() => {
+    if (!user) {
+      router.push("/account/login")
+    }
+  }, [user, router])
+
 
   const handleSaveNotifications = () => {
     toast.success("Preferencias guardadas correctamente")

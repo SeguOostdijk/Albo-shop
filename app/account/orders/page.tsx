@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+
 import Image from "next/image"
 import { Package, ChevronRight, ShoppingBag } from "lucide-react"
 import { toast } from "sonner"
@@ -93,9 +94,7 @@ export default function OrdersPage() {
     )
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   return (
     <div className="container mx-auto px-4 py-6">

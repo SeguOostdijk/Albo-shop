@@ -114,7 +114,9 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    router.push("/account/login")
+    useEffect(() => {
+      router.push("/account/login")
+    }, [router])
     return null
   }
 
