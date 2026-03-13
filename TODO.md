@@ -1,27 +1,31 @@
-# TODO - Account & Auth Implementation
+# Fix Filters Task - Progress Tracker
 
-## Phase 1: Database Schema
-- [x] Update Prisma schema with User, Order, OrderItem models
+## Plan Breakdown & Steps
 
-## Phase 2: Auth Utilities
-- [x] Create lib/supabase/auth.ts - Auth helper functions
-- [x] Create lib/auth-context.tsx - React context for auth state
+### 1. Create TODO.md ✅ (Done)
 
-## Phase 3: Account Pages
-- [x] Create app/account/login/page.tsx - Login page
-- [x] Create app/account/register/page.tsx - Registration page
-- [x] Create app/account/orders/page.tsx - Purchase history
+### 2. Edit components/filters.tsx (Dynamic props + cursor) ✅
+- Replace hardcoded filterGroups with prop `filterOptions`
+- Add `cursor-pointer` class to Checkbox
 
-## Phase 4: Integration
-- [x] Update checkout to save orders to database
-- [x] Update Header with auth state
-- [ ] Create middleware for protected routes (optional)
+### 3. Edit components/category-page-client.tsx (Core fixes)
+- Compute dynamic `filterOptions` from `products` in useState/useMemo
+  - size: unique sizes with stock>0
+  - color: from all variants.colors (any match)
+  - price: hardcoded buckets (0-30000, 30k-60k, 60k-90k, 90k+)
+  - collection: unique tags matching ['nueva-temporada', 'entrenamiento', 'retro']
+- Update `filteredProducts` useMemo to apply ALL selectedFilters before tipo/sort
+- Pass computed `filterOptions` to Filters components
 
-## Phase 5: Setup Required
-- [ ] Run `npx prisma generate` to generate Prisma client
-- [ ] Run `npx prisma db push` to sync schema with database
-- [ ] Configure Supabase environment variables (.env.local):
-   - NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   - NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-- [ ] Create orders and order_items tables in Supabase (or run migrations)
+### 4. Test changes
+- dev server: npm run dev
+- Go to /category/primera-division
+- Verify: color counts category-specific (not total 20 azul)
+- Select azul → only primera-division azules show
+- Toggle sizes/colors → filters work, counts update
+- Remove tipo de producto (not passed)
+
+### 5. attempt_completion
+
+Next step: Edit filters.tsx
 

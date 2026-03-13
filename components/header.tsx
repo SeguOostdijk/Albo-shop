@@ -179,15 +179,15 @@ export function Header() {
 
   {/* Search Bar */}
   <div className="relative mx-auto w-full max-w-lg flex">
-    <Input
-      type="search"
-      placeholder="Buscar"
-      className="w-full border-2 border-border rounded-l-sm rounded-r-none focus-visible:ring-0 focus-visible:border-primary"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      onFocus={() => setSearchOpen(true)}
-      onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
-    />
+                <Input
+                  type="search"
+                  placeholder="Buscar"
+                  className="w-full border-2 border-border rounded-l-sm rounded-r-none focus-visible:ring-0 focus-visible:border-primary cursor-text text-foreground"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchOpen(true)}
+                  onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
+                />
 
     <Button className="rounded-l-none rounded-r-sm bg-background border-2 border-l-0 border-border hover:bg-muted cursor-pointer">
       <Search className="h-5 w-5 text-foreground" />
@@ -336,7 +336,7 @@ export function Header() {
                 <Input
                   type="search"
                   placeholder="Buscar"
-                  className="w-full border-2 border-border rounded-l-sm rounded-r-none"
+                  className="w-full border-2 border-border rounded-l-sm rounded-r-none cursor-text text-foreground"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
