@@ -429,10 +429,10 @@ export default function CheckoutPage() {
                     <strong>Datos para transferencia:</strong>
                   </p>
                   <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
-                    <p>Banco: Banco Provincia de Buenos Aires</p>
-                    <p>Cuenta: CA $ 1234-5678-9012</p>
-                    <p>CBU: 0140 5999 1234 5678 9012</p>
-                    <p>Alias: ALBOSHOP.COM</p>
+                    <p>Banco: Banco de la Nacion Argentina</p>
+                    <p>CBU: 0110464040046411693330</p>
+                    <p>Nombre: Club Atletico Indendiente de San Cayet</p>
+                    <p>Cuit/Cuil: 30-70708050-3</p>
                     <p className="mt-2">Una vez realizada la transferencia, envianos el comprobante a <strong>alboshop@example.com</strong></p>
                   </div>
                 </div>
