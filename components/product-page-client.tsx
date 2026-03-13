@@ -24,7 +24,7 @@ export function ProductPageClient({
   product,
   relatedProducts,
 }: ProductPageClientProps) {
-  const [selectedColor, setSelectedColor] = useState(product.variants[0]?.color || "")
+  const [selectedColor, setSelectedColor ] = useState(product.variants[0]?.color || "")
   const [selectedSize, setSelectedSize] = useState("")
 
   const addToCart = useCartStore((state) => state.addItem)
@@ -83,12 +83,6 @@ export function ProductPageClient({
                 -{Math.round((1 - product.price / product.originalPrice) * 100)}% OFF
               </Badge>
             )}
-
-            {product.memberPrice && (
-              <p className="text-sm text-primary font-medium">
-                Precio socio: {formatCurrency(product.memberPrice)}
-              </p>
-            )}
           </div>
 
           <div>
@@ -109,6 +103,11 @@ export function ProductPageClient({
             <p className="text-sm text-secondary">
               {calculateInstallments(product.price)}
             </p>
+{product.memberPrice && (
+              <p className="text-lg text-primary font-bold mt-2 mb-0">
+                Precio socio: {formatCurrency(product.memberPrice)}
+              </p>
+            )}
           </div>
 
           <VariantSelector
@@ -158,7 +157,17 @@ export function ProductPageClient({
               </span>
             </Button>
 
-            <Button size="lg" variant="outline" className="cursor-pointer">
+            <Button size="lg" variant="outline" className="cursor-pointer" onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: document.title,
+                  url: window.location.href
+                }).catch(console.error)
+              } else {
+                navigator.clipboard.writeText(window.location.href)
+                toast.success('Link copiado al portapapeles')
+              }
+            }}>
               <Share2 className="h-5 w-5" />
               <span className="sr-only">Compartir</span>
             </Button>

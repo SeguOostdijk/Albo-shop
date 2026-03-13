@@ -26,7 +26,7 @@ export default function WishlistPage() {
             Guarda tus productos favoritos para encontrarlos mas facil
           </p>
           <Button asChild>
-            <Link href="/category/hombre">Explorar Productos</Link>
+            <Link href="/category/all">Explorar Productos</Link>
           </Button>
         </div>
       ) : (

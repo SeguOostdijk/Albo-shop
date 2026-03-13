@@ -58,9 +58,7 @@ export function VariantSelector({
       <div>
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium">Talle</span>
-          <button className="text-sm text-secondary hover:underline cursor-pointer">
-            Guia de talles
-          </button>
+          <span className="text-sm text-muted-foreground">Selecciona tu talle</span>
         </div>
 
         <div className="flex flex-wrap gap-2">

@@ -162,6 +162,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
           <span className="text-success font-medium">3 cuotas sin interes</span> de {formatCurrency(installmentPrice)}
         </p>
 
+        {product.memberPrice && (
+          <p className="text-sm font-bold text-primary mt-1">
+            Precio socio: {formatCurrency(product.memberPrice)}
+          </p>
+        )}
+
         {/* Color Options Preview */}
         {product.variants.length > 1 && (
           <div className="flex items-center gap-1 pt-1">

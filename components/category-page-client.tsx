@@ -279,22 +279,22 @@ export function CategoryPageClient({
           </Sheet>
 
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] cursor-pointer">
               <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="relevance">Relevancia</SelectItem>
-              <SelectItem value="price-asc">Precio: menor a mayor</SelectItem>
-              <SelectItem value="price-desc">Precio: mayor a menor</SelectItem>
-              <SelectItem value="newest">Mas nuevos</SelectItem>
+              <SelectItem value="relevance" className="cursor-pointer hover:bg-accent">Relevancia</SelectItem>
+              <SelectItem value="price-asc" className="cursor-pointer hover:bg-accent">Precio: menor a mayor</SelectItem>
+              <SelectItem value="price-desc" className="cursor-pointer hover:bg-accent">Precio: mayor a menor</SelectItem>
+              <SelectItem value="newest" className="cursor-pointer hover:bg-accent">Mas nuevos</SelectItem>
             </SelectContent>
           </Select>
 
           <div className="hidden md:flex items-center border rounded-md">
-            <Button
+              <Button
               variant={gridCols === 2 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-r-none"
+              className="rounded-r-none cursor-pointer hover:bg-accent hover:text-accent-foreground"
               onClick={() => setGridCols(2)}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -302,7 +302,7 @@ export function CategoryPageClient({
             <Button
               variant={gridCols === 3 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-l-none"
+              className="rounded-l-none cursor-pointer hover:bg-accent hover:text-accent-foreground"
               onClick={() => setGridCols(3)}
             >
               <Grid3X3 className="h-4 w-4" />
