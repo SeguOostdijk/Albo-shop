@@ -25,6 +25,11 @@ const COLOR_MAP: Record<string, string> = {
   plateado: "#c0c0c0",
 }
 
+type SizeStockRow = {
+  size: string
+  stock: string
+}
+
 function normalizeText(value: string) {
   return value
     .toLowerCase()
@@ -61,6 +66,7 @@ export default function NewProductPage() {
   const [categorySlug, setCategorySlug] = useState("")
   const [subcategorySlug, setSubcategorySlug] = useState("")
   const [price, setPrice] = useState("")
+  const [memberPrice, setMemberPrice] = useState("")
   const [description, setDescription] = useState("")
   const [isFeatured, setIsFeatured] = useState(false)
   const [isNew, setIsNew] = useState(false)
@@ -69,10 +75,11 @@ export default function NewProductPage() {
   const [salePercentage, setSalePercentage] = useState("")
 
   const [variantColor, setVariantColor] = useState("")
-  const [variantSizes, setVariantSizes] = useState("")
-  const [variantStock, setVariantStock] = useState("")
-
   const [imageFile, setImageFile] = useState<File | null>(null)
+
+  const [sizeStocks, setSizeStocks] = useState<SizeStockRow[]>([
+    { size: "", stock: "" },
+  ])
 
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
@@ -95,14 +102,43 @@ export default function NewProductPage() {
     setSlug(generatedSlug)
   }
 
+  const addSizeStockRow = () => {
+    setSizeStocks((prev) => [...prev, { size: "", stock: "" }])
+  }
+
+  const removeSizeStockRow = (index: number) => {
+    setSizeStocks((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const updateSizeStockRow = (
+    index: number,
+    field: "size" | "stock",
+    value: string
+  ) => {
+    setSizeStocks((prev) =>
+      prev.map((row, i) =>
+        i === index ? { ...row, [field]: value } : row
+      )
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg("")
 
     const finalSlug = slug || generatedSlug
 
-    if (!name || !finalSlug || !categorySlug || !price || !variantColor || !variantStock) {
-      setErrorMsg("Nombre, slug, categoría, precio, color y stock son obligatorios.")
+    if (!name || !finalSlug || !categorySlug || !price || !variantColor) {
+      setErrorMsg("Nombre, slug, categoría, precio y color son obligatorios.")
+      return
+    }
+
+    const validSizeStocks = sizeStocks.filter(
+      (row) => row.size.trim() !== "" && row.stock.trim() !== ""
+    )
+
+    if (validSizeStocks.length === 0) {
+      setErrorMsg("Debes cargar al menos un talle con su stock.")
       return
     }
 
@@ -160,6 +196,7 @@ export default function NewProductPage() {
         slug: finalSlug,
         category_slug: categorySlug,
         price: finalPrice,
+        member_price: memberPrice ? Number(memberPrice) : null,
         original_price: originalPrice,
         description,
         is_featured: isFeatured,
@@ -178,25 +215,34 @@ export default function NewProductPage() {
       return
     }
 
-    const sizesArray = variantSizes
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-
     const { error: variantError } = await supabase
       .from("product_variants")
       .insert({
         product_id: insertedProduct.id,
         color: variantColor,
         color_hex: generatedColorHex,
-        sizes: sizesArray,
         sku: generatedSku,
-        stock: variantStock ? Number(variantStock) : 0,
       })
 
     if (variantError) {
       setLoading(false)
       setErrorMsg(variantError.message)
+      return
+    }
+
+    const stockRows = validSizeStocks.map((row) => ({
+      product_id: insertedProduct.id,
+      size: row.size.trim(),
+      stock: Number(row.stock),
+    }))
+
+    const { error: stockError } = await supabase
+      .from("product_stock")
+      .insert(stockRows)
+
+    if (stockError) {
+      setLoading(false)
+      setErrorMsg(stockError.message)
       return
     }
 
@@ -290,6 +336,18 @@ export default function NewProductPage() {
             onChange={(e) => setPrice(e.target.value)}
             className="w-full rounded-md border px-3 py-2"
             placeholder="59999"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">Precio socio</label>
+          <input
+            type="number"
+            min="0"
+            value={memberPrice}
+            onChange={(e) => setMemberPrice(e.target.value)}
+            className="w-full rounded-md border px-3 py-2"
+            placeholder="Opcional"
           />
         </div>
 
@@ -393,16 +451,6 @@ export default function NewProductPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium">Talles</label>
-              <input
-                value={variantSizes}
-                onChange={(e) => setVariantSizes(e.target.value)}
-                className="w-full rounded-md border px-3 py-2"
-                placeholder="S, M, L, XL"
-              />
-            </div>
-
-            <div>
               <label className="mb-2 block text-sm font-medium">SKU</label>
               <input
                 value={generatedSku}
@@ -410,17 +458,61 @@ export default function NewProductPage() {
                 className="w-full rounded-md border px-3 py-2 bg-muted"
               />
             </div>
+          </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium">Stock</label>
-              <input
-                type="number"
-                min="0"
-                value={variantStock}
-                onChange={(e) => setVariantStock(e.target.value)}
-                className="w-full rounded-md border px-3 py-2"
-                placeholder="10"
-              />
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium">Talles y stock</label>
+              <button
+                type="button"
+                onClick={addSizeStockRow}
+                className="rounded-md border px-3 py-1 text-sm"
+              >
+                + Agregar talle
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {sizeStocks.map((row, index) => (
+                <div key={index} className="grid grid-cols-12 gap-3 items-end">
+                  <div className="col-span-6">
+                    <label className="mb-2 block text-sm font-medium">Talle</label>
+                    <input
+                      value={row.size}
+                      onChange={(e) =>
+                        updateSizeStockRow(index, "size", e.target.value)
+                      }
+                      className="w-full rounded-md border px-3 py-2"
+                      placeholder="Ej: S"
+                    />
+                  </div>
+
+                  <div className="col-span-4">
+                    <label className="mb-2 block text-sm font-medium">Stock</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={row.stock}
+                      onChange={(e) =>
+                        updateSizeStockRow(index, "stock", e.target.value)
+                      }
+                      className="w-full rounded-md border px-3 py-2"
+                      placeholder="10"
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <button
+                      type="button"
+                      onClick={() => removeSizeStockRow(index)}
+                      className="w-full rounded-md border px-3 py-2 text-sm text-red-600"
+                      disabled={sizeStocks.length === 1}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
