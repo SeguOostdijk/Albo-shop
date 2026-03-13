@@ -19,7 +19,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Breadcrumbs } from "@/components/breadcrumbs"
-import { Filters } from "@/components/filters"
+import { Filters, type FilterGroup, type FilterOption } from "@/components/filters"
+import { FilterOption, FilterGroup } from "@/components/filters"
+
 import { ProductCard } from "@/components/product-card"
 import type { Product } from "@/lib/type/products"
 
@@ -29,6 +31,18 @@ type Category = {
 }
 
 type SortOption = "relevance" | "price-asc" | "price-desc" | "newest"
+
+interface FilterOption {
+  id: string
+  label: string
+  count?: number
+}
+
+interface FilterGroup {
+  id: string
+  name: string
+  options: FilterOption[]
+}
 
 interface CategoryPageClientProps {
   slug: string
@@ -48,18 +62,159 @@ export function CategoryPageClient({
   const [sortBy, setSortBy] = useState<SortOption>("relevance")
   const [gridCols, setGridCols] = useState<2 | 3>(3)
 
+
   const category = categories.find((c) => c.slug === slug)
   const categoryName = category?.name || "Todos los Productos"
+
+  const filterOptions = useMemo<FilterGroup[]>(() => {
+    const sizeCounts: Record<string, number> = {};
+    const colorCounts: Record<string, number> = {};
+    const priceCounts = {
+      '0-30000': 0,
+      '30000-60000': 0,
+      '60000-90000': 0,
+      '90000+': 0
+    };
+    const collectionCounts: Record<string, number> = {};
+
+    products.forEach((p) => {
+// Sizes
+      (p.stockBySize || []).filter(s => s && typeof s.stock === 'number' && s.stock > 0 && s.size).forEach(s => {
+        const sizeId = s.size!.toLowerCase();
+        sizeCounts[sizeId] = (sizeCounts[sizeId] || 0) + 1;
+      });
+
+// Colors
+      (p.variants || []).forEach(v => {
+        if (v && v.color) {
+          const colorId = v.color.toLowerCase();
+          colorCounts[colorId] = (colorCounts[colorId] || 0) + 1;
+        }
+      });
+
+      // Price
+      const price = p.price;
+      if (price <= 30000) priceCounts['0-30000']++;
+      else if (price <= 60000) priceCounts['30000-60000']++;
+      else if (price <= 90000) priceCounts['60000-90000']++;
+      else priceCounts['90000+']++;
+
+      // Collection
+      p.tags.forEach(tag => {
+        const tagLower = tag.toLowerCase();
+        if (['nueva-temporada', 'entrenamiento', 'retro'].includes(tagLower)) {
+          collectionCounts[tagLower] = (collectionCounts[tagLower] || 0) + 1;
+        }
+      });
+    });
+
+    const groups: FilterGroup[] = [];
+
+    if (Object.keys(sizeCounts).length > 0) {
+      groups.push({
+        id: 'size',
+        name: 'Talle',
+        options: Object.entries(sizeCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([id, count]) => ({
+            id,
+            label: id.toUpperCase(),
+            count
+          }))
+      });
+    }
+
+    if (Object.keys(colorCounts).length > 0) {
+      groups.push({
+        id: 'color',
+        name: 'Color',
+        options: Object.entries(colorCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([id, count]) => ({
+            id,
+            label: id.charAt(0).toUpperCase() + id.slice(1),
+            count
+          }))
+      });
+    }
+
+    groups.push({
+      id: 'price',
+      name: 'Precio',
+      options: [
+        { id: '0-30000', label: 'Hasta $30.000', count: priceCounts['0-30000'] },
+        { id: '30000-60000', label: '$30.000 - $60.000', count: priceCounts['30000-60000'] },
+        { id: '60000-90000', label: '$60.000 - $90.000', count: priceCounts['60000-90000'] },
+        { id: '90000+', label: 'Mas de $90.000', count: priceCounts['90000+'] }
+      ].filter(o => o.count > 0)
+    });
+
+    if (Object.keys(collectionCounts).length > 0) {
+      groups.push({
+        id: 'collection',
+        name: 'Coleccion',
+        options: Object.entries(collectionCounts)
+          .map(([id, count]) => ({
+            id,
+            label: id.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            count
+          }))
+      });
+    }
+
+    return groups;
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     let result = products
 
+    // Size filter
+    if (selectedFilters.size && selectedFilters.size.length > 0) {
+      result = result.filter((p) =>
+        (p.stockBySize || []).some((s) => 
+          s && s.size && selectedFilters.size.includes(s.size.toLowerCase()) && typeof s.stock === 'number' && s.stock > 0
+        )
+      )
+    }
+
+// Color filter
+    if (selectedFilters.color && selectedFilters.color.length > 0) {
+      result = result.filter((p) =>
+        (p.variants || []).some((v) => 
+          v && v.color && selectedFilters.color.includes(v.color.toLowerCase())
+        )
+      )
+    }
+
+    // Price filter
+    if (selectedFilters.price && selectedFilters.price.length > 0) {
+      result = result.filter((p) => {
+        const price = p.price
+        if (selectedFilters.price.includes('0-30000') && price <= 30000) return true
+        if (selectedFilters.price.includes('30000-60000') && price > 30000 && price <= 60000) return true
+        if (selectedFilters.price.includes('60000-90000') && price > 60000 && price <= 90000) return true
+        if (selectedFilters.price.includes('90000+') && price > 90000) return true
+        return false
+      })
+    }
+
+    // Collection filter
+    if (selectedFilters.collection && selectedFilters.collection.length > 0) {
+      result = result.filter((p) =>
+        p.tags.some((tag) => 
+          selectedFilters.collection.includes(tag.toLowerCase())
+        )
+      )
+    }
+
+    // Tipo from URL
     if (tipo) {
       result = result.filter((p) =>
         p.tags.some((tag) => tag.toLowerCase() === tipo.toLowerCase())
       )
     }
 
+    // Sort
     switch (sortBy) {
       case "price-asc":
         result = [...result].sort((a, b) => a.price - b.price)
@@ -75,7 +230,7 @@ export function CategoryPageClient({
     }
 
     return result
-  }, [products, tipo, sortBy])
+  }, [products, selectedFilters, tipo, sortBy])
 
   const handleFilterChange = (groupId: string, optionId: string, checked: boolean) => {
     const current = selectedFilters[groupId] || []
@@ -114,6 +269,7 @@ export function CategoryPageClient({
               </SheetHeader>
               <div className="mt-6">
                 <Filters
+                  filterOptions={filterOptions}
                   selectedFilters={selectedFilters}
                   onFilterChange={handleFilterChange}
                   onClearFilters={clearFilters}
@@ -158,6 +314,7 @@ export function CategoryPageClient({
       <div className="flex gap-8">
         <aside className="hidden lg:block w-64 flex-shrink-0">
           <Filters
+            filterOptions={filterOptions}
             selectedFilters={selectedFilters}
             onFilterChange={handleFilterChange}
             onClearFilters={clearFilters}
