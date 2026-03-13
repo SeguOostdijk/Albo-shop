@@ -1,10 +1,11 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import type { ProductVariant } from "@/lib/type/products"
+import type { ProductStock, ProductVariant } from "@/lib/type/products"
 
 interface VariantSelectorProps {
   variants: ProductVariant[]
+  stockBySize: ProductStock[]
   selectedColor: string
   selectedSize: string
   onColorChange: (color: string) => void
@@ -13,13 +14,13 @@ interface VariantSelectorProps {
 
 export function VariantSelector({
   variants,
+  stockBySize,
   selectedColor,
   selectedSize,
   onColorChange,
   onSizeChange,
 }: VariantSelectorProps) {
-  const selectedVariant = variants.find((v) => v.color === selectedColor)
-  const availableSizes = selectedVariant?.sizes || []
+  const selectedStock = stockBySize.find((item) => item.size === selectedSize)
 
   return (
     <div className="space-y-6">
@@ -29,6 +30,7 @@ export function VariantSelector({
           <span className="text-sm font-medium">Color</span>
           <span className="text-sm text-muted-foreground">{selectedColor}</span>
         </div>
+
         <div className="flex gap-2">
           {variants.map((variant) => (
             <button
@@ -60,32 +62,33 @@ export function VariantSelector({
             Guia de talles
           </button>
         </div>
+
         <div className="flex flex-wrap gap-2">
-          {availableSizes.map((size) => (
+          {stockBySize.map((item) => (
             <button
-              key={size}
-              onClick={() => onSizeChange(size)}
+              key={item.size}
+              onClick={() => onSizeChange(item.size)}
               className={cn(
                 "min-w-[48px] h-12 px-4 rounded-md border font-medium text-sm transition-all cursor-pointer",
-                selectedSize === size
+                selectedSize === item.size
                   ? "border-secondary bg-secondary text-secondary-foreground"
                   : "border-border hover:border-secondary"
               )}
             >
-              {size}
+              {item.size}
             </button>
           ))}
         </div>
       </div>
 
       {/* Stock Info */}
-      {selectedVariant && (
+      {selectedSize && selectedStock && (
         <p className="text-sm">
-          {selectedVariant.stockMock > 10 ? (
+          {selectedStock.stock > 10 ? (
             <span className="text-success">En stock</span>
-          ) : selectedVariant.stockMock > 0 ? (
+          ) : selectedStock.stock > 0 ? (
             <span className="text-amber-600">
-              Solo quedan {selectedVariant.stockMock} unidades
+              Solo quedan {selectedStock.stock} unidades
             </span>
           ) : (
             <span className="text-destructive">Sin stock</span>

@@ -1,7 +1,7 @@
 "use client"
 
 import { create } from "zustand"
-import type { Product } from "./products"
+import type { Product } from "./type/products"
 
 export interface CartItem {
   product: Product

@@ -1,9 +1,12 @@
+export interface ProductStock {
+  size: string
+  stock: number
+}
+
 export interface ProductVariant {
   color: string
   colorHex: string
-  sizes: string[]
   sku: string
-  stockMock: number
 }
 
 export interface Product {
@@ -13,9 +16,11 @@ export interface Product {
   category: string
   categorySlug: string
   price: number
+  memberPrice?: number
   originalPrice?: number
   images: string[]
   variants: ProductVariant[]
+  stockBySize: ProductStock[]
   tags: string[]
   description: string
   isNew?: boolean

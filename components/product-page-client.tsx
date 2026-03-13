@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { ProductGallery } from "@/components/product-gallery"
 import { VariantSelector } from "@/components/variant-selector"
-import { ProductInfo } from "@/components/product-info"
 import { ProductCarousel } from "@/components/product-carousel"
 import { formatCurrency, calculateInstallments } from "@/lib/currency"
 import { useCartStore } from "@/lib/cart-store"
@@ -25,7 +24,7 @@ export function ProductPageClient({
   product,
   relatedProducts,
 }: ProductPageClientProps) {
-  const [selectedColor, setSelectedColor] = useState(product?.variants[0]?.color || "")
+  const [selectedColor, setSelectedColor] = useState(product.variants[0]?.color || "")
   const [selectedSize, setSelectedSize] = useState("")
 
   const addToCart = useCartStore((state) => state.addItem)
@@ -58,6 +57,9 @@ export function ProductPageClient({
     }
   }
 
+  console.log("PRODUCT", product)
+  console.log("STOCK BY SIZE", product.stockBySize)
+
   return (
     <div className="container mx-auto px-4 py-6">
       <Breadcrumbs
@@ -71,14 +73,21 @@ export function ProductPageClient({
         <ProductGallery images={product.images} productName={product.name} />
 
         <div className="space-y-6">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center flex-wrap">
             {product.isNew && (
               <Badge className="bg-accent text-accent-foreground">Nuevo</Badge>
             )}
+
             {product.originalPrice && (
               <Badge variant="destructive">
                 -{Math.round((1 - product.price / product.originalPrice) * 100)}% OFF
               </Badge>
+            )}
+
+            {product.memberPrice && (
+              <p className="text-sm text-primary font-medium">
+                Precio socio: {formatCurrency(product.memberPrice)}
+              </p>
             )}
           </div>
 
@@ -96,11 +105,15 @@ export function ProductPageClient({
                 </span>
               )}
             </div>
-            <p className="text-sm text-secondary">{calculateInstallments(product.price)}</p>
+
+            <p className="text-sm text-secondary">
+              {calculateInstallments(product.price)}
+            </p>
           </div>
 
           <VariantSelector
             variants={product.variants}
+            stockBySize={product.stockBySize}
             selectedColor={selectedColor}
             selectedSize={selectedSize}
             onColorChange={setSelectedColor}
@@ -150,8 +163,6 @@ export function ProductPageClient({
               <span className="sr-only">Compartir</span>
             </Button>
           </div>
-
-          <ProductInfo description={product.description} />
         </div>
       </div>
 

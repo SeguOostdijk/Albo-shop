@@ -4,8 +4,11 @@ import type { Product } from "@/lib/type/products"
 type DbProductVariant = {
   color: string
   color_hex: string
-  sizes: string[]
   sku: string
+}
+
+type DbProductStock = {
+  size: string
   stock: number
 }
 
@@ -20,6 +23,7 @@ type DbProduct = {
   name: string
   category_slug: string
   price: number
+  member_price: number | null
   original_price: number | null
   images: string[] | null
   tags: string[] | null
@@ -29,6 +33,7 @@ type DbProduct = {
   is_on_sale: boolean | null
   sale_percentage: number | null
   product_variants?: DbProductVariant[]
+  product_stock?: DbProductStock[]
   categories?: DbCategory | DbCategory[] | null
 }
 
@@ -42,6 +47,7 @@ function mapDbToProduct(p: DbProduct): Product {
     category: categoryData?.name ?? p.category_slug,
     categorySlug: p.category_slug,
     price: p.price,
+    memberPrice: p.member_price ?? undefined,
     originalPrice: p.original_price ?? undefined,
     images: p.images ?? [],
     tags: p.tags ?? [],
@@ -53,9 +59,11 @@ function mapDbToProduct(p: DbProduct): Product {
     variants: (p.product_variants ?? []).map((v) => ({
       color: v.color,
       colorHex: v.color_hex,
-      sizes: v.sizes ?? [],
       sku: v.sku,
-      stockMock: v.stock,
+    })),
+    stockBySize: (p.product_stock ?? []).map((s) => ({
+      size: s.size,
+      stock: Number(s.stock ?? 0),
     })),
   }
 }
@@ -66,6 +74,7 @@ const PRODUCT_SELECT = `
   name,
   category_slug,
   price,
+  member_price,
   original_price,
   images,
   tags,
@@ -77,8 +86,10 @@ const PRODUCT_SELECT = `
   product_variants (
     color,
     color_hex,
-    sizes,
-    sku,
+    sku
+  ),
+  product_stock (
+    size,
     stock
   ),
   categories!products_category_slug_fkey (
