@@ -32,7 +32,7 @@ export default function LoginPage() {
         toast.error(error.message || "Error al iniciar sesion")
       } else {
         toast.success("Sesion iniciada correctamente")
-        router.push("/account/orders")
+        router.push("/")
         router.refresh()
       }
     } catch {

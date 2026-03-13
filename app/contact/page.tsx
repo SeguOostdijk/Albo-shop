@@ -34,7 +34,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Teléfono</label>
-                <Input type="tel" placeholder="+54 9 2983 000000" className="placeholder:text-muted-foreground/60" />
+                <Input type="tel" placeholder="+54 9 2983 34-8357" className="placeholder:text-muted-foreground/60" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Mensaje</label>
@@ -65,7 +65,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">Teléfono</h3>
-                    <p className="text-muted-foreground">+54 9 2983 000000</p>
+                    <p className="text-muted-foreground">+54 9 2983 34-8357</p>
                   </div>
                 </div>
 
@@ -107,7 +107,7 @@ export default function ContactPage() {
                 </div>
               </div>
               <a 
-                href="https://wa.me/542983000000" 
+                href="https://wa.me/5492983348357" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="mt-4 block w-full bg-white text-green-500 text-center py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors"

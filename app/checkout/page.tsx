@@ -20,16 +20,18 @@ import {
 } from "@/components/ui/select"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { useCartStore } from "@/lib/cart-store"
+import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/currency"
 
 export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCartStore()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [shippingMethod, setShippingMethod] = useState("standard")
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
 
   const subtotal = getTotalPrice()
-  const shippingCost = shippingMethod === "express" ? 9999 : subtotal >= 75000 ? 0 : 5999
+  const shippingCost = shippingMethod === "express" ? 9999 : shippingMethod === "pickup" ? 0 : subtotal >= 75000 ? 0 : 5999
   const total = subtotal + shippingCost
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -151,25 +153,65 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
+{user ? (
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="tu@email.com"
+                    className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
+                    value={user?.email || ''}
+                    readOnly
+                    required
+                  />
+                ) : (
                   <Input
                     id="email"
                     type="email"
                     placeholder="tu@email.com"
                     className="placeholder:text-muted-foreground/60"
+                    defaultValue=""
                     required
                   />
+                )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefono</Label>
+{user ? (
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+54 11 1234-5678"
+                    className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
+                    value={user?.user_metadata?.phone || user?.phone || ''}
+                    readOnly
+                    required
+                  />
+                ) : (
                   <Input
                     id="phone"
                     type="tel"
                     placeholder="+54 11 1234-5678"
                     className="placeholder:text-muted-foreground/60"
+                    defaultValue=""
                     required
                   />
+                )}
                 </div>
               </div>
+{user ? (
+                <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
+                  <span className="text-sm text-green-600 font-medium">✓ Datos precargados automáticamente</span>
+<Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-auto cursor-pointer"
+                    onClick={() => window.open('/account/profile', '_blank')}
+                  >
+                    Cambiar Datos
+                  </Button>
+                </div>
+              ) : null}
             </section>
 
             {/* Shipping Address */}
@@ -181,7 +223,7 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nombre</Label>
-                  <Input id="firstName" placeholder="Juan" className="placeholder:text-muted-foreground/60" required />
+                <Input id="firstName" placeholder="Juan" className="placeholder:text-muted-foreground/60" defaultValue={user?.user_metadata?.first_name || ''} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Apellido</Label>
@@ -203,7 +245,7 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <Label htmlFor="province">Provincia</Label>
                   <Select defaultValue="caba">
-                    <SelectTrigger id="province">
+                    <SelectTrigger id="province" className="cursor-pointer">
                       <SelectValue placeholder="Seleccionar provincia" />
                     </SelectTrigger>
                     <SelectContent>
@@ -229,10 +271,22 @@ export default function CheckoutPage() {
                   onValueChange={setShippingMethod}
                   className="space-y-3"
                 >
+                  <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-green-50">
+                    <div className="flex items-center gap-3">
+                      <RadioGroupItem value="pickup" id="pickup" />
+                      <Label htmlFor="pickup" className="cursor-pointer hover:text-primary transition-colors">
+                        <span className="font-medium text-green-700">Retirar en Local</span>
+                        <span className="text-sm text-muted-foreground block">
+                          Retiralo gratis en Av. Rivadavia 4700
+                        </span>
+                      </Label>
+                    </div>
+                    <span className="font-medium text-success">Gratis</span>
+                  </div>
                   <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value="standard" id="standard" />
-                      <Label htmlFor="standard" className="cursor-pointer">
+                      <Label htmlFor="standard" className="cursor-pointer hover:text-primary transition-colors">
                         <span className="font-medium">Envio Estandar</span>
                         <span className="text-sm text-muted-foreground block">
                           5-7 dias habiles
@@ -246,7 +300,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value="express" id="express" />
-                      <Label htmlFor="express" className="cursor-pointer">
+                      <Label htmlFor="express" className="cursor-pointer hover:text-primary transition-colors">
                         <span className="font-medium">Envio Express</span>
                         <span className="text-sm text-muted-foreground block">
                           24-48 horas (CABA y GBA)
@@ -452,7 +506,7 @@ export default function CheckoutPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full mt-6"
+                className="w-full mt-6 cursor-pointer"
                 size="lg"
                 disabled={isLoading}
               >
