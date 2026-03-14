@@ -6,7 +6,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Heart, ShoppingBag, Eye, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { Product } from "@/lib/products"
+import type { Product } from "@/lib/type/products"
 import { formatCurrency } from "@/lib/currency"
 import { useWishlistStore } from "@/lib/wishlist-store"
 import { useCartStore } from "@/lib/cart-store"
@@ -35,7 +35,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   // Get default variant values
   const defaultVariant = product.variants?.[0]
   const defaultColor = defaultVariant?.color || "Unico"
-  const defaultSize = defaultVariant?.sizes?.[0] || "Unico"
+  const defaultSize = "Unico"
 
   // Check if product is in cart with default variant
   const inCart = items.some(
@@ -171,7 +171,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {/* Color Options Preview */}
         {product.variants.length > 1 && (
           <div className="flex items-center gap-1 pt-1">
-            {product.variants.slice(0, 4).map((variant, index) => (
+{product.variants.slice(0, 4).map((variant: any, index: number) => (
               <div
                 key={index}
                 className="w-4 h-4 rounded-full border-2 border-border shadow-sm"
