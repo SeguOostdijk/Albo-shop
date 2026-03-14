@@ -65,15 +65,15 @@ export function Hero() {
         {/* Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/70 to-transparent" />
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col justify-end p-8 z-10 items-center text-center">
-          <div>
-            <h1 className="text-4xl font-bold text-primary mb-4 drop-shadow-2xl">
+        <div className="absolute inset-0 flex flex-col justify-center items-center p-8 z-10 text-center">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6 drop-shadow-2xl leading-tight">
               {slide.title}
             </h1>
-            <p className="text-xl text-foreground/90 mb-6 drop-shadow-xl">
+            <p className="text-xl text-foreground/90 mb-8 drop-shadow-xl">
               {slide.subtitle}
             </p>
-            <Button size="lg" className="shadow-2xl drop-shadow-lg" asChild>
+            <Button size="lg" className="shadow-2xl drop-shadow-lg px-12 py-8 text-lg" asChild>
               <Link href={slide.href}>{slide.cta}</Link>
             </Button>
           </div>
