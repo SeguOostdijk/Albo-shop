@@ -42,49 +42,42 @@ export function Hero() {
   const slide = heroSlides[currentSlide]
 
   return (
-    <section className="relative h-[500px] md:h-[550px] overflow-hidden">
-      {/* Left image panel (shows full image within left area) */}
+    <section className="relative h-[50vh] md:h-[600px] lg:h-[700px] overflow-hidden">
+      {/* Image Panel */}
+      <div className="w-full h-[50vh] md:h-full md:flex-1 relative overflow-hidden">
+        {heroSlides.map((s, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-700 ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <Image
+              src={s.image || "/placeholder.svg"}
+              alt={s.title}
+              fill
+              className="object-cover object-center"
+              priority={index === 0}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* Content Panel */}
-      <div className="absolute inset-0 flex">
-        {/* Left side - image visible */}
-        <div className="flex-1 relative overflow-hidden">
-          {heroSlides.map((s, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-700 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <Image
-                src={s.image || "/placeholder.svg"}
-                alt={s.title}
-                fill
-                className="object-cover object-center"
-                priority={index === 0}
-              />
-            </div>
-          ))}
-        </div>
-        
-        {/* Right side - White panel */}
-        <div className="w-full md:w-[45%] bg-background flex items-center justify-center p-8 md:p-12">
-          <div className="text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4">
-              {slide.title}
-            </h1>
-            <p className="text-xl md:text-2xl text-foreground/80 mb-8">
-              {slide.subtitle}
-            </p>
-            <Button
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8"
-              asChild
-            >
-              <Link href={slide.href}>{slide.cta}</Link>
-            </Button>
-          </div>
-        </div>
+      <div className="w-full md:w-[45%] bg-background flex flex-col items-center justify-center p-6 md:p-12 text-center md:text-left">
+        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4">
+          {slide.title}
+        </h1>
+        <p className="text-lg md:text-2xl text-foreground/80 mb-8">
+          {slide.subtitle}
+        </p>
+        <Button
+          size="lg"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8"
+          asChild
+        >
+          <Link href={slide.href}>{slide.cta}</Link>
+        </Button>
       </div>
 
       {/* Pagination Dots */}

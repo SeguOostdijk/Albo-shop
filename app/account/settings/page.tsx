@@ -147,21 +147,7 @@ export default function SettingsPage() {
               Gestiona la seguridad de tu cuenta
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between py-2 border-b">
-              <div>
-                <p className="font-medium">Autenticación de dos factores</p>
-                <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad</p>
-              </div>
-              <Button variant="outline" size="sm" className="cursor-pointer">Activar</Button>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b">
-              <div>
-                <p className="font-medium">Sesiones activas</p>
-                <p className="text-sm text-muted-foreground">Gestiona tus sesiones iniciadas</p>
-              </div>
-              <Button variant="outline" size="sm" className="cursor-pointer">Ver</Button>
-            </div>
+          <CardContent className="space-y-4 p-6">
             <div className="flex items-center justify-between py-2">
               <div>
                 <p className="font-medium">Eliminar cuenta</p>

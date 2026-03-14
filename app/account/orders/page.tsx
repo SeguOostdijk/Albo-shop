@@ -118,7 +118,7 @@ export default function OrdersPage() {
               Cuando realices una compra, tus pedidos apareceran aqui
             </p>
             <Button asChild>
-              <Link href="/category/novedades">Comenzar a Comprar</Link>
+              <Link href="/">Comenzar a Comprar</Link>
             </Button>
           </CardContent>
         </Card>
