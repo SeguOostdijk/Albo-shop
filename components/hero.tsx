@@ -44,9 +44,8 @@ export function Hero() {
 
   return (
     <>
-      {/* Mobile: Shorter overlay hero, scrollable */}
-      <div className="md:hidden relative h-[70vh] min-h-[450px] overflow-hidden">
-        {/* Images */}
+      {/* Mobile: Overlay hero with fixed aspect ratio */}
+      <div className="md:hidden relative w-full h-[70vh] min-h-[350px] max-h-[600px] overflow-hidden bg-background">
         {heroSlides.map((s, index) => (
           <div
             key={`mobile-${index}`}
@@ -60,12 +59,11 @@ export function Hero() {
               fill
               className="object-cover object-center opacity-85"
               priority={index === 0}
+              sizes="100vw"
             />
           </div>
         ))}
-        {/* Light gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
-        {/* Centered content */}
         <div className="absolute inset-0 flex flex-col justify-center items-center p-6 md:p-8 z-10 text-center">
           <div className="max-w-lg">
             <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4 drop-shadow-2xl leading-tight">
@@ -79,32 +77,20 @@ export function Hero() {
             </Button>
           </div>
         </div>
-        {/* Dots */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 p-2">
-          {heroSlides.map((_, index) => (
-            <button
-              key={`mobile-dot-${index}`}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 shadow-md cursor-pointer touch-manipulation ${
-                index === currentSlide ? "bg-primary scale-125 shadow-primary" : "bg-white/90 hover:bg-primary/80"
-              }`}
-              aria-label={`Slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        {/* Dots removidos */}
       </div>
 
-      {/* Desktop: Original split layout */}
-      <div className="hidden md:flex relative h-[600px] lg:h-[700px] overflow-hidden">
+      {/* Desktop: Overlay hero con imagen y contenido 50/50 */}
+      <div className="hidden md:flex relative w-full h-[80vh] min-h-[520px] max-h-[900px] overflow-hidden">
         <div className="w-full h-full flex">
-          {/* Left image */}
-          <div className="flex-1 relative overflow-hidden">
+          {/* Imagen 50% */}
+          <div className="w-1/2 relative overflow-hidden bg-background">
             {heroSlides.map((s, index) => (
               <div
                 key={`desktop-${index}`}
                 className={`absolute inset-0 transition-opacity duration-700 ${
                   index === currentSlide ? "opacity-100" : "opacity-0"
-                }`}
+                } flex items-center justify-center`}
               >
                 <Image
                   src={s.image || "/placeholder.svg"}
@@ -112,13 +98,13 @@ export function Hero() {
                   fill
                   className="object-cover object-center"
                   priority={index === 0}
+                  sizes="50vw"
                 />
               </div>
             ))}
           </div>
-          
-          {/* Right content */}
-          <div className="w-[55%] bg-background flex items-center justify-center p-12">
+          {/* Contenido 50% */}
+          <div className="w-1/2 bg-background/80 flex items-center justify-center p-12">
             <div>
               <h1 className="text-5xl lg:text-6xl font-bold text-primary leading-tight mb-6">
                 {slide.title}
@@ -136,19 +122,7 @@ export function Hero() {
             </div>
           </div>
         </div>
-
-        {/* Dots */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-          {heroSlides.map((_, index) => (
-            <button
-              key={`desktop-dot-${index}`}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all cursor-pointer ${
-                index === currentSlide ? "bg-primary scale-125 shadow-lg" : "bg-primary/40 hover:bg-primary"
-              }`}
-            />
-          ))}
-        </div>
+        {/* Dots removidos */}
       </div>
     </>
   )
