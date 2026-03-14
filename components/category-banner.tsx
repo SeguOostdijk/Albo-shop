@@ -24,7 +24,7 @@ export function CategoryBanner() {
     <section className="py-12 bg-background">
       <div className="container mx-auto px-4">
         {/* Mobile: 1 column, smaller */}
-        <div className="block md:hidden grid grid-cols-1 gap-8 max-w-3xl mx-auto">
+        <div className="block md:hidden grid grid-cols-1 gap-12 max-w-2xl mx-auto">
           {categoryBanners.map((category) => (
             <Link
               key={category.href}
