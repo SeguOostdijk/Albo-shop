@@ -35,11 +35,10 @@ export default function SettingsPage() {
     )
   }
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/account/login")
-    }
-  }, [user, router])
+  if (!user) {
+    router.push("/account/login")
+    return null
+  }
 
 
   const handleSaveNotifications = () => {

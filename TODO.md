@@ -1,12 +1,14 @@
-# Hero Mobile Fix TODO
+# Mobile Improvements TODO (Hero Image + Menu + Cart Button)
 
-## Plan Summary
-Fix hero not visible on mobile by stacking layout vertically on mobile (full-width image top, full-width content bottom), using responsive heights/heights, text sizing, and alignment.
+## Updated Plan Summary (Feedback)
+1. Hero image taller (`h-screen min-h-[400px]`), better aspect/mobile layout.
+2. Header mobile menu wider (`w-[85vw] max-w-md`).
+3. Product cards: Confirm/enhance mobile add-to-cart button (already present).
 
 ## Steps
-- [x] Step 1: Create TODO.md
-- [x] Step 2: Edit components/hero.tsx with responsive layout (flex-col md:flex-row, heights, widths, text sizes)
-- [x] Step 3: Test on mobile (npm run dev + DevTools emulator/real device)
-- [x] Step 4: Update TODO.md with progress
-- [x] Step 5: Complete task
+- [x] Step 1: Previous hero fixes
+- [x] Step 2: Update hero.tsx for reliable image (h-screen, aspect-[16/9], flex-row md)
+- [x] Step 3: Update header.tsx menu width (w-[85vw] max-w-md p-6)
+- [x] Step 4: Verified product-card.tsx already has mobile-friendly "AGREGAR AL CARRITO" button (full-width, tappable)
+- [x] Step 5: Test & complete (dev server running, changes live)
 

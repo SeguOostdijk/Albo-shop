@@ -100,7 +100,7 @@ export function Header() {
                   <span className="sr-only">Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] bg-primary text-primary-foreground">
+              <SheetContent side="left" className="w-[85vw] max-w-md sm:w-[350px] bg-primary text-primary-foreground p-6">
                 <nav className="flex flex-col gap-2 mt-8">
                   <Link
                     href="/category/novedades"

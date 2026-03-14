@@ -42,9 +42,9 @@ export function Hero() {
   const slide = heroSlides[currentSlide]
 
   return (
-    <section className="relative h-[50vh] md:h-[600px] lg:h-[700px] overflow-hidden">
+    <section className="relative h-screen md:h-[600px] lg:h-[700px] min-h-[400px] overflow-hidden flex flex-col md:flex-row">
       {/* Image Panel */}
-      <div className="w-full h-[50vh] md:h-full md:flex-1 relative overflow-hidden">
+      <div className="w-full md:flex-1 aspect-[16/9] md:aspect-auto relative overflow-hidden bg-muted">
         {heroSlides.map((s, index) => (
           <div
             key={index}
@@ -56,7 +56,7 @@ export function Hero() {
               src={s.image || "/placeholder.svg"}
               alt={s.title}
               fill
-              className="object-cover object-center"
+              className="w-full h-full object-cover object-center"
               priority={index === 0}
             />
           </div>
