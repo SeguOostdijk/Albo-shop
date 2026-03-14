@@ -24,12 +24,13 @@ export function CategoryBanner() {
     <section className="py-12 bg-background">
       <div className="container mx-auto px-4">
         {/* Mobile: 1 column, smaller */}
-        <div className="block md:hidden grid grid-cols-1 gap-12 max-w-2xl mx-auto">
+        <div className="md:hidden grid grid-cols-1 gap-16 max-w-xl mx-auto py-8">
+
           {categoryBanners.map((category) => (
             <Link
               key={category.href}
               href={category.href}
-              className="group relative aspect-[4/5] overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 max-w-md mx-auto border border-border/50 hover:border-primary/50"
+              className="group relative aspect-[4/5] overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 max-w-sm mx-auto block"
             >
               <Image
                 src={category.image || "/placeholder.svg"}
