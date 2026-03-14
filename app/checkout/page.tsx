@@ -1,8 +1,6 @@
 "use client"
 
-import React from "react"
-
-import { useState } from "react"
+import React, { useMemo, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Lock, CreditCard, Truck } from "lucide-react"
@@ -24,21 +22,91 @@ import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/currency"
 
 export default function CheckoutPage() {
-  const { items, getTotalPrice, clearCart } = useCartStore()
+  const { items, clearCart } = useCartStore()
   const { user } = useAuth()
+
   const [isLoading, setIsLoading] = useState(false)
   const [shippingMethod, setShippingMethod] = useState("standard")
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
 
-  const subtotal = getTotalPrice()
-  const shippingCost = shippingMethod === "express" ? 9999 : shippingMethod === "pickup" ? 0 : subtotal >= 75000 ? 0 : 5999
+  const [useMemberDiscount, setUseMemberDiscount] = useState(false)
+  const [memberNumber, setMemberNumber] = useState("")
+  const [memberValidated, setMemberValidated] = useState(false)
+  const [memberError, setMemberError] = useState("")
+  const [validatingMember, setValidatingMember] = useState(false)
+
+  const getUnitPrice = (product: {
+    price: number
+    memberPrice?: number
+  }) => {
+    if (memberValidated && product.memberPrice) {
+      return product.memberPrice
+    }
+
+    return product.price
+  }
+
+  const subtotalWithoutMemberDiscount = useMemo(() => {
+    return items.reduce((acc, item) => {
+      return acc + item.product.price * item.quantity
+    }, 0)
+  }, [items])
+
+  const subtotal = useMemo(() => {
+    return items.reduce((acc, item) => {
+      return acc + getUnitPrice(item.product) * item.quantity
+    }, 0)
+  }, [items, memberValidated])
+
+  const memberSavings = Math.max(0, subtotalWithoutMemberDiscount - subtotal)
+
+  const shippingCost =
+    shippingMethod === "express"
+      ? 9999
+      : shippingMethod === "pickup"
+        ? 0
+        : subtotal >= 75000
+          ? 0
+          : 5999
+
   const total = subtotal + shippingCost
+
+  const handleValidateMember = async () => {
+    setMemberError("")
+    setMemberValidated(false)
+    setValidatingMember(true)
+
+    try {
+      const res = await fetch("/api/validate-member", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ memberNumber }),
+      })
+
+      const json = await res.json()
+
+      if (!json.ok || !json.valid) {
+        setMemberError("Número de socio inválido")
+        setMemberValidated(false)
+        return
+      }
+
+      setMemberValidated(true)
+      toast.success("Número de socio validado")
+    } catch {
+      setMemberError("No se pudo validar el número de socio")
+      setMemberValidated(false)
+    } finally {
+      setValidatingMember(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Get form data
     const formData = new FormData(e.currentTarget)
     const firstName = formData.get("firstName") as string
     const lastName = formData.get("lastName") as string
@@ -48,22 +116,28 @@ export default function CheckoutPage() {
     const city = formData.get("city") as string
     const province = formData.get("province") as string
     const postalCode = formData.get("postalCode") as string
-    
-    // Payment info - only get card details if credit or debit card is selected
-    let paymentInfo: { method: string; last4?: string; brand?: string; cardName?: string; dni?: string } = {
+
+    let paymentInfo: {
+      method: string
+      last4?: string
+      brand?: string
+      cardName?: string
+      dni?: string
+    } = {
       method: paymentMethod,
     }
-    
+
     if (paymentMethod === "credit-card" || paymentMethod === "debit-card") {
       const cardNumber = formData.get("cardNumber") as string
       const cardName = formData.get("cardName") as string
       const dni = formData.get("dni") as string
+
       paymentInfo = {
         method: paymentMethod,
         last4: cardNumber ? cardNumber.replace(/\s/g, "").slice(-4) : "",
         brand: "Visa",
-        cardName: cardName,
-        dni: dni,
+        cardName,
+        dni,
       }
     }
 
@@ -86,7 +160,9 @@ export default function CheckoutPage() {
           shippingMethod,
           shippingCost,
           total,
-          paymentInfo
+          paymentInfo,
+          memberNumber: memberValidated ? memberNumber.trim() : null,
+          memberValidated,
         }),
       })
 
@@ -95,7 +171,6 @@ export default function CheckoutPage() {
       if (data.success) {
         toast.success("Pedido realizado con exito!")
         clearCart()
-        // If user is logged in, redirect to orders
         window.location.href = "/account/orders"
       } else {
         toast.error(data.error || "Error al procesar el pago. Intenta nuevamente.")
@@ -132,7 +207,6 @@ export default function CheckoutPage() {
         ]}
       />
 
-      {/* Back to cart */}
       <Link
         href="/cart"
         className="inline-flex items-center text-sm text-secondary hover:underline mt-4"
@@ -145,68 +219,74 @@ export default function CheckoutPage() {
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Checkout Form */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Contact Information */}
             <section className="bg-card rounded-lg border border-border p-6">
               <h2 className="text-lg font-semibold mb-4">Informacion de Contacto</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-{user ? (
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
-                    value={user?.email || ''}
-                    readOnly
-                    required
-                  />
-                ) : (
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    className="placeholder:text-muted-foreground/60"
-                    defaultValue=""
-                    required
-                  />
-                )}
+                  {user ? (
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="tu@email.com"
+                      className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
+                      value={user?.email || ""}
+                      readOnly
+                      required
+                    />
+                  ) : (
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="tu@email.com"
+                      className="placeholder:text-muted-foreground/60"
+                      defaultValue=""
+                      required
+                    />
+                  )}
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefono</Label>
-{user ? (
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+54 11 1234-5678"
-                    className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
-                    value={user?.user_metadata?.phone || user?.phone || ''}
-                    readOnly
-                    required
-                  />
-                ) : (
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+54 11 1234-5678"
-                    className="placeholder:text-muted-foreground/60"
-                    defaultValue=""
-                    required
-                  />
-                )}
+                  {user ? (
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="+54 11 1234-5678"
+                      className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
+                      value={user?.user_metadata?.phone || user?.phone || ""}
+                      readOnly
+                      required
+                    />
+                  ) : (
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="+54 11 1234-5678"
+                      className="placeholder:text-muted-foreground/60"
+                      defaultValue=""
+                      required
+                    />
+                  )}
                 </div>
               </div>
-{user ? (
+
+              {user ? (
                 <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
-                  <span className="text-sm text-green-600 font-medium">✓ Datos precargados automáticamente</span>
-<Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
+                  <span className="text-sm text-green-600 font-medium">
+                    ✓ Datos precargados automáticamente
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     className="ml-auto cursor-pointer"
-                    onClick={() => window.open('/account/profile', '_blank')}
+                    onClick={() => window.open("/account/profile", "_blank")}
                   >
                     Cambiar Datos
                   </Button>
@@ -214,37 +294,61 @@ export default function CheckoutPage() {
               ) : null}
             </section>
 
-            {/* Shipping Address */}
             <section className="bg-card rounded-lg border border-border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Truck className="h-5 w-5 text-secondary" />
                 <h2 className="text-lg font-semibold">Direccion de Envio</h2>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nombre</Label>
-                <Input id="firstName" placeholder="Juan" className="placeholder:text-muted-foreground/60" defaultValue={user?.user_metadata?.first_name || ''} required />
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    placeholder="Juan"
+                    className="placeholder:text-muted-foreground/60"
+                    defaultValue={user?.user_metadata?.first_name || ""}
+                    required
+                  />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Apellido</Label>
-                  <Input id="lastName" placeholder="Perez" className="placeholder:text-muted-foreground/60" required />
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Perez"
+                    className="placeholder:text-muted-foreground/60"
+                    required
+                  />
                 </div>
+
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="address">Direccion</Label>
                   <Input
                     id="address"
+                    name="address"
                     placeholder="Av. Corrientes 1234, Piso 5, Depto A"
                     className="placeholder:text-muted-foreground/60"
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="city">Ciudad</Label>
-                  <Input id="city" placeholder="Buenos Aires" className="placeholder:text-muted-foreground/60" required />
+                  <Input
+                    id="city"
+                    name="city"
+                    placeholder="Buenos Aires"
+                    className="placeholder:text-muted-foreground/60"
+                    required
+                  />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="province">Provincia</Label>
-                  <Select defaultValue="caba">
+                  <Select name="province" defaultValue="caba">
                     <SelectTrigger id="province" className="cursor-pointer">
                       <SelectValue placeholder="Seleccionar provincia" />
                     </SelectTrigger>
@@ -257,13 +361,19 @@ export default function CheckoutPage() {
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">Codigo Postal</Label>
-                  <Input id="postalCode" placeholder="1000" className="placeholder:text-muted-foreground/60" required />
+                  <Input
+                    id="postalCode"
+                    name="postalCode"
+                    placeholder="1000"
+                    className="placeholder:text-muted-foreground/60"
+                    required
+                  />
                 </div>
               </div>
 
-              {/* Shipping Method */}
               <div className="mt-6 pt-6 border-t border-border">
                 <h3 className="font-medium mb-4">Metodo de Envio</h3>
                 <RadioGroup
@@ -283,6 +393,7 @@ export default function CheckoutPage() {
                     </div>
                     <span className="font-medium text-success">Gratis</span>
                   </div>
+
                   <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value="standard" id="standard" />
@@ -297,6 +408,7 @@ export default function CheckoutPage() {
                       {subtotal >= 75000 ? "Gratis" : formatCurrency(5999)}
                     </span>
                   </div>
+
                   <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value="express" id="express" />
@@ -313,14 +425,76 @@ export default function CheckoutPage() {
               </div>
             </section>
 
-            {/* Payment Information */}
+            <section className="bg-card rounded-lg border border-border p-6">
+              <h2 className="text-lg font-semibold mb-4">Beneficio de socio</h2>
+
+              <div className="rounded-lg border border-border p-4 space-y-3">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={useMemberDiscount}
+                    onChange={(e) => {
+                      setUseMemberDiscount(e.target.checked)
+                      if (!e.target.checked) {
+                        setMemberNumber("")
+                        setMemberValidated(false)
+                        setMemberError("")
+                      }
+                    }}
+                  />
+                  Aplicar descuento de socio
+                </label>
+
+                {useMemberDiscount && (
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="memberNumber">Introduzca su numero de socio</Label>
+                      <Input
+                        id="memberNumber"
+                        value={memberNumber}
+                        onChange={(e) => setMemberNumber(e.target.value)}
+                        placeholder="Ej: 123456"
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={handleValidateMember}
+                      disabled={validatingMember || memberNumber.trim() === ""}
+                    >
+                      {validatingMember ? "Validando..." : "Validar numero"}
+                    </Button>
+
+                    {memberValidated && (
+                      <p className="text-sm text-green-600">
+                        Número válido. Se aplicó el precio de socio.
+                      </p>
+                    )}
+
+                    {memberError && (
+                      <p className="text-sm text-red-600">{memberError}</p>
+                    )}
+
+                    <a
+                      href="https://wa.me/5491123456789?text=Hola,%20quiero%20hacerme%20socio"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-sm text-primary underline"
+                    >
+                      ¿No sos socio? Hacete socio
+                    </a>
+                  </div>
+                )}
+              </div>
+            </section>
+
             <section className="bg-card rounded-lg border border-border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard className="h-5 w-5 text-secondary" />
                 <h2 className="text-lg font-semibold">Informacion de Pago</h2>
               </div>
-              
-              {/* Payment Method Selection */}
+
               <div className="space-y-2 mb-6">
                 <Label className="text-sm font-medium">Metodo de Pago</Label>
                 <RadioGroup
@@ -331,8 +505,8 @@ export default function CheckoutPage() {
                   <label
                     htmlFor="credit-card"
                     className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "credit-card" 
-                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                      paymentMethod === "credit-card"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
                         : "border-border hover:border-primary/50 hover:bg-muted/50"
                     }`}
                   >
@@ -340,11 +514,12 @@ export default function CheckoutPage() {
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Credito</span>
                   </label>
+
                   <label
                     htmlFor="debit-card"
                     className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "debit-card" 
-                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                      paymentMethod === "debit-card"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
                         : "border-border hover:border-primary/50 hover:bg-muted/50"
                     }`}
                   >
@@ -352,22 +527,24 @@ export default function CheckoutPage() {
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Debito</span>
                   </label>
+
                   <label
                     htmlFor="mercadopago"
                     className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "mercadopago" 
-                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                      paymentMethod === "mercadopago"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
                         : "border-border hover:border-primary/50 hover:bg-muted/50"
                     }`}
                   >
                     <RadioGroupItem value="mercadopago" id="mercadopago" className="sr-only" />
                     <span className="text-sm font-medium text-[#00B4E6]">MercadoPago</span>
                   </label>
+
                   <label
                     htmlFor="transfer"
                     className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "transfer" 
-                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                      paymentMethod === "transfer"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
                         : "border-border hover:border-primary/50 hover:bg-muted/50"
                     }`}
                   >
@@ -380,40 +557,67 @@ export default function CheckoutPage() {
                 </RadioGroup>
               </div>
 
-              {/* Card Details - Only show for credit/debit cards */}
               {(paymentMethod === "credit-card" || paymentMethod === "debit-card") && (
                 <div className="space-y-4 pt-4 border-t border-border">
                   <div className="space-y-2">
                     <Label htmlFor="cardNumber">Numero de Tarjeta</Label>
                     <Input
                       id="cardNumber"
+                      name="cardNumber"
                       placeholder="1234 5678 9012 3456"
                       className="placeholder:text-muted-foreground/60"
                       required
                     />
                   </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="expiry">Vencimiento</Label>
-                      <Input id="expiry" placeholder="MM/AA" className="placeholder:text-muted-foreground/60" required />
+                      <Input
+                        id="expiry"
+                        name="expiry"
+                        placeholder="MM/AA"
+                        className="placeholder:text-muted-foreground/60"
+                        required
+                      />
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="cvv">CVV</Label>
-                      <Input id="cvv" placeholder="123" className="placeholder:text-muted-foreground/60" required />
+                      <Input
+                        id="cvv"
+                        name="cvv"
+                        placeholder="123"
+                        className="placeholder:text-muted-foreground/60"
+                        required
+                      />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="cardName">Nombre en la Tarjeta</Label>
-                    <Input id="cardName" placeholder="JUAN PEREZ" className="placeholder:text-muted-foreground/60" required />
+                    <Input
+                      id="cardName"
+                      name="cardName"
+                      placeholder="JUAN PEREZ"
+                      className="placeholder:text-muted-foreground/60"
+                      required
+                    />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="dni">DNI del titular</Label>
-                    <Input id="dni" placeholder="12.345.678" className="placeholder:text-muted-foreground/60" required />
+                    <Input
+                      id="dni"
+                      name="dni"
+                      placeholder="12.345.678"
+                      className="placeholder:text-muted-foreground/60"
+                      required
+                    />
                   </div>
                 </div>
               )}
 
-              {/* Mercado Pago - Show instructions */}
               {paymentMethod === "mercadopago" && (
                 <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -422,7 +626,6 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Bank Transfer - Show instructions */}
               {paymentMethod === "transfer" && (
                 <div className="mt-4 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
                   <p className="text-sm text-green-800 dark:text-green-200 mb-2">
@@ -433,7 +636,10 @@ export default function CheckoutPage() {
                     <p>CBU: 0110464040046411693330</p>
                     <p>Nombre: Club Atletico Indendiente de San Cayet</p>
                     <p>Cuit/Cuil: 30-70708050-3</p>
-                    <p className="mt-2">Una vez realizada la transferencia, envianos el comprobante a <strong>alboshop@example.com</strong></p>
+                    <p className="mt-2">
+                      Una vez realizada la transferencia, envianos el comprobante a{" "}
+                      <strong>alboshop@example.com</strong>
+                    </p>
                   </div>
                 </div>
               )}
@@ -445,48 +651,101 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-card rounded-lg border border-border p-6 sticky top-24">
               <h2 className="text-lg font-semibold mb-4">Resumen del Pedido</h2>
 
-              {/* Cart Items */}
+              {memberValidated && memberSavings > 0 && (
+                <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3">
+                  <p className="text-sm font-medium text-green-700">
+                    Precio socio aplicado
+                  </p>
+                  <p className="text-xs text-green-600">
+                    Ahorrás {formatCurrency(memberSavings)} en tus productos
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-3 mb-6">
-                {items.map((item) => (
-                  <div
-                    key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}`}
-                    className="flex gap-3"
-                  >
-                    <div className="relative w-16 h-20 rounded overflow-hidden bg-muted flex-shrink-0">
-                      <Image
-                        src={item.product.images[0] || "/placeholder.svg"}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover"
-                      />
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center">
-                        {item.quantity}
-                      </span>
+                {items.map((item) => {
+                  const unitPrice = getUnitPrice(item.product)
+                  const lineTotal = unitPrice * item.quantity
+                  const originalLineTotal = item.product.price * item.quantity
+                  const hasMemberDiscount =
+                    memberValidated &&
+                    !!item.product.memberPrice &&
+                    item.product.memberPrice < item.product.price
+
+                  return (
+                    <div
+                      key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}`}
+                      className="flex gap-3"
+                    >
+                      <div className="relative w-16 h-20 rounded overflow-hidden bg-muted flex-shrink-0">
+                        <Image
+                          src={item.product.images[0] || "/placeholder.svg"}
+                          alt={item.product.name}
+                          fill
+                          className="object-cover"
+                        />
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center">
+                          {item.quantity}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.product.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.selectedColor} / {item.selectedSize}
+                        </p>
+
+                        {hasMemberDiscount ? (
+                          <div className="mt-1">
+                            <p className="text-xs text-muted-foreground line-through">
+                              {formatCurrency(originalLineTotal)}
+                            </p>
+                            <p className="text-sm font-medium text-primary">
+                              {formatCurrency(lineTotal)}
+                            </p>
+                            <p className="text-[11px] text-green-600">
+                              Precio socio
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-sm font-medium mt-1">
+                            {formatCurrency(lineTotal)}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.product.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.selectedColor} / {item.selectedSize}
-                      </p>
-                      <p className="text-sm font-medium mt-1">
-                        {formatCurrency(item.product.price * item.quantity)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
-              {/* Summary */}
               <div className="space-y-3 text-sm border-t border-border pt-4">
+                {memberValidated && memberSavings > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal original</span>
+                    <span className="line-through text-muted-foreground">
+                      {formatCurrency(subtotalWithoutMemberDiscount)}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">
+                    {memberValidated && memberSavings > 0 ? "Subtotal con socio" : "Subtotal"}
+                  </span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
+
+                {memberValidated && memberSavings > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Ahorro socio</span>
+                    <span>-{formatCurrency(memberSavings)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Envio</span>
                   {shippingCost === 0 ? (
@@ -495,6 +754,7 @@ export default function CheckoutPage() {
                     <span>{formatCurrency(shippingCost)}</span>
                   )}
                 </div>
+
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between font-semibold text-base">
                     <span>Total</span>
@@ -503,7 +763,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 className="w-full mt-6 cursor-pointer"
