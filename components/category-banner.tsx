@@ -24,7 +24,8 @@ export function CategoryBanner() {
     <section className="py-12 bg-background">
       <div className="container mx-auto px-4">
         {/* Mobile: 1 column, smaller */}
-        <div className="md:hidden grid grid-cols-1 gap-16 max-w-xl mx-auto py-8">
+        <div className="md:hidden grid grid-cols-1 gap-20 max-w-lg mx-auto py-12">
+
 
           {categoryBanners.map((category) => (
             <Link
