@@ -184,6 +184,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
             )}
           </div>
         )}
+
+        {/* Mobile Add to Cart Button - Always Visible */}
+        <Button 
+          className="md:hidden w-full mt-3 font-semibold cursor-pointer"
+          onClick={handleCartAction}
+          variant={inCart ? "secondary" : "default"}
+        >
+          <ShoppingBag className="h-4 w-4 mr-2" />
+          {inCart ? "EN CARRITO" : "AÑADIR AL CARRITO"}
+        </Button>
       </div>
     </div>
   )

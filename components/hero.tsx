@@ -42,52 +42,55 @@ export function Hero() {
   const slide = heroSlides[currentSlide]
 
   return (
-    <section className="relative h-screen md:h-[600px] lg:h-[700px] min-h-[400px] overflow-hidden flex flex-col md:flex-row">
-      {/* Image Panel */}
-      <div className="w-full md:flex-1 aspect-[16/9] md:aspect-auto relative overflow-hidden bg-muted">
-        {heroSlides.map((s, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <Image
-              src={s.image || "/placeholder.svg"}
-              alt={s.title}
-              fill
-              className="w-full h-full object-cover object-center"
-              priority={index === 0}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Content Panel */}
-      <div className="w-full md:w-[45%] bg-background flex flex-col items-center justify-center p-6 md:p-12 text-center md:text-left">
-        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4">
-          {slide.title}
-        </h1>
-        <p className="text-lg md:text-2xl text-foreground/80 mb-8">
-          {slide.subtitle}
-        </p>
-        <Button
-          size="lg"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8"
-          asChild
+    <section className="relative h-screen overflow-hidden">
+      {/* Full background images */}
+      {heroSlides.map((s, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-700 ${
+            index === currentSlide ? "opacity-100" : "opacity-0"
+          }`}
         >
-          <Link href={slide.href}>{slide.cta}</Link>
-        </Button>
+          <Image
+            src={s.image || "/placeholder.svg"}
+            alt={s.title}
+            fill
+            className="object-cover object-center opacity-70 md:opacity-100"
+            priority={index === 0}
+          />
+        </div>
+      ))}
+
+      {/* Gradient overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent" />
+
+      {/* Content overlay */}
+      <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 max-w-4xl mx-auto w-full text-center md:text-left items-center md:items-start z-10">
+        <div className="text-shadow">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4 drop-shadow-lg">
+            {slide.title}
+          </h1>
+          <p className="text-lg md:text-2xl text-foreground/90 mb-8 max-w-md drop-shadow-md">
+            {slide.subtitle}
+          </p>
+          <Button
+            size="lg"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 py-6 text-lg shadow-2xl drop-shadow-lg"
+            asChild
+          >
+            <Link href={slide.href}>{slide.cta}</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Pagination Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-20">
         {heroSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-colors cursor-pointer ${
-              index === currentSlide ? "bg-primary" : "bg-primary/30"
+            className={`w-3 h-3 rounded-full transition-all duration-300 cursor-pointer shadow-lg ${
+              index === currentSlide ? "bg-primary scale-125 shadow-primary/50" : "bg-white/80 hover:bg-primary/80"
             }`}
             aria-label={`Ir a slide ${index + 1}`}
           />
