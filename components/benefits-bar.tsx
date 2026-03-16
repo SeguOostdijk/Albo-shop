@@ -1,7 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Truck, CreditCard, RefreshCw, MapPin, Wallet, ArrowRightLeft } from "lucide-react"
+import {
+  Truck,
+  CreditCard,
+  RefreshCw,
+  MapPin,
+  Wallet,
+  ArrowRightLeft,
+} from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -30,7 +37,8 @@ const benefits: Benefit[] = [
     color: "text-primary",
     bgColor: "bg-primary/10",
     title: "Zonas de Entrega",
-    description: "Realizamos envíos a todo el país a través de Correo Argentino y Oca. El costo de envío varía según la zona y el peso del paquete. Envío gratis en compras superiores a $80.000 en zona AMBA.",
+    description:
+      "Realizamos envíos a todo el país a través de Correo Argentino y Oca. El costo de envío varía según la zona y el peso del paquete. Envío gratis en compras superiores a $80.000 en zona AMBA.",
   },
   {
     type: "payment",
@@ -39,7 +47,8 @@ const benefits: Benefit[] = [
     color: "text-primary",
     bgColor: "bg-primary/10",
     title: "Métodos de Pago",
-    description: "Aceptamos todas las tarjetas de crédito y débito (Visa, Mastercard, American Express). También podés pagar en efectivo a través de Rapipago o Pago Fácil. 3 y 6 cuotas sin interés con tarjetas selectas.",
+    description:
+      "Aceptamos todas las tarjetas de crédito y débito (Visa, Mastercard, American Express). También podés pagar en efectivo a través de Rapipago o Pago Fácil. 3 y 6 cuotas sin interés con tarjetas selectas.",
   },
   {
     type: "door-to-door",
@@ -48,7 +57,8 @@ const benefits: Benefit[] = [
     color: "text-accent",
     bgColor: "bg-accent/10",
     title: "Cambios y Devoluciones",
-    description: "Si necesitas cambiar un producto, coordinamos la recolección en tu domicilio sin costo adicional. El nuevo producto se envía una vez recibido el original. Este servicio está disponible en zona AMBA.",
+    description:
+      "Si necesitas cambiar un producto, coordinamos la recolección en tu domicilio sin costo adicional. El nuevo producto se envía una vez recibido el original. Este servicio está disponible en zona AMBA.",
   },
 ]
 
@@ -87,26 +97,28 @@ export function BenefitsBar() {
 
   return (
     <>
-      <section className="py-12 bg-background">
+      <section className="bg-background py-10 md:py-12">
         <div className="container mx-auto px-4">
-          <div className="flex justify-center">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl w-full">
-              {benefits.map((benefit, index) => (
+          <div className="mx-auto max-w-4xl">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6">
+              {benefits.map((benefit) => (
                 <button
-                  key={index}
+                  key={benefit.type}
                   onClick={() => setOpenDialog(benefit.type)}
                   className={`
-                    w-full max-w-[280px] md:w-48 h-32 md:h-auto
-                    flex flex-col items-center justify-center gap-3 p-6 rounded-xl
-                    border-2 border-transparent transition-all duration-300
-                    hover:border-primary hover:shadow-lg hover:scale-105
-                    ${benefit.bgColor} cursor-pointer group
+                    group flex min-h-[120px] w-full items-center gap-4 rounded-xl border border-border/50 p-4 text-left
+                    transition-all duration-300 hover:scale-[1.02] hover:border-primary hover:shadow-lg
+                    md:h-auto md:max-w-none md:flex-col md:justify-center md:gap-3 md:p-6 md:text-center
+                    ${benefit.bgColor} cursor-pointer
                   `}
                 >
-                  <div className={`${benefit.color} group-hover:scale-110 transition-transform`}>
-                    <benefit.icon className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+                  <div
+                    className={`${benefit.color} shrink-0 transition-transform group-hover:scale-110`}
+                  >
+                    <benefit.icon className="h-9 w-9 md:h-12 md:w-12" strokeWidth={1.5} />
                   </div>
-                  <span className="text-sm font-semibold text-foreground text-center group-hover:text-primary transition-colors">
+
+                  <span className="text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary md:max-w-[16ch]">
                     {benefit.text}
                   </span>
                 </button>
@@ -116,38 +128,40 @@ export function BenefitsBar() {
         </div>
       </section>
 
-      {/* Dialogs */}
       {benefits.map((benefit) => (
         <Dialog
           key={benefit.type}
           open={openDialog === benefit.type}
           onOpenChange={(open) => setOpenDialog(open ? benefit.type : null)}
         >
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="w-[calc(100vw-2rem)] max-w-[500px] rounded-2xl sm:max-w-[500px]">
             <DialogHeader>
-              <div className="flex items-center gap-3">
-                <div className={`${benefit.bgColor} ${benefit.color} p-3 rounded-full`}>
-                  <benefit.icon className="w-6 h-6" />
+              <div className="flex items-start gap-3 sm:items-center">
+                <div className={`${benefit.bgColor} ${benefit.color} rounded-full p-3`}>
+                  <benefit.icon className="h-6 w-6" />
                 </div>
-                <DialogTitle className="text-xl">{benefit.title}</DialogTitle>
+                <DialogTitle className="text-lg sm:text-xl">{benefit.title}</DialogTitle>
               </div>
             </DialogHeader>
-            <DialogDescription className="text-base text-foreground mt-4">
+
+            <DialogDescription className="mt-4 text-sm leading-6 text-foreground sm:text-base">
               {benefit.description}
             </DialogDescription>
-            <div className="mt-6 pt-4 border-t">
-              <h4 className="font-semibold text-sm text-muted-foreground mb-3 uppercase tracking-wide">
+
+            <div className="mt-6 border-t pt-4">
+              <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:text-sm">
                 Características
               </h4>
+
               <ul className="space-y-3">
                 {benefitDetails[benefit.type].items.map((item, idx) => {
                   const DetailIcon = benefitDetails[benefit.type].icon
                   return (
                     <li key={idx} className="flex items-start gap-3">
-                      <div className={`mt-1 ${benefit.color}`}>
-                        <DetailIcon className="w-4 h-4" />
+                      <div className={`mt-1 shrink-0 ${benefit.color}`}>
+                        <DetailIcon className="h-4 w-4" />
                       </div>
-                      <span className="text-sm text-foreground">{item}</span>
+                      <span className="text-sm leading-5 text-foreground">{item}</span>
                     </li>
                   )
                 })}
@@ -159,4 +173,3 @@ export function BenefitsBar() {
     </>
   )
 }
-
