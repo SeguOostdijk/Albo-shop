@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -13,6 +12,7 @@ const heroSlides = [
     subtitle: "Temporada 2025/26 ya disponible",
     cta: "COMPRAR AHORA",
     href: "/product/camiseta-titular-2025",
+    eyebrow: "Colección oficial",
   },
   {
     image: "/salida.png",
@@ -20,13 +20,15 @@ const heroSlides = [
     subtitle: "La misma ropa que usan los jugadores",
     cta: "COMPRAR AHORA",
     href: "/category/primera-division",
+    eyebrow: "Albo Shop",
   },
   {
     image: "/FutbolFemeninoHero.png",
     title: "FEMENINO",
     subtitle: "La misma ropa que usan las jugadoras",
-    cta: "VER COLECCION",
+    cta: "VER COLECCIÓN",
     href: "/category/femenino",
+    eyebrow: "Nueva temporada",
   },
 ]
 
@@ -37,6 +39,7 @@ export function Hero() {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
     }, 5000)
+
     return () => clearInterval(timer)
   }, [])
 
@@ -44,12 +47,12 @@ export function Hero() {
 
   return (
     <>
-      {/* Mobile: Overlay hero with fixed aspect ratio */}
-      <div className="md:hidden relative w-full h-[70vh] min-h-[350px] max-h-[600px] overflow-hidden bg-background">
+      {/* Mobile */}
+      <section className="relative h-[72vh] min-h-[420px] max-h-[720px] overflow-hidden bg-background md:hidden">
         {heroSlides.map((s, index) => (
           <div
             key={`mobile-${index}`}
-            className={`absolute inset-0 transition-opacity duration-700 touch-scroll ${
+            className={`absolute inset-0 transition-opacity duration-700 ${
               index === currentSlide ? "opacity-100" : "opacity-0"
             }`}
           >
@@ -57,40 +60,69 @@ export function Hero() {
               src={s.image || "/placeholder.svg"}
               alt={s.title}
               fill
-              className="object-cover object-center opacity-85"
+              className="object-cover object-center"
               priority={index === 0}
               sizes="100vw"
             />
           </div>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
-        <div className="absolute inset-0 flex flex-col justify-center items-center p-6 md:p-8 z-10 text-center">
-          <div className="max-w-lg">
-            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4 drop-shadow-2xl leading-tight">
+
+        {/* Overlays livianos */}
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/65 via-black/30 to-transparent" />
+
+        {/* Content */}
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5 pb-6">
+          <div className="max-w-[85%]">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/80">
+              {slide.eyebrow}
+            </p>
+
+            <h1 className="text-3xl font-extrabold leading-[0.95] text-white">
               {slide.title}
             </h1>
-            <p className="text-lg text-foreground/95 mb-6 drop-shadow-lg px-4">
+
+            <p className="mt-3 max-w-[28ch] text-sm leading-5 text-white/85">
               {slide.subtitle}
             </p>
-            <Button size="lg" className="shadow-xl drop-shadow-lg px-10 py-6 text-base font-semibold" asChild>
-              <Link href={slide.href}>{slide.cta}</Link>
-            </Button>
+
+            <div className="mt-5">
+              <Button
+                size="lg"
+                className="h-11 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg"
+                asChild
+              >
+                <Link href={slide.href}>{slide.cta}</Link>
+              </Button>
+            </div>
+
+            <div className="mt-5 flex items-center gap-2">
+              {heroSlides.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  aria-label={`Ir al slide ${index + 1}`}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`h-2 rounded-full transition-all ${
+                    index === currentSlide ? "w-6 bg-white" : "w-2 bg-white/45"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
-        {/* Dots removidos */}
-      </div>
+      </section>
 
-      {/* Desktop: Overlay hero con imagen y contenido 50/50 */}
-      <div className="hidden md:flex relative w-full h-[80vh] min-h-[520px] max-h-[900px] overflow-hidden">
-        <div className="w-full h-full flex">
-          {/* Imagen 50% */}
-          <div className="w-1/2 relative overflow-hidden bg-background">
+      {/* Desktop: igual que antes */}
+      <div className="relative hidden h-[80vh] min-h-[520px] max-h-[900px] w-full overflow-hidden md:flex">
+        <div className="flex h-full w-full">
+          <div className="relative w-1/2 overflow-hidden bg-background">
             {heroSlides.map((s, index) => (
               <div
                 key={`desktop-${index}`}
-                className={`absolute inset-0 transition-opacity duration-700 ${
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ${
                   index === currentSlide ? "opacity-100" : "opacity-0"
-                } flex items-center justify-center`}
+                }`}
               >
                 <Image
                   src={s.image || "/placeholder.svg"}
@@ -103,18 +135,18 @@ export function Hero() {
               </div>
             ))}
           </div>
-          {/* Contenido 50% */}
-          <div className="w-1/2 bg-background/80 flex items-center justify-center p-12">
+
+          <div className="flex w-1/2 items-center justify-center bg-background/80 p-12">
             <div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-primary leading-tight mb-6">
+              <h1 className="mb-6 text-5xl font-bold leading-tight text-primary lg:text-6xl">
                 {slide.title}
               </h1>
-              <p className="text-2xl text-foreground/80 mb-10">
+              <p className="mb-10 text-2xl text-foreground/80">
                 {slide.subtitle}
               </p>
               <Button
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-10 py-6 text-lg shadow-lg"
+                className="bg-primary px-10 py-6 text-lg font-semibold text-primary-foreground shadow-lg hover:bg-primary/90"
                 asChild
               >
                 <Link href={slide.href}>{slide.cta}</Link>
@@ -122,9 +154,7 @@ export function Hero() {
             </div>
           </div>
         </div>
-        {/* Dots removidos */}
       </div>
     </>
   )
 }
-
