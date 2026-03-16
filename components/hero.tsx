@@ -57,20 +57,19 @@ export function Hero() {
             }`}
           >
             <Image
-              src={s.image || "/placeholder.svg"}
-              alt={s.title}
-              fill
-              className="object-cover object-center"
-              priority={index === 0}
-              sizes="100vw"
-            />
+  src={s.image || "/placeholder.svg"}
+  alt={s.title}
+  fill
+  className="object-cover object-center scale-105 blur-[2px]"
+  priority={index === 0}
+  sizes="100vw"
+/>
           </div>
         ))}
 
         {/* Overlays livianos */}
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/65 via-black/30 to-transparent" />
-
+        <div className="absolute inset-0 bg-black/15" />
+        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
         {/* Content */}
         <div className="absolute inset-x-0 bottom-0 z-10 p-5 pb-6">
           <div className="max-w-[85%]">
