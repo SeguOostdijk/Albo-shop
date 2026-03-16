@@ -48,72 +48,77 @@ export function Hero() {
   return (
     <>
       {/* Mobile */}
-        <section className="relative h-[72vh] min-h-[420px] max-h-[720px] md:hidden" style={{transform: 'none'}}>
-        {heroSlides.map((s, index) => (
-          <div
-            key={`mobile-${index}`}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <Image
-  src={s.image || "/placeholder.svg"}
-  alt={s.title}
-  fill
-  className="object-cover object-center scale-105 blur-[2px]"
-  priority={index === 0}
-  sizes="100vw"
-/>
-          </div>
-        ))}
-
-        {/* Overlays livianos */}
-        <div className="absolute inset-0 bg-black/15" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
-        {/* Content */}
-        <div className="absolute inset-x-0 bottom-0 z-10 p-5 pb-6">
-          <div className="max-w-[85%]">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/80">
-              {slide.eyebrow}
-            </p>
-
-            <h1 className="text-3xl font-extrabold leading-[0.95] text-white">
-              {slide.title}
-            </h1>
-
-            <p className="mt-3 max-w-[28ch] text-sm leading-5 text-white/85">
-              {slide.subtitle}
-            </p>
-
-            <div className="mt-5">
-              <Button
-                size="lg"
-                className="h-11 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg"
-                asChild
-              >
-                <Link href={slide.href}>{slide.cta}</Link>
-              </Button>
-            </div>
-
-            <div className="mt-5 flex items-center gap-2">
-              {heroSlides.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  aria-label={`Ir al slide ${index + 1}`}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`h-2 rounded-full transition-all ${
-                    index === currentSlide ? "w-6 bg-white" : "w-2 bg-white/45"
-                  }`}
+      <section className="relative isolate block w-full max-w-full overflow-hidden bg-background md:hidden">
+        <div className="relative h-[72vh] min-h-[420px] max-h-[720px] w-full overflow-hidden">
+          {heroSlides.map((s, index) => (
+            <div
+              key={`mobile-${index}`}
+              className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${
+                index === currentSlide ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <div className="absolute inset-0 overflow-hidden">
+                <Image
+                  src={s.image || "/placeholder.svg"}
+                  alt={s.title}
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  className="object-cover object-center blur-[2px] scale-[1.04]"
                 />
-              ))}
+              </div>
+            </div>
+          ))}
+
+          {/* overlays */}
+          <div className="pointer-events-none absolute inset-0 bg-black/15" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
+
+          {/* content */}
+          <div className="absolute inset-x-0 bottom-0 z-10 p-5 pb-6">
+            <div className="max-w-[85%]">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/80">
+                {slide.eyebrow}
+              </p>
+
+              <h1 className="text-3xl font-extrabold leading-[0.95] text-white">
+                {slide.title}
+              </h1>
+
+              <p className="mt-3 max-w-[28ch] text-sm leading-5 text-white/85">
+                {slide.subtitle}
+              </p>
+
+              <div className="mt-5">
+                <Button
+                  size="lg"
+                  className="h-11 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg"
+                  asChild
+                >
+                  <Link href={slide.href}>{slide.cta}</Link>
+                </Button>
+              </div>
+
+              <div className="mt-5 flex items-center gap-2">
+                {heroSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    aria-label={`Ir al slide ${index + 1}`}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`h-2 rounded-full transition-all ${
+                      index === currentSlide ? "w-6 bg-white" : "w-2 bg-white/45"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Desktop: igual que antes */}
-      <div className="relative hidden h-[80vh] min-h-[520px] max-h-[900px] w-full md:flex" style={{transform: 'none'}}>
+      <div className="relative hidden h-[80vh] min-h-[520px] max-h-[900px] w-full overflow-hidden md:flex">
         <div className="flex h-full w-full">
           <div className="relative w-1/2 overflow-hidden bg-background">
             {heroSlides.map((s, index) => (
@@ -140,9 +145,7 @@ export function Hero() {
               <h1 className="mb-6 text-5xl font-bold leading-tight text-primary lg:text-6xl">
                 {slide.title}
               </h1>
-              <p className="mb-10 text-2xl text-foreground/80">
-                {slide.subtitle}
-              </p>
+              <p className="mb-10 text-2xl text-foreground/80">{slide.subtitle}</p>
               <Button
                 size="lg"
                 className="bg-primary px-10 py-6 text-lg font-semibold text-primary-foreground shadow-lg hover:bg-primary/90"
