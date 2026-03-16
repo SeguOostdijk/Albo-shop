@@ -34,11 +34,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-<html lang="es" className="overflow-x-hidden overscroll-none">
+  <html lang="es" style={{overflow: 'visible'}} className="overscroll-none">
       <body className="font-sans antialiased">
         <AuthProvider>
           <Header />
-          <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen pt-0">{children}</main>
           <Footer />
           <Toaster />
           <Analytics />

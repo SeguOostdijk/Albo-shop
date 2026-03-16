@@ -113,14 +113,14 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="sticky top-0 z-[9999] w-full bg-background/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] border-b border-border isolate">
       <div className="bg-accent px-3 py-2 text-center text-xs font-medium text-accent-foreground sm:text-sm">
         <p className="line-clamp-2 sm:line-clamp-1">
           25% de reintegro + 3 cuotas sin interes pagando con tarjetas de credito Visa BBVA
         </p>
       </div>
 
-      <div className="border-b border-border bg-background">
+      <div className="border-b border-border bg-background/95 backdrop-blur-sm shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between gap-3 lg:gap-6">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -129,7 +129,7 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-primary hover:bg-primary/10"
+                    className="cursor-pointer text-primary hover:bg-primary/10"
                   >
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Abrir menú</span>
@@ -235,14 +235,14 @@ export function Header() {
 
                   <Button
                     type="button"
-                    className="rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
+                    className="cursor-pointer rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
                   >
                     <Search className="h-5 w-5 text-foreground" />
                   </Button>
                 </div>
 
                 {searchOpenDesktop && searchLoading && (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
+                  <div className="absolute left-0 right-0 top-full z-[10000] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
                     Buscando...
                   </div>
                 )}
@@ -261,10 +261,10 @@ export function Header() {
 
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {isAdminUser && (
-                <Link href="/admin" className="hidden xl:block">
+                      <Link href="/admin" className="hidden xl:block cursor-pointer">
                   <Button
                     variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
                   >
                     <Pencil className="mr-2 h-4 w-4" />
                     Editar catálogo
@@ -275,7 +275,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-primary hover:bg-primary/10 md:hidden"
+                className="cursor-pointer text-primary hover:bg-primary/10 md:hidden"
                 onClick={() => setSearchOpenMobile((prev) => !prev)}
               >
                 <Search className="h-5 w-5" />
@@ -286,7 +286,7 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative text-primary hover:bg-primary/10"
+                  className="cursor-pointer relative text-primary hover:bg-primary/10"
                 >
                   <Heart className="h-5 w-5" />
                   {wishlistItems > 0 && (
@@ -304,29 +304,29 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-primary hover:bg-primary/10"
+                      className="cursor-pointer text-primary hover:bg-primary/10"
                     >
                       <User className="h-5 w-5" />
                       <span className="sr-only">Mi cuenta</span>
                     </Button>
                   </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-56 z-[10000]">
                     <DropdownMenuLabel className="truncate">
                       {user.email}
                     </DropdownMenuLabel>
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                       <Link href="/account/orders">Mis Pedidos</Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                       <Link href="/wishlist">Mis Favoritos</Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                       <Link href="/account">Mi Cuenta</Link>
                     </DropdownMenuItem>
 
@@ -340,7 +340,7 @@ export function Header() {
 
                     <DropdownMenuItem
                       onClick={handleSignOut}
-                      className="text-red-500 focus:text-red-500"
+                      className="text-red-500 focus:text-red-500 cursor-pointer"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       Cerrar Sesión
@@ -352,7 +352,7 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-primary hover:bg-primary/10"
+                    className="cursor-pointer text-primary hover:bg-primary/10"
                   >
                     <User className="h-5 w-5" />
                     <span className="sr-only">Mi cuenta</span>
@@ -363,7 +363,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative text-primary hover:bg-primary/10"
+                className="cursor-pointer relative text-primary hover:bg-primary/10"
                 onClick={openCart}
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -391,13 +391,13 @@ export function Header() {
 
                 <Button
                   type="button"
-                  className="rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
+                  className="cursor-pointer rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
                 >
                   <Search className="h-5 w-5 text-foreground" />
                 </Button>
 
                 {searchLoading && (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
+                  <div className="absolute left-0 right-0 top-full z-[10000] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
                     Buscando...
                   </div>
                 )}

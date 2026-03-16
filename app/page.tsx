@@ -32,7 +32,7 @@ export default async function HomePage() {
       {/* Featured Products */}
       <ProductCarousel
         title="Destacado"
-        subtitle="PRODUCTOS DESTACADO"
+        subtitle="PRODUCTOS DESTACADOS"
         products={featuredProducts}
         viewAllHref="/category/novedades"
       />

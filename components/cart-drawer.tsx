@@ -13,7 +13,7 @@ export function CartDrawer() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
-      <SheetContent className="w-full sm:max-w-lg flex flex-col">
+    <SheetContent className="w-full sm:max-w-lg flex flex-col z-[10000]">
         <SheetHeader className="border-b border-border pb-4">
           <SheetTitle className="flex items-center justify-between">
             <span>Tu Carrito ({items.length})</span>

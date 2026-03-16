@@ -12,7 +12,7 @@ interface SearchResultsProps {
 
 export function SearchResults({ results, onSelect }: SearchResultsProps) {
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50">
+      <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-[10001]">
       {results.map((product) => (
         <Link
           key={product.id}

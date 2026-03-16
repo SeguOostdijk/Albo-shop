@@ -48,7 +48,7 @@ export function Hero() {
   return (
     <>
       {/* Mobile */}
-      <section className="relative h-[72vh] min-h-[420px] max-h-[720px] overflow-hidden bg-background md:hidden">
+        <section className="relative h-[72vh] min-h-[420px] max-h-[720px] md:hidden" style={{transform: 'none'}}>
         {heroSlides.map((s, index) => (
           <div
             key={`mobile-${index}`}
@@ -113,7 +113,7 @@ export function Hero() {
       </section>
 
       {/* Desktop: igual que antes */}
-      <div className="relative hidden h-[80vh] min-h-[520px] max-h-[900px] w-full overflow-hidden md:flex">
+      <div className="relative hidden h-[80vh] min-h-[520px] max-h-[900px] w-full md:flex" style={{transform: 'none'}}>
         <div className="flex h-full w-full">
           <div className="relative w-1/2 overflow-hidden bg-background">
             {heroSlides.map((s, index) => (
