@@ -3,7 +3,11 @@
 import { useState, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import { SlidersHorizontal, Grid3X3, LayoutGrid } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import { Breadcrumbs } from "@/components/breadcrumbs"
+import { ProductCard } from "@/components/product-card"
+import type { Product } from "@/lib/type/products"
 import {
   Select,
   SelectContent,
@@ -14,16 +18,13 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Breadcrumbs } from "@/components/breadcrumbs"
-import { Filters, type FilterGroup, type FilterOption } from "@/components/filters"
-import { FilterOption, FilterGroup } from "@/components/filters"
 
-import { ProductCard } from "@/components/product-card"
-import type { Product } from "@/lib/type/products"
+import { Filters } from "@/components/filters"
 
 type Category = {
   slug: string
@@ -60,161 +61,160 @@ export function CategoryPageClient({
 
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortBy, setSortBy] = useState<SortOption>("relevance")
-  const [gridCols, setGridCols] = useState<2 | 3>(3)
-
+  const [gridCols, setGridCols] = useState<2 | 3>(2)
 
   const category = categories.find((c) => c.slug === slug)
   const categoryName = category?.name || "Todos los Productos"
 
   const filterOptions = useMemo<FilterGroup[]>(() => {
-    const sizeCounts: Record<string, number> = {};
-    const colorCounts: Record<string, number> = {};
+    const sizeCounts: Record<string, number> = {}
+    const colorCounts: Record<string, number> = {}
     const priceCounts = {
-      '0-30000': 0,
-      '30000-60000': 0,
-      '60000-90000': 0,
-      '90000+': 0
-    };
-    const collectionCounts: Record<string, number> = {};
+      "0-30000": 0,
+      "30000-60000": 0,
+      "60000-90000": 0,
+      "90000+": 0,
+    }
+    const collectionCounts: Record<string, number> = {}
 
     products.forEach((p) => {
-// Sizes
-      (p.stockBySize || []).filter(s => s && typeof s.stock === 'number' && s.stock > 0 && s.size).forEach(s => {
-        const sizeId = s.size!.toLowerCase();
-        sizeCounts[sizeId] = (sizeCounts[sizeId] || 0) + 1;
-      });
+      ;(p.stockBySize || [])
+        .filter((s) => s && typeof s.stock === "number" && s.stock > 0 && s.size)
+        .forEach((s) => {
+          const sizeId = s.size!.toLowerCase()
+          sizeCounts[sizeId] = (sizeCounts[sizeId] || 0) + 1
+        })
 
-// Colors
-      (p.variants || []).forEach(v => {
+      ;(p.variants || []).forEach((v) => {
         if (v && v.color) {
-          const colorId = v.color.toLowerCase();
-          colorCounts[colorId] = (colorCounts[colorId] || 0) + 1;
+          const colorId = v.color.toLowerCase()
+          colorCounts[colorId] = (colorCounts[colorId] || 0) + 1
         }
-      });
+      })
 
-      // Price
-      const price = p.price;
-      if (price <= 30000) priceCounts['0-30000']++;
-      else if (price <= 60000) priceCounts['30000-60000']++;
-      else if (price <= 90000) priceCounts['60000-90000']++;
-      else priceCounts['90000+']++;
+      const price = p.price
+      if (price <= 30000) priceCounts["0-30000"]++
+      else if (price <= 60000) priceCounts["30000-60000"]++
+      else if (price <= 90000) priceCounts["60000-90000"]++
+      else priceCounts["90000+"]++
 
-      // Collection
-      p.tags.forEach(tag => {
-        const tagLower = tag.toLowerCase();
-        if (['nueva-temporada', 'entrenamiento', 'retro'].includes(tagLower)) {
-          collectionCounts[tagLower] = (collectionCounts[tagLower] || 0) + 1;
+      p.tags.forEach((tag) => {
+        const tagLower = tag.toLowerCase()
+        if (["nueva-temporada", "entrenamiento", "retro"].includes(tagLower)) {
+          collectionCounts[tagLower] = (collectionCounts[tagLower] || 0) + 1
         }
-      });
-    });
+      })
+    })
 
-    const groups: FilterGroup[] = [];
+    const groups: FilterGroup[] = []
 
     if (Object.keys(sizeCounts).length > 0) {
       groups.push({
-        id: 'size',
-        name: 'Talle',
+        id: "size",
+        name: "Talle",
         options: Object.entries(sizeCounts)
           .sort((a, b) => b[1] - a[1])
           .map(([id, count]) => ({
             id,
             label: id.toUpperCase(),
-            count
-          }))
-      });
+            count,
+          })),
+      })
     }
 
     if (Object.keys(colorCounts).length > 0) {
       groups.push({
-        id: 'color',
-        name: 'Color',
+        id: "color",
+        name: "Color",
         options: Object.entries(colorCounts)
           .sort((a, b) => b[1] - a[1])
           .map(([id, count]) => ({
             id,
             label: id.charAt(0).toUpperCase() + id.slice(1),
-            count
-          }))
-      });
+            count,
+          })),
+      })
     }
 
     groups.push({
-      id: 'price',
-      name: 'Precio',
+      id: "price",
+      name: "Precio",
       options: [
-        { id: '0-30000', label: 'Hasta $30.000', count: priceCounts['0-30000'] },
-        { id: '30000-60000', label: '$30.000 - $60.000', count: priceCounts['30000-60000'] },
-        { id: '60000-90000', label: '$60.000 - $90.000', count: priceCounts['60000-90000'] },
-        { id: '90000+', label: 'Mas de $90.000', count: priceCounts['90000+'] }
-      ].filter(o => o.count > 0)
-    });
+        { id: "0-30000", label: "Hasta $30.000", count: priceCounts["0-30000"] },
+        { id: "30000-60000", label: "$30.000 - $60.000", count: priceCounts["30000-60000"] },
+        { id: "60000-90000", label: "$60.000 - $90.000", count: priceCounts["60000-90000"] },
+        { id: "90000+", label: "Más de $90.000", count: priceCounts["90000+"] },
+      ].filter((o) => (o.count ?? 0) > 0),
+    })
 
     if (Object.keys(collectionCounts).length > 0) {
       groups.push({
-        id: 'collection',
-        name: 'Coleccion',
-        options: Object.entries(collectionCounts)
-          .map(([id, count]) => ({
-            id,
-            label: id.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-            count
-          }))
-      });
+        id: "collection",
+        name: "Colección",
+        options: Object.entries(collectionCounts).map(([id, count]) => ({
+          id,
+          label: id
+            .replace("-", " ")
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "),
+          count,
+        })),
+      })
     }
 
-    return groups;
-  }, [products]);
+    return groups
+  }, [products])
 
   const filteredProducts = useMemo(() => {
     let result = products
 
-    // Size filter
     if (selectedFilters.size && selectedFilters.size.length > 0) {
       result = result.filter((p) =>
-        (p.stockBySize || []).some((s) => 
-          s && s.size && selectedFilters.size.includes(s.size.toLowerCase()) && typeof s.stock === 'number' && s.stock > 0
+        (p.stockBySize || []).some(
+          (s) =>
+            s &&
+            s.size &&
+            selectedFilters.size.includes(s.size.toLowerCase()) &&
+            typeof s.stock === "number" &&
+            s.stock > 0
         )
       )
     }
 
-// Color filter
     if (selectedFilters.color && selectedFilters.color.length > 0) {
       result = result.filter((p) =>
-        (p.variants || []).some((v) => 
-          v && v.color && selectedFilters.color.includes(v.color.toLowerCase())
+        (p.variants || []).some(
+          (v) => v && v.color && selectedFilters.color.includes(v.color.toLowerCase())
         )
       )
     }
 
-    // Price filter
     if (selectedFilters.price && selectedFilters.price.length > 0) {
       result = result.filter((p) => {
         const price = p.price
-        if (selectedFilters.price.includes('0-30000') && price <= 30000) return true
-        if (selectedFilters.price.includes('30000-60000') && price > 30000 && price <= 60000) return true
-        if (selectedFilters.price.includes('60000-90000') && price > 60000 && price <= 90000) return true
-        if (selectedFilters.price.includes('90000+') && price > 90000) return true
+        if (selectedFilters.price.includes("0-30000") && price <= 30000) return true
+        if (selectedFilters.price.includes("30000-60000") && price > 30000 && price <= 60000)
+          return true
+        if (selectedFilters.price.includes("60000-90000") && price > 60000 && price <= 90000)
+          return true
+        if (selectedFilters.price.includes("90000+") && price > 90000) return true
         return false
       })
     }
 
-    // Collection filter
     if (selectedFilters.collection && selectedFilters.collection.length > 0) {
       result = result.filter((p) =>
-        p.tags.some((tag) => 
-          selectedFilters.collection.includes(tag.toLowerCase())
-        )
+        p.tags.some((tag) => selectedFilters.collection.includes(tag.toLowerCase()))
       )
     }
 
-    // Tipo from URL
     if (tipo) {
       result = result.filter((p) =>
         p.tags.some((tag) => tag.toLowerCase() === tipo.toLowerCase())
       )
     }
 
-    // Sort
     switch (sortBy) {
       case "price-asc":
         result = [...result].sort((a, b) => a.price - b.price)
@@ -223,10 +223,10 @@ export function CategoryPageClient({
         result = [...result].sort((a, b) => b.price - a.price)
         break
       case "newest":
-        result = [...result].sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0))
+        result = [...result].sort((a, b) => Number(b.isNew) - Number(a.isNew))
         break
       default:
-        result = [...result].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
+        result = [...result].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured))
     }
 
     return result
@@ -238,7 +238,10 @@ export function CategoryPageClient({
       ? [...current, optionId]
       : current.filter((id) => id !== optionId)
 
-    setSelectedFilters({ ...selectedFilters, [groupId]: newFilters })
+    setSelectedFilters((prev) => ({
+      ...prev,
+      [groupId]: newFilters,
+    }))
   }
 
   const clearFilters = () => {
@@ -246,27 +249,34 @@ export function CategoryPageClient({
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-5 sm:py-6">
       <Breadcrumbs items={[{ label: categoryName }]} />
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{categoryName}</h1>
-          <p className="text-muted-foreground mt-1">{filteredProducts.length} productos</p>
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold sm:text-3xl">{categoryName}</h1>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+            {filteredProducts.length} productos
+          </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="lg:hidden bg-transparent">
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
+              <Button variant="outline" className="w-full bg-transparent sm:w-auto lg:hidden">
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filtros
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] overflow-y-auto">
+
+            <SheetContent side="left" className="w-[88vw] max-w-[340px] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Filtros</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Filtrá los productos por talle, color, precio y colección.
+                </SheetDescription>
               </SheetHeader>
+
               <div className="mt-6">
                 <Filters
                   filterOptions={filterOptions}
@@ -279,30 +289,39 @@ export function CategoryPageClient({
           </Sheet>
 
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-            <SelectTrigger className="w-[180px] cursor-pointer">
+            <SelectTrigger className="w-full min-w-0 cursor-pointer sm:w-[220px]">
               <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="relevance" className="cursor-pointer hover:bg-accent">Relevancia</SelectItem>
-              <SelectItem value="price-asc" className="cursor-pointer hover:bg-accent">Precio: menor a mayor</SelectItem>
-              <SelectItem value="price-desc" className="cursor-pointer hover:bg-accent">Precio: mayor a menor</SelectItem>
-              <SelectItem value="newest" className="cursor-pointer hover:bg-accent">Mas nuevos</SelectItem>
+              <SelectItem value="relevance" className="cursor-pointer">
+                Relevancia
+              </SelectItem>
+              <SelectItem value="price-asc" className="cursor-pointer">
+                Precio: menor a mayor
+              </SelectItem>
+              <SelectItem value="price-desc" className="cursor-pointer">
+                Precio: mayor a menor
+              </SelectItem>
+              <SelectItem value="newest" className="cursor-pointer">
+                Más nuevos
+              </SelectItem>
             </SelectContent>
           </Select>
 
-          <div className="hidden md:flex items-center border rounded-md">
-              <Button
+          <div className="hidden items-center rounded-md border md:flex">
+            <Button
               variant={gridCols === 2 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-r-none cursor-pointer hover:bg-accent hover:text-accent-foreground"
+              className="rounded-r-none hover:bg-accent hover:text-accent-foreground"
               onClick={() => setGridCols(2)}
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
+
             <Button
               variant={gridCols === 3 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-l-none cursor-pointer hover:bg-accent hover:text-accent-foreground"
+              className="rounded-l-none hover:bg-accent hover:text-accent-foreground"
               onClick={() => setGridCols(3)}
             >
               <Grid3X3 className="h-4 w-4" />
@@ -311,8 +330,8 @@ export function CategoryPageClient({
         </div>
       </div>
 
-      <div className="flex gap-8">
-        <aside className="hidden lg:block w-64 flex-shrink-0">
+      <div className="flex gap-6 lg:gap-8">
+        <aside className="hidden w-64 shrink-0 lg:block">
           <Filters
             filterOptions={filterOptions}
             selectedFilters={selectedFilters}
@@ -321,16 +340,30 @@ export function CategoryPageClient({
           />
         </aside>
 
-        <div className="flex-1">
-          <div
-            className={`grid gap-4 md:gap-6 ${
-              gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"
-            }`}
-          >
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+        <div className="min-w-0 flex-1">
+          {filteredProducts.length === 0 ? (
+            <div className="rounded-lg border border-border bg-background px-4 py-10 text-center">
+              <p className="text-base font-medium">No se encontraron productos</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Probá cambiando los filtros o el ordenamiento.
+              </p>
+            </div>
+          ) : (
+            <div
+              className={[
+                "grid items-stretch gap-3 sm:gap-4 lg:gap-6",
+                gridCols === 2
+                  ? "grid-cols-2"
+                  : "grid-cols-2 xl:grid-cols-3",
+              ].join(" ")}
+            >
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="min-w-0 w-full max-w-xs mx-auto xl:max-w-sm">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

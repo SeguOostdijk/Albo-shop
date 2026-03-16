@@ -6,6 +6,8 @@ import { XIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
+
+
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
@@ -127,14 +129,15 @@ function SheetDescription({
   )
 }
 
+
 export {
   Sheet,
+  SheetHeader,
+  SheetPortal,
+  SheetOverlay,
   SheetTrigger,
   SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetFooter,
   SheetTitle,
   SheetDescription,
 }
-
