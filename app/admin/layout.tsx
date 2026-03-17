@@ -13,16 +13,7 @@ export default function AdminLayout({
       <header className="border-b bg-background">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
 
-          {/* Volver a tienda */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm font-medium hover:underline"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver a la tienda
-          </Link>
-
-          {/* Título */}
+          {/* Título centrado */}
           <h1 className="text-lg font-semibold">
             Panel de administración
           </h1>

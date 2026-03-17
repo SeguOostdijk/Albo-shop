@@ -51,22 +51,15 @@ export default async function AdminProductsPage() {
     <div className="space-y-8">
       <div>
         <div className="flex items-center justify-between mb-6 gap-4">
-          <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
             ← Volver al panel de administracion
           </Link>
-          <div className="flex items-center gap-2">
-            <Link href="/admin">
-              <Button variant="outline" size="sm" className="h-9 px-4 cursor-pointer">
-                Admin Principal
-              </Button>
-            </Link>
-            <Link href="/admin/products/new">
-              <Button className="cursor-pointer hover:shadow-md">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Nuevo Producto
-              </Button>
-            </Link>
-          </div>
+          <Link href="/admin/products/new">
+            <Button className="cursor-pointer hover:shadow-md">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Nuevo Producto
+            </Button>
+          </Link>
         </div>
       </div>
 

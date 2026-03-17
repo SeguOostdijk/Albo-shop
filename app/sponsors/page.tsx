@@ -39,8 +39,8 @@ export default function SponsorsPage() {
 
         {/* CTA Section */}
         <div className="text-center">
-          <Link href="/">
-          <Button size="lg" className="bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold px-12 py-8 text-lg shadow-2xl hover:shadow-3xl hover:scale-[1.02] rounded-2xl border border-transparent hover:border-white/20">
+          <Link href="/" className="cursor-pointer">
+          <Button size="lg" className="bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold px-12 py-8 text-lg shadow-2xl hover:shadow-3xl hover:scale-[1.02] rounded-2xl border border-transparent hover:border-white/20 cursor-pointer">
             Volver a Tienda
           </Button>
           </Link>
