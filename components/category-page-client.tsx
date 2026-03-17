@@ -61,7 +61,7 @@ export function CategoryPageClient({
 
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortBy, setSortBy] = useState<SortOption>("relevance")
-  const [gridCols, setGridCols] = useState<2 | 3>(2)
+  const [gridCols, setGridCols] = useState<2 | 3>(3)
 
   const category = categories.find((c) => c.slug === slug)
   const categoryName = category?.name || "Todos los Productos"
@@ -310,18 +310,20 @@ export function CategoryPageClient({
 
           <div className="hidden items-center rounded-md border md:flex">
             <Button
+              type="button"
               variant={gridCols === 2 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-r-none hover:bg-accent hover:text-accent-foreground"
+              className="rounded-r-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
               onClick={() => setGridCols(2)}
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
 
             <Button
+              type="button"
               variant={gridCols === 3 ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-l-none hover:bg-accent hover:text-accent-foreground"
+              className="rounded-l-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
               onClick={() => setGridCols(3)}
             >
               <Grid3X3 className="h-4 w-4" />
@@ -352,9 +354,9 @@ export function CategoryPageClient({
             <div
               className={[
                 "grid items-stretch gap-3 sm:gap-4 lg:gap-6",
-                gridCols === 2
+              gridCols === 2
                   ? "grid-cols-2"
-                  : "grid-cols-2 xl:grid-cols-3",
+                  : "grid-cols-3",
               ].join(" ")}
             >
               {filteredProducts.map((product) => (

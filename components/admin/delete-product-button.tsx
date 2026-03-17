@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
 
 interface DeleteProductButtonProps {
   productId: string
@@ -52,13 +53,14 @@ export function DeleteProductButton({
   }
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={handleDelete}
       disabled={loading}
-      className="text-red-600 disabled:opacity-50"
+      className="h-9 px-3 hover:bg-destructive hover:text-destructive-foreground cursor-pointer border"
     >
       {loading ? "Eliminando..." : "Eliminar"}
-    </button>
+    </Button>
   )
 }

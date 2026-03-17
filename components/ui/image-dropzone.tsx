@@ -76,7 +76,7 @@ export function ImageDropzone({ onImageSelect, className = '' }: ImageDropzonePr
             <Button
               variant="destructive"
               size="sm"
-              className="absolute -top-3 -right-3 rounded-full p-1 h-8 w-8 shadow-lg hover:shadow-xl"
+              className="absolute -top-3 -right-3 rounded-full p-1 h-8 w-8 shadow-lg hover:shadow-xl cursor-pointer"
               onClick={clearPreview}
             >
               <X className="h-4 w-4" />

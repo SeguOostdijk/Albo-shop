@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ImageDropzone } from '@/components/ui/image-dropzone'
 import { Trash2, Plus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 import { createClient } from '@/lib/supabase/client'
 
 interface Sponsor {
@@ -49,7 +50,6 @@ export function SponsorsManager() {
   const uploadImage = async (file: File): Promise<string | null> => {
     setUploading(true)
     try {
-      const fileExt = file.name.split('.').pop()
       const fileName = `sponsors/${Date.now()}-${file.name}`
       
       const { error } = await supabase.storage
@@ -103,21 +103,10 @@ export function SponsorsManager() {
       setSponsors([...sponsors, data])
       setNewSponsor({ name: '', image: '', url: '' })
       setImageFile(null)
-    } catch (error: any) {
-  console.error("Add sponsor error raw:", error)
-  console.error("Add sponsor error message:", error?.message)
-  console.error("Add sponsor error details:", error?.details)
-  console.error("Add sponsor error hint:", error?.hint)
-  console.error("Add sponsor error code:", error?.code)
-
-  alert(
-    error?.message ||
-    error?.details ||
-    error?.hint ||
-    JSON.stringify(error, null, 2) ||
-    "Unknown error"
-  )
-}
+    } catch (error) {
+      console.error("Add sponsor error:", error)
+      alert("Error adding sponsor: " + error.message)
+    }
   }
 
   const deleteSponsor = async (id: string) => {
@@ -158,39 +147,35 @@ export function SponsorsManager() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(350px,1fr)_2.3fr] gap-12 max-w-[95vw] mx-auto min-h-[450px] pb-12">
       {/* Add New Sponsor */}
-      <Card className="border-0 bg-gradient-to-br from-muted/30 backdrop-blur-sm shadow-2xl">
+      <Card className="border-0 bg-gradient-to-br from-muted/30 backdrop-blur-sm shadow-xl h-full">
         <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <Plus className="h-7 w-7" />
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Plus className="h-5 w-5" />
             Nuevo Sponsor
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-4">
-              <Input
-                placeholder="Nombre del sponsor"
-                value={newSponsor.name}
-                onChange={(e) => setNewSponsor({ ...newSponsor, name: e.target.value })}
-              />
-              <Input
-                placeholder="https://sponsor.com"
-                value={newSponsor.url}
-                onChange={(e) => setNewSponsor({ ...newSponsor, url: e.target.value })}
-              />
-            </div>
-            <div className="lg:col-span-2">
-              <ImageDropzone onImageSelect={handleImageSelect} />
-            </div>
+        <CardContent className="p-6 flex flex-col justify-between h-full">
+          <div className="space-y-4">
+            <Input
+              placeholder="Nombre del sponsor"
+              value={newSponsor.name}
+              onChange={(e) => setNewSponsor({ ...newSponsor, name: e.target.value })}
+            />
+            <Input
+              placeholder="https://sponsor.com"
+              value={newSponsor.url}
+              onChange={(e) => setNewSponsor({ ...newSponsor, url: e.target.value })}
+            />
+            <ImageDropzone onImageSelect={handleImageSelect} />
           </div>
-            <Button 
-              type="button"
-              onClick={addSponsor}
-              className="mt-8 w-full lg:w-auto px-12 h-14 text-lg font-semibold shadow-xl hover:shadow-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 cursor-pointer"
-              disabled={!newSponsor.name || !newSponsor.image || !newSponsor.url || uploading}
-            >
+          <Button 
+            type="button"
+            onClick={addSponsor}
+            className="w-full h-12 text-base font-semibold shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 mt-4 cursor-pointer"
+            disabled={!newSponsor.name || !newSponsor.image || !newSponsor.url || uploading}
+          >
             {uploading ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3" />
@@ -210,47 +195,46 @@ export function SponsorsManager() {
       <Card className="border-0 shadow-2xl backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">Sponsors ({sponsors.filter(s => s.is_active).length})</CardTitle>
-            <Badge variant="secondary" className="text-lg px-4 py-2">
+            <CardTitle className="text-xl">Sponsors ({sponsors.filter(s => s.is_active).length})</CardTitle>
+            <Badge variant="secondary" className="text-sm px-3 py-1">
               {sponsors.length} total
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
+        <CardContent className="p-6 pt-0 max-h-[500px] overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sponsors.map((sponsor) => (
-              <div key={sponsor.id} className="group relative border rounded-2xl p-6 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 overflow-hidden bg-gradient-to-br from-background/50 to-muted/20">
-                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 from-primary/5 to-accent/5 backdrop-blur-sm" />
-                <div className="relative z-10 space-y-4">
-                  <div className="aspect-video bg-muted rounded-xl overflow-hidden shadow-lg">
-                    <img 
-                      src={sponsor.image} 
-                      alt={sponsor.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+              <div key={sponsor.id} className="group relative border rounded-xl p-4 h-48 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden bg-gradient-to-br from-background/50 to-muted/20 flex flex-col">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 group-hover:opacity-50 transition-opacity duration-300"
+                  style={{ backgroundImage: `url(${sponsor.image})` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 backdrop-blur-sm opacity-70 group-hover:opacity-90 transition-opacity duration-300" />
+                <div className="relative z-10 flex flex-col h-full space-y-3 pt-4">
+                  <div className="flex-1 min-h-0 text-center px-2 flex flex-col items-center justify-center space-y-1">
+                    <h3 className="font-semibold line-clamp-1 text-sm bg-background/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">{sponsor.name}</h3>
+                    {sponsor.url && (
+                      <p className="text-xs text-muted-foreground truncate max-w-full bg-background/80 backdrop-blur-sm px-3 py-1 rounded">{sponsor.url}</p>
+                    )}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-xl line-clamp-1">{sponsor.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{sponsor.url}</p>
-                  </div>
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-1.5 bg-background/90 backdrop-blur-sm p-1.5 rounded-lg border shadow-sm">
                     <Button 
                       type="button"
                       variant={sponsor.is_active ? "default" : "outline"} 
                       size="sm"
-                      className="flex-1 font-medium cursor-pointer"
+                      className="flex-1 text-xs font-bold cursor-pointer h-8"
                       onClick={() => toggleActive(sponsor.id)}
                     >
-                      {sponsor.is_active ? 'Activo ✅' : 'Inactivo ⚠️'}
+                      {sponsor.is_active ? 'ACTIVO' : 'INACTIVO'}
                     </Button>
                     <Button 
                       type="button"
                       variant="destructive" 
                       size="sm"
-                      className="flex-none cursor-pointer"
+                      className="flex-none text-xs font-bold cursor-pointer h-8 px-2"
                       onClick={() => deleteSponsor(sponsor.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      Eliminar
                     </Button>
                   </div>
                 </div>
@@ -258,11 +242,10 @@ export function SponsorsManager() {
             ))}
           </div>
           {sponsors.length === 0 && (
-            <div className="text-center py-20 opacity-60">
-              <Plus className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-xl font-medium text-muted-foreground">
-                No hay sponsors aún. ¡Agrega el primero!
-              </p>
+            <div className="grid place-items-center h-64 text-muted-foreground">
+              <Plus className="h-16 w-16 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No hay sponsors</h3>
+              <p className="text-sm opacity-75">Agrega el primero usando el formulario</p>
             </div>
           )}
         </CardContent>

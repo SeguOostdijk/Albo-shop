@@ -1,6 +1,10 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Package, Edit3, Trash2, Sparkles, Star, Eye, Tag } from "lucide-react"
 import { DeleteProductButton } from "@/components/admin/delete-product-button"
 
 export const revalidate = 0
@@ -44,85 +48,120 @@ export default async function AdminProductsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Productos</h1>
-          <p className="text-muted-foreground">
-            Administrar productos de la tienda
-          </p>
+    <div className="space-y-8">
+      <div>
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
+            ← Volver al panel de administracion
+          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/admin">
+              <Button variant="outline" size="sm" className="h-9 px-4 cursor-pointer">
+                Admin Principal
+              </Button>
+            </Link>
+            <Link href="/admin/products/new">
+              <Button className="cursor-pointer hover:shadow-md">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Nuevo Producto
+              </Button>
+            </Link>
+          </div>
         </div>
-
-        <Link
-          href="/admin/products/new"
-          className="bg-primary text-primary-foreground px-4 py-2 rounded"
-        >
-          + Agregar producto
-        </Link>
       </div>
 
-      <div className="border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-
-          <thead className="bg-muted">
-            <tr>
-              <th className="text-left p-3">Nombre</th>
-              <th className="text-left p-3">Slug</th>
-              <th className="text-left p-3">Categoría</th>
-              <th className="text-left p-3">Precio</th>
-              <th className="text-left p-3">Estado</th>
-              <th className="text-left p-3">Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {products?.map((product) => (
-              <tr key={product.id} className="border-t">
-
-                <td className="p-3">{product.name}</td>
-                <td className="p-3">{product.slug}</td>
-                <td className="p-3">{product.category_slug}</td>
-                <td className="p-3">${product.price}</td>
-
-                <td className="p-3">
-                  {product.is_featured && "Destacado "}
-                  {product.is_new && "Nuevo"}
-                </td>
-
-                <td className="p-3">
-<div className="flex gap-3">
-    <Link
-      href={`/admin/products/${product.id}/edit`}
-      className="text-blue-600"
-    >
-      Editar
-    </Link>
-
-    <DeleteProductButton
-      productId={product.id}
-      productName={product.name}
-    />
-  </div>
-</td>
-                
-
-              </tr>
-            ))}
-
-            {(!products || products.length === 0) && (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-muted-foreground">
-                  No hay productos cargados
-                </td>
-              </tr>
-            )}
-
-          </tbody>
-
-        </table>
-      </div>
-
+      <Card>
+        <div className="rounded-md border bg-background p-0">
+          <div className="flex items-center p-6">
+            <div className="flex-1 space-y-1">
+              <h2 className="text-xl font-semibold tracking-tight">
+                Productos ({products?.length || 0})
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Gestiona tu catálogo de productos
+              </p>
+            </div>
+            <div className="w-28" />
+          </div>
+          
+          <div className="border-t">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="h-12 px-4 text-left text-xs font-medium uppercase text-muted-foreground">
+                      Producto
+                    </th>
+                    <th className="hidden h-12 px-4 text-right text-xs font-medium uppercase text-muted-foreground md:table-cell">
+                      Categoría
+                    </th>
+                    <th className="hidden h-12 px-4 text-right text-xs font-medium uppercase text-muted-foreground md:table-cell">
+                      Precio
+                    </th>
+                    <th className="h-12 w-32 shrink-0 px-4 text-right text-xs font-medium uppercase text-muted-foreground">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(!products || products.length === 0) ? (
+                    <tr>
+                      <td colSpan={4} className="h-24 text-center text-muted-foreground">
+                        No hay productos
+                      </td>
+                    </tr>
+                  ) : (
+                    products.map((product) => (
+                      <tr key={product.id} className="border-b hover:bg-muted/50 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+                              <Package className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-muted-foreground">{product.slug}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="hidden py-4 px-4 text-right md:table-cell">
+                          <span className="capitalize">{product.category_slug}</span>
+                        </td>
+                        <td className="hidden py-4 px-4 text-right md:table-cell">
+                          ${product.price.toLocaleString()}
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center justify-end gap-2">
+                            {product.is_featured && (
+                              <Badge variant="secondary">
+                                <Star className="h-3 w-3 mr-1" />
+                                Destacado
+                              </Badge>
+                            )}
+                            {product.is_new && (
+                              <Badge variant="default">
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                Nuevo
+                              </Badge>
+                            )}
+                            <Link href={`/admin/products/${product.id}/edit`}>
+                              <Button variant="ghost" size="sm" className="h-9 px-3 hover:bg-muted cursor-pointer">
+                                <Edit3 className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <DeleteProductButton productId={product.id} productName={product.name} />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   )
 }
+

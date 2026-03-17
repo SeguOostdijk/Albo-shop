@@ -137,4 +137,7 @@
     overflow-x: hidden;
     overscroll-behavior-x: none;
   }
+  body:has(.no-newsletter) footer > div:first-child {
+    display: none !important;
+  }
 }
