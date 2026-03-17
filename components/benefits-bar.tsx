@@ -90,23 +90,22 @@ export function BenefitsBar() {
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex justify-center">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl w-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-lg w-full">
               {benefits.map((benefit, index) => (
                 <button
                   key={index}
                   onClick={() => setOpenDialog(benefit.type)}
                   className={`
-                    w-full max-w-[280px] md:w-48 h-32 md:h-auto
-                    flex flex-col items-center justify-center gap-3 p-6 rounded-xl
+                    w-full h-32 flex flex-col items-center justify-center gap-3 p-6 rounded-xl
                     border-2 border-transparent transition-all duration-300
-                    hover:border-primary hover:shadow-lg hover:scale-105
-                    ${benefit.bgColor} cursor-pointer group
+                    hover:border-primary hover:shadow-xl hover:scale-105
+                    ${benefit.bgColor} cursor-pointer group mx-auto
                   `}
                 >
                   <div className={`${benefit.color} group-hover:scale-110 transition-transform`}>
-                    <benefit.icon className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+                    <benefit.icon className="w-12 h-12" strokeWidth={1.5} />
                   </div>
-                  <span className="text-sm font-semibold text-foreground text-center group-hover:text-primary transition-colors">
+                  <span className="text-base font-semibold text-foreground text-center leading-tight group-hover:text-primary px-2 transition-colors">
                     {benefit.text}
                   </span>
                 </button>

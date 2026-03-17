@@ -9,6 +9,7 @@ import {
   getAllProductsFromDb,
 } from "@/lib/products-db"
 import { BenefitsBar } from "@/components/benefits-bar"
+import { PromoBanner } from "@/components/promo-banner"
 
 export default async function HomePage() {
   const [featuredProducts, saleProducts, allProducts] = await Promise.all([
@@ -69,6 +70,13 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      {/* Espacio publicitario */}
+      <PromoBanner 
+        imageSrc='/ViaMas.png'
+        altText='Oferta especial Albo Shop'
+        linkUrl='/promotions'
+      />
 
       {/* Benefits Bar */}
       <BenefitsBar />
