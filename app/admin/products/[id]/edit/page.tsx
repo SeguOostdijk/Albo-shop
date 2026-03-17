@@ -272,7 +272,9 @@ export default function EditProductPage() {
       (row) => row.size.trim() !== '' && row.stock.trim() !== ''
     )
 
-    if (validSizeStocks.length === 0) {
+    if (categorySlug === 'accesorios' ) {
+      // Accesorios no requieren talles
+    } else if (validSizeStocks.length === 0) {
       setErrorMsg('Debes cargar al menos un talle con su stock.')
       return
     }
@@ -698,9 +700,9 @@ export default function EditProductPage() {
                     <div className='col-span-6'>
                       <label className='mb-2 block text-sm font-medium'>Talle</label>
                       <input
-                        value={row.size.toUpperCase()}
+                        value={row.size ? row.size.toUpperCase() : ''}
                         onChange={(e) =>
-                          updateSizeStockRow(index, 'size', e.target.value.toUpperCase())
+                          updateSizeStockRow(index, 'size', e.target.value)
                         }
                         className='w-full rounded-md border px-3 py-2 font-normal uppercase tracking-widest text-base'
                         placeholder='EJ: S'
