@@ -97,47 +97,25 @@ export function BenefitsBar() {
 
   return (
     <>
-      <section className="bg-background py-10 md:py-12">
+      <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
-<<<<<<< HEAD
           <div className="flex justify-center">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-lg w-full">
               {benefits.map((benefit, index) => (
-=======
-          <div className="mx-auto max-w-4xl">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6">
-              {benefits.map((benefit) => (
->>>>>>> 2d2a41d4e8399976f4a3e6cea51d06c70e86d8d1
                 <button
-                  key={benefit.type}
+                  key={index}
                   onClick={() => setOpenDialog(benefit.type)}
-                  className={`
-<<<<<<< HEAD
+                  className="
                     w-full h-32 flex flex-col items-center justify-center gap-3 p-6 rounded-xl
                     border-2 border-transparent transition-all duration-300
                     hover:border-primary hover:shadow-xl hover:scale-105
                     ${benefit.bgColor} cursor-pointer group mx-auto
-                  `}
+                  "
                 >
                   <div className={`${benefit.color} group-hover:scale-110 transition-transform`}>
                     <benefit.icon className="w-12 h-12" strokeWidth={1.5} />
                   </div>
                   <span className="text-base font-semibold text-foreground text-center leading-tight group-hover:text-primary px-2 transition-colors">
-=======
-                    group flex min-h-[120px] w-full items-center gap-4 rounded-xl border border-border/50 p-4 text-left
-                    transition-all duration-300 hover:scale-[1.02] hover:border-primary hover:shadow-lg
-                    md:h-auto md:max-w-none md:flex-col md:justify-center md:gap-3 md:p-6 md:text-center
-                    ${benefit.bgColor} cursor-pointer
-                  `}
-                >
-                  <div
-                    className={`${benefit.color} shrink-0 transition-transform group-hover:scale-110`}
-                  >
-                    <benefit.icon className="h-9 w-9 md:h-12 md:w-12" strokeWidth={1.5} />
-                  </div>
-
-                  <span className="text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary md:max-w-[16ch]">
->>>>>>> 2d2a41d4e8399976f4a3e6cea51d06c70e86d8d1
                     {benefit.text}
                   </span>
                 </button>
@@ -147,40 +125,38 @@ export function BenefitsBar() {
         </div>
       </section>
 
+      {/* Dialogs */}
       {benefits.map((benefit) => (
         <Dialog
           key={benefit.type}
           open={openDialog === benefit.type}
           onOpenChange={(open) => setOpenDialog(open ? benefit.type : null)}
         >
-          <DialogContent className="w-[calc(100vw-2rem)] max-w-[500px] rounded-2xl sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <div className="flex items-start gap-3 sm:items-center">
-                <div className={`${benefit.bgColor} ${benefit.color} rounded-full p-3`}>
-                  <benefit.icon className="h-6 w-6" />
+              <div className="flex items-center gap-3">
+                <div className={`${benefit.bgColor} ${benefit.color} p-3 rounded-full`}>
+                  <benefit.icon className="w-6 h-6" />
                 </div>
-                <DialogTitle className="text-lg sm:text-xl">{benefit.title}</DialogTitle>
+                <DialogTitle className="text-xl">{benefit.title}</DialogTitle>
               </div>
             </DialogHeader>
-
-            <DialogDescription className="mt-4 text-sm leading-6 text-foreground sm:text-base">
+            <DialogDescription className="text-base text-foreground mt-4">
               {benefit.description}
             </DialogDescription>
-
-            <div className="mt-6 border-t pt-4">
-              <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:text-sm">
+            <div className="mt-6 pt-4 border-t">
+              <h4 className="font-semibold text-sm text-muted-foreground mb-3 uppercase tracking-wide">
                 Características
               </h4>
-
               <ul className="space-y-3">
                 {benefitDetails[benefit.type].items.map((item, idx) => {
                   const DetailIcon = benefitDetails[benefit.type].icon
                   return (
                     <li key={idx} className="flex items-start gap-3">
-                      <div className={`mt-1 shrink-0 ${benefit.color}`}>
-                        <DetailIcon className="h-4 w-4" />
+                      <div className={`mt-1 ${benefit.color}`}>
+                        <DetailIcon className="w-4 h-4" />
                       </div>
-                      <span className="text-sm leading-5 text-foreground">{item}</span>
+                      <span className="text-sm text-foreground">{item}</span>
                     </li>
                   )
                 })}
