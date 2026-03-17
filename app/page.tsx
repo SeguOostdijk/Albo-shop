@@ -24,40 +24,39 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero Slider */}
       <Hero />
 
-      {/* Category Banners */}
       <CategoryBanner />
 
-      {/* Featured Products */}
-      <ProductCarousel
-        title="Destacado"
-        subtitle="PRODUCTOS DESTACADOS"
-        products={featuredProducts}
-        viewAllHref="/category/novedades"
-      />
-
-      {/* Sale Products */}
-      {saleProducts.length > 0 && (
+      <section className="py-8 md:py-0">
         <ProductCarousel
-          title="Ofertas"
-          subtitle="PRODUCTOS EN OFERTA"
-          products={saleProducts}
-          viewAllHref="/category/oportunidades"
+          title="Destacado"
+          subtitle="PRODUCTOS DESTACADOS"
+          products={featuredProducts}
+          viewAllHref="/category/novedades"
         />
+      </section>
+
+      {saleProducts.length > 0 && (
+        <section className="py-8 md:py-0">
+          <ProductCarousel
+            title="Ofertas"
+            subtitle="PRODUCTOS EN OFERTA"
+            products={saleProducts}
+            viewAllHref="/category/oportunidades"
+          />
+        </section>
       )}
 
-      {/* Extras / Accesorios */}
-      <section className="py-12 bg-muted">
+      <section className="bg-muted py-10 md:py-12">
         <div className="container mx-auto px-4">
-          <div className="flex items-start gap-0 mb-6">
-            <div className="w-1 h-14 bg-primary mr-4" />
-            <div>
-              <p className="text-sm text-primary font-medium uppercase tracking-wider">
+          <div className="mb-6 flex items-start gap-3 md:gap-0">
+            <div className="mr-1 h-12 w-1 shrink-0 bg-primary md:mr-4 md:h-14" />
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wider text-primary sm:text-sm">
                 EXTRAS
               </p>
-              <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">
+              <h2 className="text-xl font-bold uppercase text-accent sm:text-2xl md:text-3xl">
                 ACCESORIOS
               </h2>
             </div>
@@ -71,6 +70,7 @@ export default async function HomePage() {
         </div>
       </section>
 
+<<<<<<< HEAD
       {/* Espacio publicitario */}
       <PromoBanner 
         imageSrc='/ViaMas.png'
@@ -79,6 +79,8 @@ export default async function HomePage() {
       />
 
       {/* Benefits Bar */}
+=======
+>>>>>>> 2d2a41d4e8399976f4a3e6cea51d06c70e86d8d1
       <BenefitsBar />
     </>
   )
