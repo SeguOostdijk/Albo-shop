@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { categories, subcategories } from "@/lib/type/products"
+import { categories, subcategories, extrasSubcategories, isExtrasAccesorios } from "@/lib/type/products"
+import { Button } from '@/components/ui/button'
+import { ArrowLeft, X } from 'lucide-react'
+import { ImageDropzone } from '@/components/ui/image-dropzone'
+import Link from 'next/link'
 
 const COLOR_MAP: Record<string, string> = {
   blanco: "#ffffff",
@@ -28,6 +32,10 @@ const COLOR_MAP: Record<string, string> = {
 type SizeStockRow = {
   size: string
   stock: string
+}
+
+type ProductImage = {
+  file?: File
 }
 
 function normalizeText(value: string) {
@@ -75,11 +83,13 @@ export default function NewProductPage() {
   const [salePercentage, setSalePercentage] = useState("")
 
   const [variantColor, setVariantColor] = useState("")
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [pendingImages, setPendingImages] = useState<File[]>([])
 
   const [sizeStocks, setSizeStocks] = useState<SizeStockRow[]>([
     { size: "", stock: "" },
   ])
+  const [stock, setStock] = useState("")
+  const [stockTotal, setStockTotal] = useState("")
 
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
@@ -97,6 +107,8 @@ export default function NewProductPage() {
   const previewFinalPrice = isOnSale
     ? Math.round(basePrice * (1 - discountValue / 100))
     : basePrice
+
+  const totalImages = pendingImages.length
 
   const handleUseGeneratedSlug = () => {
     setSlug(generatedSlug)
@@ -122,6 +134,14 @@ export default function NewProductPage() {
     )
   }
 
+  const handleImageSelect = (file: File) => {
+    setPendingImages((prev) => [...prev, file])
+  }
+
+  const removePendingImage = (index: number) => {
+    setPendingImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg("")
@@ -133,11 +153,23 @@ export default function NewProductPage() {
       return
     }
 
-    const validSizeStocks = sizeStocks.filter(
-      (row) => row.size.trim() !== "" && row.stock.trim() !== ""
-    )
-
-    if (validSizeStocks.length === 0) {
+    const isExtrasAccesoriosCondition = isExtrasAccesorios(categorySlug, subcategorySlug)
+    
+    let validSizeStocks
+    if (isExtrasAccesoriosCondition) {
+      validSizeStocks = []
+    } else {
+      validSizeStocks = sizeStocks.filter(
+        (row) => row.size?.trim() !== "" && row.stock?.trim() !== ""
+      )
+    }
+    
+    if (isExtrasAccesoriosCondition) {
+      if (!stock.trim()) {
+        setErrorMsg("Debes indicar el stock para accesorios.")
+        return
+      }
+    } else if (validSizeStocks.length === 0) {
       setErrorMsg("Debes cargar al menos un talle con su stock.")
       return
     }
@@ -160,27 +192,28 @@ export default function NewProductPage() {
 
     const tags = subcategorySlug ? [subcategorySlug] : []
 
-    let uploadedImageUrl: string | null = null
-
-    if (imageFile) {
-      const fileExt = imageFile.name.split(".").pop()
-      const filePath = `${finalSlug}/${Date.now()}.${fileExt}`
+    // Upload pending images
+    let uploadedImages: string[] = []
+    for (const file of pendingImages) {
+      const fileExt = file.name.split(".").pop()
+      const filePath = `${finalSlug}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
 
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(filePath, imageFile)
+        .upload(filePath, file)
 
       if (uploadError) {
-        setLoading(false)
-        setErrorMsg(uploadError.message)
-        return
+        console.error('Upload error:', uploadError)
+        continue
       }
 
       const { data: publicUrlData } = supabase.storage
         .from("product-images")
         .getPublicUrl(filePath)
 
-      uploadedImageUrl = publicUrlData.publicUrl
+      if (publicUrlData.publicUrl) {
+        uploadedImages.push(publicUrlData.publicUrl)
+      }
     }
 
     const finalPrice = isOnSale
@@ -204,7 +237,7 @@ export default function NewProductPage() {
         is_on_sale: isOnSale,
         sale_percentage: isOnSale ? Number(salePercentage) : null,
         tags,
-        images: uploadedImageUrl ? [uploadedImageUrl] : [],
+        images: uploadedImages,
       })
       .select("id")
       .single()
@@ -230,11 +263,20 @@ export default function NewProductPage() {
       return
     }
 
-    const stockRows = validSizeStocks.map((row) => ({
-      product_id: insertedProduct.id,
-      size: row.size.trim(),
-      stock: Number(row.stock),
-    }))
+    let stockRows
+    if (isExtrasAccesoriosCondition) {
+      stockRows = [{
+        product_id: insertedProduct.id,
+        size: null,
+        stock: Number(stock),
+      }]
+    } else {
+      stockRows = validSizeStocks.map((row) => ({
+        product_id: insertedProduct.id,
+        size: row.size.trim(),
+        stock: Number(row.stock),
+      }))
+    }
 
     const { error: stockError } = await supabase
       .from("product_stock")
@@ -247,20 +289,29 @@ export default function NewProductPage() {
     }
 
     setLoading(false)
+    setPendingImages([])
     router.push("/admin/products")
     router.refresh()
   }
 
   return (
-    <div className="container mx-auto max-w-2xl px-2 sm:px-4 py-6 sm:py-8">
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">Nuevo producto</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+    <div className="container mx-auto max-w-2xl px-4 py-8">
+      <div className="mb-6">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" asChild className="cursor-pointer">
+            <Link href="/admin/products" className="flex items-center gap-1 cursor-pointer">
+              <ArrowLeft className="h-4 w-4" />
+              Volver a productos
+            </Link>
+          </Button>
+        </div>
+        <h1 className="text-3xl font-bold mt-4">Nuevo producto</h1>
+        <p className="text-muted-foreground">
           Cargá la información básica del producto
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 rounded-lg border p-3 sm:p-6">
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border p-6">
         <div>
           <label className="mb-2 block text-sm font-medium">Nombre</label>
           <input
@@ -273,7 +324,7 @@ export default function NewProductPage() {
 
         <div>
           <label className="mb-2 block text-sm font-medium">Slug</label>
-          <div className="flex flex-col xs:flex-row gap-2">
+          <div className="flex gap-2">
             <input
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
@@ -283,7 +334,7 @@ export default function NewProductPage() {
             <button
               type="button"
               onClick={handleUseGeneratedSlug}
-              className="rounded-md border px-3 py-2"
+              className="rounded-md border px-3 py-2 cursor-pointer"
             >
               Autogenerar
             </button>
@@ -300,11 +351,11 @@ export default function NewProductPage() {
           <select
             value={categorySlug}
             onChange={(e) => setCategorySlug(e.target.value)}
-            className="w-full rounded-md border px-3 py-2"
+            className="w-full rounded-md border px-3 py-2 cursor-pointer"
           >
             <option value="">Seleccionar categoría</option>
             {categories.map((category) => (
-              <option key={category.slug} value={category.slug}>
+              <option key={category.slug} value={category.slug} className="cursor-pointer hover:bg-accent">
                 {category.name}
               </option>
             ))}
@@ -316,11 +367,11 @@ export default function NewProductPage() {
           <select
             value={subcategorySlug}
             onChange={(e) => setSubcategorySlug(e.target.value)}
-            className="w-full rounded-md border px-3 py-2"
+            className="w-full rounded-md border px-3 py-2 cursor-pointer"
           >
             <option value="">Sin subcategoría</option>
-            {subcategories.map((subcategory) => (
-              <option key={subcategory.slug} value={subcategory.slug}>
+            {(categorySlug === 'extras' ? extrasSubcategories : subcategories).map((subcategory) => (
+              <option key={subcategory.slug} value={subcategory.slug} className="cursor-pointer hover:bg-accent">
                 {subcategory.name}
               </option>
             ))}
@@ -351,10 +402,11 @@ export default function NewProductPage() {
           />
         </div>
 
-        <div className="rounded-md border p-3 sm:p-4 space-y-3">
-          <label className="flex items-center gap-2">
+        <div className="rounded-md border p-4 space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
+              className="cursor-pointer"
               checked={isOnSale}
               onChange={(e) => {
                 setIsOnSale(e.target.checked)
@@ -397,29 +449,49 @@ export default function NewProductPage() {
           />
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">Imagen principal</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-md border px-3 py-2"
-          />
+        <div className="w-full">
+          <label className="mb-2 block text-sm font-medium">Imágenes ({totalImages})</label>
+          <ImageDropzone onImageSelect={handleImageSelect} />
+          
+          {pendingImages.length > 0 && (
+            <div className='mt-4'>
+              <p className='text-sm font-medium mb-2 text-muted-foreground'>Imágenes pendientes:</p>
+              <div className='grid grid-cols-3 gap-2'>
+                {pendingImages.map((file, index) => (
+                  <div key={index} className='relative bg-muted p-2 rounded-md'>
+                    <div className='w-full h-24 bg-muted-foreground/20 rounded animate-pulse' />
+                    <p className='text-xs mt-1 truncate'>{file.name}</p>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-1 -right-1 h-5 w-5 p-0 cursor-pointer"
+                      onClick={() => removePendingImage(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-col gap-2 sm:gap-3 md:flex-row">
-          <label className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 md:flex-row">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
+              className="cursor-pointer"
               checked={isFeatured}
               onChange={(e) => setIsFeatured(e.target.checked)}
             />
             Destacado
           </label>
 
-          <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
+              className="cursor-pointer"
               checked={isNew}
               onChange={(e) => setIsNew(e.target.checked)}
             />
@@ -430,7 +502,7 @@ export default function NewProductPage() {
         <div className="mt-6 border-t pt-6">
           <h2 className="text-lg font-semibold mb-4">Variante inicial</h2>
 
-          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="mb-2 block text-sm font-medium">Color</label>
               <input
@@ -460,85 +532,98 @@ export default function NewProductPage() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between mb-2 xs:mb-3 gap-2 xs:gap-0">
-              <label className="block text-sm font-medium">Talles y stock</label>
-              <button
-                type="button"
-                onClick={addSizeStockRow}
-                className="rounded-md border px-3 py-1 text-sm"
-              >
-                + Agregar talle
-              </button>
+{isExtrasAccesorios(categorySlug, subcategorySlug) ? (
+            <div className="mt-6">
+              <label className="block text-sm font-medium mb-2">Stock</label>
+              <input
+                type="number"
+                min="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                className="w-full rounded-md border px-3 py-2"
+                placeholder="10"
+              />
             </div>
-
-            <div className="space-y-2 sm:space-y-3">
-              {sizeStocks.map((row, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 sm:gap-3 items-end">
-                  <div className="col-span-12 xs:col-span-6">
-                    <label className="mb-2 block text-sm font-medium">Talle</label>
-                    <input
-                      value={row.size}
-                      onChange={(e) =>
-                        updateSizeStockRow(index, "size", e.target.value)
-                      }
-                      className="w-full rounded-md border px-3 py-2"
-                      placeholder="Ej: S"
-                    />
+          ) : (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium">Talles y stock</label>
+                <button
+                  type="button"
+                  onClick={addSizeStockRow}
+                  className="rounded-md border px-3 py-1 text-sm cursor-pointer"
+                >
+                  + Agregar talle
+                </button>
+              </div>
+              <div className="space-y-3">
+                {sizeStocks.map((row, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-3 items-end">
+                    <div className="col-span-6">
+                      <label className="mb-2 block text-sm font-medium">Talle</label>
+                      <input
+                        value={row.size}
+                        onChange={(e) =>
+                          updateSizeStockRow(index, "size", e.target.value)
+                        }
+                        className="w-full rounded-md border px-3 py-2 cursor-pointer"
+                        placeholder="Ej: S"
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <label className="mb-2 block text-sm font-medium">Stock</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={row.stock}
+                        onChange={(e) =>
+                          updateSizeStockRow(index, "stock", e.target.value)
+                        }
+                        className="w-full rounded-md border px-3 py-2"
+                        placeholder="10"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <button
+                        type="button"
+                        onClick={() => removeSizeStockRow(index)}
+                        className="w-full rounded-md border px-3 py-2 text-sm text-red-600 cursor-pointer"
+                        disabled={sizeStocks.length === 1}
+                      >
+                        Quitar
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="col-span-12 xs:col-span-4">
-                    <label className="mb-2 block text-sm font-medium">Stock</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={row.stock}
-                      onChange={(e) =>
-                        updateSizeStockRow(index, "stock", e.target.value)
-                      }
-                      className="w-full rounded-md border px-3 py-2"
-                      placeholder="10"
-                    />
-                  </div>
-
-                  <div className="col-span-12 xs:col-span-2">
-                    <button
-                      type="button"
-                      onClick={() => removeSizeStockRow(index)}
-                      className="w-full rounded-md border px-3 py-2 text-sm text-red-600"
-                      disabled={sizeStocks.length === 1}
-                    >
-                      Quitar
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {errorMsg && (
           <p className="text-sm text-red-600">{errorMsg}</p>
         )}
 
-        <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+        <div className="flex gap-3">
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 w-full xs:w-auto"
+            className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Guardando..." : "Crear producto"}
           </button>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => router.push("/admin/products")}
-            className="rounded-md border px-4 py-2 w-full xs:w-auto"
+            className="cursor-pointer"
           >
             Cancelar
-          </button>
+          </Button>
         </div>
       </form>
     </div>
   )
 }
+

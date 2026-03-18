@@ -39,11 +39,16 @@ import { createClient } from "@/lib/supabase/client"
 import { categories, subcategories } from "@/lib/type/products"
 import type { Product } from "@/lib/type/products"
 
+const extrasSubcategories = [
+  { name: "Accesorios", slug: "accesorios" },
+  { name: "Ropa", slug: "ropa" },
+];
+
 import { CartDrawer } from "@/components/cart-drawer"
 import { SearchResults } from "@/components/search-results"
 
 const mainNavCategories = categories.filter((cat) =>
-  ["primera-division", "femenino", "infantiles", "accesorios"].includes(cat.slug)
+["primera-division", "femenino", "infantiles", "accesorios", "extras"].includes(cat.slug)
 )
 
 export function Header() {
@@ -166,7 +171,7 @@ export function Header() {
 
                         {cat.slug !== "accesorios" && (
                           <div className="flex flex-col gap-1 pl-4">
-                            {subcategories.map((sub) => (
+                            {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
                               <Link
                                 key={sub.slug}
                                 href={`/category/${cat.slug}?tipo=${sub.slug}`}
@@ -440,7 +445,7 @@ export function Header() {
                 {cat.slug !== "accesorios" && (
                   <div className="invisible absolute left-0 top-full z-50 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
                     <div className="min-w-[200px] border border-border bg-background py-2 text-foreground shadow-lg">
-                      {subcategories.map((sub) => (
+                      {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
                         <Link
                           key={sub.slug}
                           href={`/category/${cat.slug}?tipo=${sub.slug}`}
