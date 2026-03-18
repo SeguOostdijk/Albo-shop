@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { categories, subcategories } from '@/lib/type/products'
+import { categories, subcategories, extrasSubcategories, isExtrasAccesorios } from '@/lib/type/products'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, X, Plus } from 'lucide-react'
 import { ImageDropzone } from '@/components/ui/image-dropzone'
@@ -106,6 +106,7 @@ export default function EditProductPage() {
   const [sizeStocks, setSizeStocks] = useState<SizeStockRow[]>([
     { size: '', stock: '' },
   ])
+  const [stock, setStock] = useState("")
 
   const [currentImages, setCurrentImages] = useState<ProductImage[]>([])
   const [pendingImages, setPendingImages] = useState<File[]>([])
@@ -231,7 +232,15 @@ export default function EditProductPage() {
         ? (data.product_stock as StockRow[])
         : []
 
-      if (stockRows.length > 0) {
+      const isExtrasAccesoriosConditionLoad = isExtrasAccesorios(data.category_slug || '', data.tags?.[0] || '')
+      
+      if (isExtrasAccesoriosConditionLoad && stockRows.length > 0) {
+        // Load stock from first NULL size row or first row
+        const nullSizeRow = stockRows.find(row => row.size === null) || stockRows[0]
+        if (nullSizeRow) {
+          setStock(String(nullSizeRow.stock ?? 0))
+        }
+      } else if (stockRows.length > 0) {
         setSizeStocks(
           stockRows.map((row) => ({
             size: row.size,
@@ -268,12 +277,22 @@ export default function EditProductPage() {
       return
     }
 
-    const validSizeStocks = sizeStocks.filter(
-      (row) => row.size.trim() !== '' && row.stock.trim() !== ''
-    )
-
-    if (categorySlug === 'accesorios' ) {
-      // Accesorios no requieren talles
+    const isExtrasAccesoriosCondition = isExtrasAccesorios(categorySlug, subcategorySlug)
+    
+    let validSizeStocks
+    if (isExtrasAccesoriosCondition) {
+      validSizeStocks = []
+    } else {
+      validSizeStocks = sizeStocks.filter(
+        (row) => row.size?.trim() !== '' && row.stock?.trim() !== ''
+      )
+    }
+    
+    if (isExtrasAccesoriosCondition) {
+      if (!stock.trim()) {
+        setErrorMsg("Debes indicar el stock para accesorios.")
+        return
+      }
     } else if (validSizeStocks.length === 0) {
       setErrorMsg('Debes cargar al menos un talle con su stock.')
       return
@@ -395,11 +414,20 @@ export default function EditProductPage() {
       return
     }
 
-    const stockRows = validSizeStocks.map((row) => ({
-      product_id: id,
-      size: row.size.trim(),
-      stock: Number(row.stock),
-    }))
+    let stockRows
+    if (isExtrasAccesoriosCondition) {
+      stockRows = [{
+        product_id: id,
+        size: null,
+        stock: Number(stock),
+      }]
+    } else {
+      stockRows = validSizeStocks.map((row) => ({
+        product_id: id,
+        size: row.size.trim(),
+        stock: Number(row.stock),
+      }))
+    }
 
     const { error: insertStockError } = await supabase
       .from('product_stock')
@@ -435,10 +463,10 @@ export default function EditProductPage() {
           </Link>
         </Button>
       </div>
-      <div className='container mx-auto max-w-2xl px-2 sm:px-4 pt-16 sm:pt-20 py-6 sm:py-8'>
-        <h1 className='text-2xl sm:text-3xl font-bold mb-6 sm:mb-8'>Editar producto</h1>
+      <div className='container mx-auto max-w-2xl px-4 pt-20 py-8'>
+        <h1 className='text-3xl font-bold mb-8'>Editar producto</h1>
 
-        <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-5 rounded-lg border p-3 sm:p-6'>
+        <form onSubmit={handleSubmit} className='space-y-5 rounded-lg border p-6'>
           <div>
             <label className='mb-2 block text-sm font-medium'>Nombre</label>
             <input
@@ -451,7 +479,7 @@ export default function EditProductPage() {
 
           <div>
             <label className='mb-2 block text-sm font-medium'>Slug</label>
-            <div className='flex flex-col xs:flex-row gap-2'>
+            <div className='flex gap-2'>
               <input
                 required
                 value={slug}
@@ -493,7 +521,7 @@ export default function EditProductPage() {
               className='w-full rounded-md border px-3 py-2 cursor-pointer'
             >
               <option value=''>Sin subcategoría</option>
-              {subcategories.map((subcategory) => (
+              {(categorySlug === 'extras' ? extrasSubcategories : subcategories).map((subcategory) => (
                 <option key={subcategory.slug} value={subcategory.slug} className="cursor-pointer hover:bg-accent">
                   {subcategory.name}
                 </option>
@@ -525,7 +553,7 @@ export default function EditProductPage() {
             />
           </div>
 
-          <div className='rounded-md border p-3 sm:p-4 space-y-3'>
+          <div className='rounded-md border p-4 space-y-3'>
             <label className='flex items-center gap-2 cursor-pointer'>
               <input
                 type='checkbox'
@@ -627,7 +655,7 @@ export default function EditProductPage() {
             )}
           </div>
 
-          <div className='space-y-2 sm:space-y-3'>
+          <div className='space-y-3'>
             <label className='flex items-center gap-2 cursor-pointer'>
               <input
                 type='checkbox'
@@ -652,7 +680,7 @@ export default function EditProductPage() {
           <div className='mt-6 border-t pt-6'>
             <h2 className='text-lg font-semibold mb-4'>Variante inicial</h2>
 
-            <div className='grid gap-3 sm:gap-4 md:grid-cols-2'>
+            <div className='grid gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-2 block text-sm font-medium'>Color</label>
                 <input
@@ -682,76 +710,87 @@ export default function EditProductPage() {
               </div>
             </div>
 
-            <div className='mt-6'>
-              <div className='flex flex-col xs:flex-row items-start xs:items-center justify-between mb-2 xs:mb-3 gap-2 xs:gap-0'>
-                <label className='block text-sm font-medium'>Talles y stock</label>
-                <button
-                  type='button'
-                  onClick={addSizeStockRow}
-                  className='rounded-md border px-3 py-1 text-sm cursor-pointer'
-                >
-                  + Agregar talle
-                </button>
+{isExtrasAccesorios(categorySlug, subcategorySlug) ? (
+              <div className='mt-6'>
+                <label className='block text-sm font-medium mb-2'>Stock</label>
+                <input
+                  type='number'
+                  min='0'
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  className='w-full rounded-md border px-3 py-2'
+                  placeholder='10'
+                />
               </div>
-
-              <div className='space-y-2 sm:space-y-3'>
-                {sizeStocks.map((row, index) => (
-                  <div key={index} className='grid grid-cols-12 gap-2 sm:gap-3 items-end'>
-                    <div className='col-span-12 xs:col-span-6'>
-                      <label className='mb-2 block text-sm font-medium'>Talle</label>
-                      <input
-                        value={row.size ? row.size.toUpperCase() : ''}
-                        onChange={(e) =>
-                          updateSizeStockRow(index, 'size', e.target.value)
-                        }
-                        className='w-full rounded-md border px-3 py-2 font-normal uppercase tracking-widest text-base'
-                        placeholder='EJ: S'
-                      />
+            ) : (
+              <div className='mt-6'>
+                <div className='flex items-center justify-between mb-3'>
+                  <label className='block text-sm font-medium'>Talles y stock</label>
+                  <button
+                    type='button'
+                    onClick={addSizeStockRow}
+                    className='rounded-md border px-3 py-1 text-sm cursor-pointer'
+                  >
+                    + Agregar talle
+                  </button>
+                </div>
+                <div className='space-y-3'>
+                  {sizeStocks.map((row, index) => (
+                    <div key={index} className='grid grid-cols-12 gap-3 items-end'>
+                      <div className='col-span-6'>
+                        <label className='mb-2 block text-sm font-medium'>Talle</label>
+                        <input
+                          value={row.size ? row.size.toUpperCase() : ''}
+                          onChange={(e) =>
+                            updateSizeStockRow(index, 'size', e.target.value)
+                          }
+                          className='w-full rounded-md border px-3 py-2 font-normal uppercase tracking-widest text-base'
+                          placeholder='EJ: S'
+                        />
+                      </div>
+                      <div className='col-span-4'>
+                        <label className='mb-2 block text-sm font-medium'>Stock</label>
+                        <input
+                          type='number'
+                          min='0'
+                          value={row.stock}
+                          onChange={(e) =>
+                            updateSizeStockRow(index, 'stock', e.target.value)
+                          }
+                          className='w-full rounded-md border px-3 py-2'
+                          placeholder='10'
+                        />
+                      </div>
+                      <div className='col-span-2'>
+                        <button
+                          type='button'
+                          onClick={() => removeSizeStockRow(index)}
+                          className='w-full rounded-md border px-3 py-2 text-sm text-red-600 cursor-pointer'
+                          disabled={sizeStocks.length === 1}
+                        >
+                          Quitar
+                        </button>
+                      </div>
                     </div>
-
-                    <div className='col-span-12 xs:col-span-4'>
-                      <label className='mb-2 block text-sm font-medium'>Stock</label>
-                      <input
-                        type='number'
-                        min='0'
-                        value={row.stock}
-                        onChange={(e) =>
-                          updateSizeStockRow(index, 'stock', e.target.value)
-                        }
-                        className='w-full rounded-md border px-3 py-2'
-                        placeholder='10'
-                      />
-                    </div>
-
-                    <div className='col-span-12 xs:col-span-2'>
-                      <button
-                        type='button'
-                        onClick={() => removeSizeStockRow(index)}
-                        className='w-full rounded-md border px-3 py-2 text-sm text-red-600 cursor-pointer'
-                        disabled={sizeStocks.length === 1}
-                      >
-                        Quitar
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {errorMsg && <p className='text-sm text-red-600'>{errorMsg}</p>}
 
-          <div className='flex flex-col xs:flex-row gap-2 sm:gap-3'>
+          <div className='flex gap-3'>
             <button
               type='submit'
               disabled={saving}
-              className='rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 cursor-pointer w-full xs:w-auto'
+              className='rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 cursor-pointer'
             >
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
 
-            <Link href='/admin/products' className='cursor-pointer w-full xs:w-auto'>
-              <Button variant='outline' className='h-10 cursor-pointer w-full xs:w-auto'>
+            <Link href='/admin/products' className='cursor-pointer'>
+              <Button variant='outline' className='h-10 cursor-pointer'>
                 Cancelar
               </Button>
             </Link>

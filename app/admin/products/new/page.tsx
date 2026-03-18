@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { categories, subcategories } from "@/lib/type/products"
+import { categories, subcategories, extrasSubcategories, isExtrasAccesorios } from "@/lib/type/products"
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, X } from 'lucide-react'
 import { ImageDropzone } from '@/components/ui/image-dropzone'
@@ -88,6 +88,8 @@ export default function NewProductPage() {
   const [sizeStocks, setSizeStocks] = useState<SizeStockRow[]>([
     { size: "", stock: "" },
   ])
+  const [stock, setStock] = useState("")
+  const [stockTotal, setStockTotal] = useState("")
 
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
@@ -151,12 +153,22 @@ export default function NewProductPage() {
       return
     }
 
-    const validSizeStocks = sizeStocks.filter(
-      (row) => row.size.trim() !== "" && row.stock.trim() !== ""
-    )
-
-    if (categorySlug === 'accesorios') {
-      // Accesorios no requieren talles
+    const isExtrasAccesoriosCondition = isExtrasAccesorios(categorySlug, subcategorySlug)
+    
+    let validSizeStocks
+    if (isExtrasAccesoriosCondition) {
+      validSizeStocks = []
+    } else {
+      validSizeStocks = sizeStocks.filter(
+        (row) => row.size?.trim() !== "" && row.stock?.trim() !== ""
+      )
+    }
+    
+    if (isExtrasAccesoriosCondition) {
+      if (!stock.trim()) {
+        setErrorMsg("Debes indicar el stock para accesorios.")
+        return
+      }
     } else if (validSizeStocks.length === 0) {
       setErrorMsg("Debes cargar al menos un talle con su stock.")
       return
@@ -251,11 +263,20 @@ export default function NewProductPage() {
       return
     }
 
-    const stockRows = validSizeStocks.map((row) => ({
-      product_id: insertedProduct.id,
-      size: row.size.trim(),
-      stock: Number(row.stock),
-    }))
+    let stockRows
+    if (isExtrasAccesoriosCondition) {
+      stockRows = [{
+        product_id: insertedProduct.id,
+        size: null,
+        stock: Number(stock),
+      }]
+    } else {
+      stockRows = validSizeStocks.map((row) => ({
+        product_id: insertedProduct.id,
+        size: row.size.trim(),
+        stock: Number(row.stock),
+      }))
+    }
 
     const { error: stockError } = await supabase
       .from("product_stock")
@@ -290,7 +311,7 @@ export default function NewProductPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 rounded-lg border p-3 sm:p-6">
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border p-6">
         <div>
           <label className="mb-2 block text-sm font-medium">Nombre</label>
           <input
@@ -303,7 +324,7 @@ export default function NewProductPage() {
 
         <div>
           <label className="mb-2 block text-sm font-medium">Slug</label>
-          <div className="flex flex-col xs:flex-row gap-2">
+          <div className="flex gap-2">
             <input
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
@@ -349,7 +370,7 @@ export default function NewProductPage() {
             className="w-full rounded-md border px-3 py-2 cursor-pointer"
           >
             <option value="">Sin subcategoría</option>
-            {subcategories.map((subcategory) => (
+            {(categorySlug === 'extras' ? extrasSubcategories : subcategories).map((subcategory) => (
               <option key={subcategory.slug} value={subcategory.slug} className="cursor-pointer hover:bg-accent">
                 {subcategory.name}
               </option>
@@ -481,7 +502,7 @@ export default function NewProductPage() {
         <div className="mt-6 border-t pt-6">
           <h2 className="text-lg font-semibold mb-4">Variante inicial</h2>
 
-          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="mb-2 block text-sm font-medium">Color</label>
               <input
@@ -511,68 +532,79 @@ export default function NewProductPage() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between mb-2 xs:mb-3 gap-2 xs:gap-0">
-              <label className="block text-sm font-medium">Talles y stock</label>
-              <button
-                type="button"
-                onClick={addSizeStockRow}
-                className="rounded-md border px-3 py-1 text-sm cursor-pointer"
-              >
-                + Agregar talle
-              </button>
+{isExtrasAccesorios(categorySlug, subcategorySlug) ? (
+            <div className="mt-6">
+              <label className="block text-sm font-medium mb-2">Stock</label>
+              <input
+                type="number"
+                min="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                className="w-full rounded-md border px-3 py-2"
+                placeholder="10"
+              />
             </div>
-
-            <div className="space-y-2 sm:space-y-3">
-              {sizeStocks.map((row, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 sm:gap-3 items-end">
-                  <div className="col-span-12 xs:col-span-6">
-                    <label className="mb-2 block text-sm font-medium">Talle</label>
-                    <input
-                      value={row.size}
-                      onChange={(e) =>
-                        updateSizeStockRow(index, "size", e.target.value)
-                      }
-                      className="w-full rounded-md border px-3 py-2 cursor-pointer"
-                      placeholder="Ej: S"
-                    />
+          ) : (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium">Talles y stock</label>
+                <button
+                  type="button"
+                  onClick={addSizeStockRow}
+                  className="rounded-md border px-3 py-1 text-sm cursor-pointer"
+                >
+                  + Agregar talle
+                </button>
+              </div>
+              <div className="space-y-3">
+                {sizeStocks.map((row, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-3 items-end">
+                    <div className="col-span-6">
+                      <label className="mb-2 block text-sm font-medium">Talle</label>
+                      <input
+                        value={row.size}
+                        onChange={(e) =>
+                          updateSizeStockRow(index, "size", e.target.value)
+                        }
+                        className="w-full rounded-md border px-3 py-2 cursor-pointer"
+                        placeholder="Ej: S"
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <label className="mb-2 block text-sm font-medium">Stock</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={row.stock}
+                        onChange={(e) =>
+                          updateSizeStockRow(index, "stock", e.target.value)
+                        }
+                        className="w-full rounded-md border px-3 py-2"
+                        placeholder="10"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <button
+                        type="button"
+                        onClick={() => removeSizeStockRow(index)}
+                        className="w-full rounded-md border px-3 py-2 text-sm text-red-600 cursor-pointer"
+                        disabled={sizeStocks.length === 1}
+                      >
+                        Quitar
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="col-span-12 xs:col-span-4">
-                    <label className="mb-2 block text-sm font-medium">Stock</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={row.stock}
-                      onChange={(e) =>
-                        updateSizeStockRow(index, "stock", e.target.value)
-                      }
-                      className="w-full rounded-md border px-3 py-2"
-                      placeholder="10"
-                    />
-                  </div>
-
-                  <div className="col-span-12 xs:col-span-2">
-                    <button
-                      type="button"
-                      onClick={() => removeSizeStockRow(index)}
-                      className="w-full rounded-md border px-3 py-2 text-sm text-red-600 cursor-pointer"
-                      disabled={sizeStocks.length === 1}
-                    >
-                      Quitar
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {errorMsg && (
           <p className="text-sm text-red-600">{errorMsg}</p>
         )}
 
-        <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+        <div className="flex gap-3">
           <button
             type="submit"
             disabled={loading}

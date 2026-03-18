@@ -40,5 +40,13 @@ export const categories = [
   { name: "Primera Division", slug: "primera-division" },
   { name: "Femenino", slug: "femenino" },
   { name: "Infantiles", slug: "infantiles" },
-  { name: "Accesorios", slug: "accesorios" },
+  { name: "Extras", slug: "extras" },
 ]
+
+export const extrasSubcategories = [
+  { name: "Accesorios", slug: "accesorios" },
+  { name: "Ropa", slug: "ropa" },
+]
+
+export const isExtrasAccesorios = (categorySlug: string, subcategorySlug: string): boolean => 
+  categorySlug === 'extras' && subcategorySlug === 'accesorios';
