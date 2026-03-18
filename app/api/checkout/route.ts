@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase/auth"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 
 type CheckoutItem = {
   quantity: number
@@ -63,6 +63,21 @@ export async function POST(request: Request) {
       memberValidated?: boolean
     }
 
+    console.log("CHECKOUT BODY:", {
+      email,
+      phone,
+      firstName,
+      lastName,
+      address,
+      city,
+      province,
+      postalCode,
+      shippingMethod,
+      memberNumber,
+      memberValidated,
+      itemsCount: items?.length,
+    })
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, error: "El carrito está vacío" },
@@ -86,17 +101,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: sessionData } = await supabase.auth.getSession()
-    const session = sessionData.session
-
-    const userId = session?.user?.id || null
-    const guestEmail = userId ? null : email
-    const guestName = userId ? null : `${firstName} ${lastName}`
+    // Este endpoint usa service role para operar sobre la DB.
+    // Si después querés asociar la orden al usuario autenticado,
+    // hay que leer la sesión con un cliente server-side atado a cookies.
+    const userId = null
 
     let validMember = false
 
     if (memberValidated && memberNumber?.trim()) {
-      const { data: memberData, error: memberError } = await supabase
+      const { data: memberData, error: memberError } = await supabaseAdmin
         .from("members")
         .select("id, member_number")
         .eq("member_number", memberNumber.trim())
@@ -116,7 +129,7 @@ export async function POST(request: Request) {
 
     const productIds = [...new Set(items.map((item) => item.product.id))]
 
-    const { data: productsData, error: productsError } = await supabase
+    const { data: productsData, error: productsError } = await supabaseAdmin
       .from("products")
       .select("id, name, price, member_price, images")
       .in("id", productIds)
@@ -129,7 +142,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: stockData, error: stockError } = await supabase
+    const { data: stockData, error: stockError } = await supabaseAdmin
       .from("product_stock")
       .select("product_id, size, stock")
       .in("product_id", productIds)
@@ -142,9 +155,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const productsMap = new Map(
-      (productsData ?? []).map((p) => [p.id, p])
-    )
+    const productsMap = new Map((productsData ?? []).map((p) => [p.id, p]))
 
     const stockMap = new Map<string, number>()
     for (const row of stockData ?? []) {
@@ -172,7 +183,7 @@ export async function POST(request: Request) {
 
       if (availableStock < item.quantity) {
         throw new Error(
-          `No hay stock suficiente para "${dbProduct.name}" talle ${item.selectedSize}".`
+          `No hay stock suficiente para "${dbProduct.name}" talle ${item.selectedSize}.`
         )
       }
 
@@ -186,7 +197,6 @@ export async function POST(request: Request) {
       return {
         product_id: dbProduct.id,
         product_name: dbProduct.name,
-        product_image: dbProduct.images?.[0] || null,
         quantity: item.quantity,
         price: unitPrice,
         color: item.selectedColor,
@@ -197,32 +207,30 @@ export async function POST(request: Request) {
     const shippingCost = getShippingCost(subtotal, shippingMethod)
     const total = subtotal + shippingCost
 
-    const shippingAddress = {
-      firstName,
-      lastName,
-      address,
-      city,
-      province,
-      postalCode,
-      phone,
-    }
-
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
         user_id: userId,
-        guest_email: guestEmail,
-        guest_name: guestName,
-        status: "pending",
-        total,
-        shipping_cost: shippingCost,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        address,
+        city,
+        province,
+        postal_code: postalCode,
         shipping_method: shippingMethod,
-        shipping_address: shippingAddress,
+        shipping_cost: shippingCost,
+        total,
+        payment_method: paymentInfo.method,
         payment_info: {
           ...paymentInfo,
           memberApplied: validMember,
           memberNumber: validMember ? memberNumber?.trim() : null,
         },
+        member_number: validMember ? memberNumber?.trim() : null,
+        member_validated: validMember,
+        status: "pending",
+        phone,
       })
       .select()
       .single()
@@ -240,16 +248,33 @@ export async function POST(request: Request) {
       ...item,
     }))
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseAdmin
       .from("order_items")
       .insert(orderItems)
 
     if (itemsError) {
       console.error("Error creating order items:", itemsError)
+
+      // rollback simple para no dejar orden huérfana
+      await supabaseAdmin.from("orders").delete().eq("id", order.id)
+
       return NextResponse.json(
         { success: false, error: "Error al guardar los productos del pedido" },
         { status: 500 }
       )
+    }
+
+    let redirectTo = "/account/orders"
+
+    if (paymentInfo.method === "transfer") {
+      redirectTo = `/checkout/payment/transfer?orderId=${order.id}`
+    } else if (paymentInfo.method === "mercadopago") {
+      redirectTo = `/checkout/payment/mercadopago?orderId=${order.id}`
+    } else if (
+      paymentInfo.method === "credit-card" ||
+      paymentInfo.method === "debit-card"
+    ) {
+      redirectTo = `/checkout/payment/card?orderId=${order.id}`
     }
 
     return NextResponse.json({
@@ -259,6 +284,7 @@ export async function POST(request: Request) {
       shippingCost,
       total,
       memberApplied: validMember,
+      redirectTo,
       message: "Pedido procesado exitosamente",
     })
   } catch (error) {
