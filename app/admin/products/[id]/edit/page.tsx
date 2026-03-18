@@ -435,10 +435,10 @@ export default function EditProductPage() {
           </Link>
         </Button>
       </div>
-      <div className='container mx-auto max-w-2xl px-4 pt-20 py-8'>
-        <h1 className='text-3xl font-bold mb-8'>Editar producto</h1>
+      <div className='container mx-auto max-w-2xl px-2 sm:px-4 pt-16 sm:pt-20 py-6 sm:py-8'>
+        <h1 className='text-2xl sm:text-3xl font-bold mb-6 sm:mb-8'>Editar producto</h1>
 
-        <form onSubmit={handleSubmit} className='space-y-5 rounded-lg border p-6'>
+        <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-5 rounded-lg border p-3 sm:p-6'>
           <div>
             <label className='mb-2 block text-sm font-medium'>Nombre</label>
             <input
@@ -451,7 +451,7 @@ export default function EditProductPage() {
 
           <div>
             <label className='mb-2 block text-sm font-medium'>Slug</label>
-            <div className='flex gap-2'>
+            <div className='flex flex-col xs:flex-row gap-2'>
               <input
                 required
                 value={slug}
@@ -525,7 +525,7 @@ export default function EditProductPage() {
             />
           </div>
 
-          <div className='rounded-md border p-4 space-y-3'>
+          <div className='rounded-md border p-3 sm:p-4 space-y-3'>
             <label className='flex items-center gap-2 cursor-pointer'>
               <input
                 type='checkbox'
@@ -627,7 +627,7 @@ export default function EditProductPage() {
             )}
           </div>
 
-          <div className='space-y-3'>
+          <div className='space-y-2 sm:space-y-3'>
             <label className='flex items-center gap-2 cursor-pointer'>
               <input
                 type='checkbox'
@@ -652,7 +652,7 @@ export default function EditProductPage() {
           <div className='mt-6 border-t pt-6'>
             <h2 className='text-lg font-semibold mb-4'>Variante inicial</h2>
 
-            <div className='grid gap-4 md:grid-cols-2'>
+            <div className='grid gap-3 sm:gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-2 block text-sm font-medium'>Color</label>
                 <input
@@ -683,7 +683,7 @@ export default function EditProductPage() {
             </div>
 
             <div className='mt-6'>
-              <div className='flex items-center justify-between mb-3'>
+              <div className='flex flex-col xs:flex-row items-start xs:items-center justify-between mb-2 xs:mb-3 gap-2 xs:gap-0'>
                 <label className='block text-sm font-medium'>Talles y stock</label>
                 <button
                   type='button'
@@ -694,10 +694,10 @@ export default function EditProductPage() {
                 </button>
               </div>
 
-              <div className='space-y-3'>
+              <div className='space-y-2 sm:space-y-3'>
                 {sizeStocks.map((row, index) => (
-                  <div key={index} className='grid grid-cols-12 gap-3 items-end'>
-                    <div className='col-span-6'>
+                  <div key={index} className='grid grid-cols-12 gap-2 sm:gap-3 items-end'>
+                    <div className='col-span-12 xs:col-span-6'>
                       <label className='mb-2 block text-sm font-medium'>Talle</label>
                       <input
                         value={row.size ? row.size.toUpperCase() : ''}
@@ -709,7 +709,7 @@ export default function EditProductPage() {
                       />
                     </div>
 
-                    <div className='col-span-4'>
+                    <div className='col-span-12 xs:col-span-4'>
                       <label className='mb-2 block text-sm font-medium'>Stock</label>
                       <input
                         type='number'
@@ -723,7 +723,7 @@ export default function EditProductPage() {
                       />
                     </div>
 
-                    <div className='col-span-2'>
+                    <div className='col-span-12 xs:col-span-2'>
                       <button
                         type='button'
                         onClick={() => removeSizeStockRow(index)}
@@ -741,17 +741,17 @@ export default function EditProductPage() {
 
           {errorMsg && <p className='text-sm text-red-600'>{errorMsg}</p>}
 
-          <div className='flex gap-3'>
+          <div className='flex flex-col xs:flex-row gap-2 sm:gap-3'>
             <button
               type='submit'
               disabled={saving}
-              className='rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 cursor-pointer'
+              className='rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50 cursor-pointer w-full xs:w-auto'
             >
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
 
-            <Link href='/admin/products' className='cursor-pointer'>
-              <Button variant='outline' className='h-10 cursor-pointer'>
+            <Link href='/admin/products' className='cursor-pointer w-full xs:w-auto'>
+              <Button variant='outline' className='h-10 cursor-pointer w-full xs:w-auto'>
                 Cancelar
               </Button>
             </Link>
