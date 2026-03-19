@@ -6,14 +6,14 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
 const heroSlides = [
-  {
-    image: "/campeonato.jpg",
-    title: "NUEVA CAMISETA",
-    subtitle: "Temporada 2025/26 ya disponible",
-    cta: "COMPRAR AHORA",
-    href: "/product/camiseta-titular-2025",
-    eyebrow: "Colección oficial",
-  },
+    {
+      image: "/campeonato.jpg",
+      title: "NUEVA CAMISETA",
+      subtitle: "Temporada 2025/26 ya disponible",
+      cta: "COMPRAR AHORA",
+      href: "/product/camiseta-blanca-de-juego-primera-division",
+      eyebrow: "Colección oficial",
+    },
   {
     image: "/salida.png",
     title: "PRIMERA DIVISION",
