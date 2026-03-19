@@ -24,7 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { MotionProps, motion, AnimatePresence } from 'framer-motion'
+import { motion, type HTMLMotionProps, AnimatePresence } from 'framer-motion'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -259,8 +259,9 @@ function SidebarTrigger({
       {...props}
     >
       <motion.div
-        animate={{ rotate: open ? 180 : 0 }}
+        animate={{ rotate: open() ? 180 : 0 }}
         transition={{ duration: 0.2 }}
+        {...({} as HTMLMotionProps<"div">)}
       >
         <PanelLeftIcon />
       </motion.div>
@@ -370,29 +371,9 @@ function SidebarSeparator({
   )
 }
 
-// Re-export all other components...
-export {
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuBadge,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarRail,
-  SidebarInset,
-  SidebarInput,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarSeparator,
-  useSidebar,
+export {}
+   />
+  )
 }
+
+export {}

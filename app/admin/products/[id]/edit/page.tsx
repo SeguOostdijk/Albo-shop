@@ -279,14 +279,11 @@ export default function EditProductPage() {
 
     const isExtrasAccesoriosCondition = isExtrasAccesorios(categorySlug, subcategorySlug)
     
-    let validSizeStocks
-    if (isExtrasAccesoriosCondition) {
-      validSizeStocks = []
-    } else {
-      validSizeStocks = sizeStocks.filter(
-        (row) => row.size?.trim() !== '' && row.stock?.trim() !== ''
-      )
-    }
+    const validSizeStocks: SizeStockRow[] = isExtrasAccesoriosCondition 
+      ? [] 
+      : sizeStocks.filter(
+          (row) => row.size?.trim() !== '' && row.stock?.trim() !== ''
+        )
     
     if (isExtrasAccesoriosCondition) {
       if (!stock.trim()) {

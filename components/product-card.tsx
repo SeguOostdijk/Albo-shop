@@ -72,7 +72,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           alt={product.name}
           fill
           className="object-contain p-4 transition-transform duration-500 group-hover:scale-110 sm:p-5 md:p-6"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
         {/* Badges */}

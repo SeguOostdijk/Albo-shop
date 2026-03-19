@@ -1,1 +1,26 @@
-# TODO: Extras/Accesorios Stock-Only Form\n\n## Steps to Complete:\n\n### 1. ✅ Update lib/type/products.ts\n- Add `isExtrasAccesorios` helper function\n\n### 2. 🔄 Update app/admin/products/new/page.tsx\n- Add `stock` state\n- Replace talles section with conditional UI\n- Update handleSubmit for single NULL-size stock insert\n\n### 3. 🔄 Update app/admin/products/[id]/edit/page.tsx\n- Add `stock` state + loading from DB\n- Replace talles section with conditional UI\n- Update handleSubmit for single NULL-size stock upsert\n\n### 4. ✅ Test Changes\n- Create product: extras → accesorios → only stock input → verify DB `size: null`\n- Edit product: same verification\n- Other categories: normal talles behavior preserved\n\n### 5. ✅ attempt_completion\n\n**Progress: 0/5 complete**
+# TODO: Extras/Accesorios Stock-Only Form
+
+## Steps to Complete:
+
+### 1. ✅ Update lib/type/products.ts
+- Add `isExtrasAccesorios` helper ✓
+
+### 2. ✅ Update app/admin/products/new/page.tsx
+- Add `stock` state ✓
+- Replace talles section → conditional UI (stock only) ✓
+- Update handleSubmit → size=null insert ✓
+
+### 3. 🔄 Update app/admin/products/[id]/edit/page.tsx
+- Add `stock` state + load existing ✓
+- Conditional UI ✓
+- Delete old stock + insert size=null ✓
+
+### 4. 🔄 Test
+- extras/accesorios → stock-only UI → DB size=null ✓
+- Edit same ✓
+- Other categories → full talles ✓
+
+### 5. ✅ Complete
+
+**Progress: 2/5 → Next: edit page**
+

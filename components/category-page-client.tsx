@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/sheet"
 
 import { Filters } from "@/components/filters"
+import { cn } from "@/lib/utils"
 
 type Category = {
   slug: string
@@ -147,21 +148,7 @@ export function CategoryPageClient({
       ].filter((o) => (o.count ?? 0) > 0),
     })
 
-    if (Object.keys(collectionCounts).length > 0) {
-      groups.push({
-        id: "collection",
-        name: "Colección",
-        options: Object.entries(collectionCounts).map(([id, count]) => ({
-          id,
-          label: id
-            .replace("-", " ")
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" "),
-          count,
-        })),
-      })
-    }
+    // Removed "Colección" group as per request
 
     return groups
   }, [products])
@@ -269,7 +256,7 @@ export function CategoryPageClient({
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="w-[88vw] max-w-[340px] overflow-y-auto">
+            <SheetContent side="left" className="w-[90vw] max-w-[380px] p-0 bg-gradient-to-b from-white/90 via-white/70 to-white/50 backdrop-blur-2xl shadow-2xl border-0 rounded-2xl overflow-hidden">
               <SheetHeader>
                 <SheetTitle>Filtros</SheetTitle>
                 <SheetDescription className="sr-only">
@@ -277,7 +264,7 @@ export function CategoryPageClient({
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="mt-6">
+              <div className="mt-6 p-6">
                 <Filters
                   filterOptions={filterOptions}
                   selectedFilters={selectedFilters}
@@ -352,12 +339,10 @@ export function CategoryPageClient({
             </div>
           ) : (
             <div
-              className={[
-                "grid items-stretch gap-3 sm:gap-4 lg:gap-6",
-              gridCols === 2
-                  ? "grid-cols-2"
-                  : "grid-cols-3",
-              ].join(" ")}
+              className={cn(
+                "grid grid-cols-2 items-stretch gap-3 sm:gap-4 md:gap-6",
+                gridCols === 3 && "md:grid-cols-3"
+              )}
             >
               {filteredProducts.map((product) => (
                 <div key={product.id} className="min-w-0 w-full max-w-xs mx-auto xl:max-w-sm">

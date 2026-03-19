@@ -48,10 +48,11 @@ import { CartDrawer } from "@/components/cart-drawer"
 import { SearchResults } from "@/components/search-results"
 
 const mainNavCategories = categories.filter((cat) =>
-["primera-division", "femenino", "infantiles", "accesorios", "extras"].includes(cat.slug)
+  ["primera-division", "femenino", "infantiles", "accesorios", "extras"].includes(cat.slug)
 )
 
 export function Header() {
+
   const [searchOpenMobile, setSearchOpenMobile] = useState(false)
   const [searchOpenDesktop, setSearchOpenDesktop] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -134,76 +135,80 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="cursor-pointer text-primary hover:bg-primary/10"
+                    className="cursor-pointer text-primary hover:bg-primary/10 hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md hover:border hover:border-primary/50"
                   >
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Abrir menú</span>
                   </Button>
                 </SheetTrigger>
-
                 <SheetContent
                   side="left"
-                  className="w-[85vw] max-w-md bg-primary p-6 text-primary-foreground sm:w-[350px]"
+                  className="w-[90vw] max-w-[420px] bg-gradient-to-b from-primary to-primary/90 backdrop-blur-xl text-primary-foreground border-primary/20 shadow-2xl p-0 sm:w-[380px]"
                 >
                   <SheetTitle className="sr-only">Menú principal</SheetTitle>
                   <SheetDescription className="sr-only">
                     Navegación principal de la tienda.
                   </SheetDescription>
 
-                  <nav className="mt-8 flex flex-col gap-2">
-                    <Link
-                      href="/category/novedades"
-                      className="block border-b border-primary-foreground/20 py-2 text-lg font-medium text-accent transition-colors hover:text-accent/80"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      NOVEDADES
-                    </Link>
-
-                    {mainNavCategories.map((cat) => (
-                      <div key={cat.slug} className="border-b border-primary-foreground/20 pb-2">
-                        <Link
-                          href={`/category/${cat.slug}`}
-                          className="block py-2 text-lg font-medium transition-colors hover:text-accent"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {cat.name.toUpperCase()}
-                        </Link>
-
-                        {cat.slug !== "accesorios" && (
-                          <div className="flex flex-col gap-1 pl-4">
-                            {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
-                              <Link
-                                key={sub.slug}
-                                href={`/category/${cat.slug}?tipo=${sub.slug}`}
-                                className="py-1 text-sm text-primary-foreground/80 transition-colors hover:text-accent"
-                                onClick={() => setMobileMenuOpen(false)}
-                              >
-                                {sub.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    <Link
-                      href="/category/oportunidades"
-                      className="block py-2 text-lg font-medium text-accent transition-colors hover:text-accent/80"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      OPORTUNIDADES
-                    </Link>
-
-                    {isAdminUser && (
+                  <div className="h-full overflow-y-auto pb-20 px-6 pt-12 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-primary-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent/60 [&::-webkit-scrollbar-thumb]:hover:bg-accent/80">
+                    <nav className="flex flex-col gap-3">
                       <Link
-                        href="/admin"
-                        className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
+                        href="/category/novedades"
+                        className="group relative block rounded-xl bg-gradient-to-r from-transparent to-primary/10 p-4 text-xl font-bold text-accent shadow-lg backdrop-blur-sm hover:shadow-xl hover:scale-[1.02] hover:from-primary/20 transition-all duration-300"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        EDITAR CATÁLOGO
+                        <span className="absolute inset-0 bg-gradient-to-r from-accent/10 to-transparent rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                        NOVEDADES
                       </Link>
-                    )}
-                  </nav>
+
+                      {mainNavCategories.map((cat) => (
+                        <div key={cat.slug} className="border-b border-primary-foreground/20 pb-2">
+                          <Link
+                            href={`/category/${cat.slug}`}
+                            className="group relative block rounded-lg bg-white/20 backdrop-blur-sm p-4 text-xl font-semibold text-white shadow-lg hover:shadow-xl hover:scale-[1.02] hover:bg-white/30 transition-all duration-300"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            <span className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+                            {cat.name.toUpperCase()}
+                          </Link>
+
+                          {cat.slug !== "accesorios" && (
+                            <div className="flex flex-col gap-1 pl-4">
+                              {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
+                                <Link
+                                  key={sub.slug}
+                                  href={`/category/${cat.slug}?tipo=${sub.slug}`}
+                                  className="group relative block rounded-lg bg-white/10 p-3 text-base font-medium text-white/90 shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-white/20 transition-all duration-300 ml-2 mr-4 my-1"
+                                  onClick={() => setMobileMenuOpen(false)}
+                                >
+                                  {sub.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      <Link
+                        href="/category/oportunidades"
+                        className="group relative block rounded-xl bg-gradient-to-r from-orange-500/20 to-yellow-500/20 p-4 text-xl font-bold text-orange-400 shadow-lg backdrop-blur-sm border border-orange-500/30 hover:shadow-xl hover:scale-[1.02] hover:from-orange-500/30 transition-all duration-300"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                        OPORTUNIDADES
+                      </Link>
+
+                      {isAdminUser && (
+                        <Link
+                          href="/admin"
+                          className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          EDITAR CATÁLOGO
+                        </Link>
+                      )}
+                    </nav>
+                  </div>
                 </SheetContent>
               </Sheet>
 
@@ -237,7 +242,6 @@ export function Header() {
                     onFocus={() => setSearchOpenDesktop(true)}
                     onBlur={() => setTimeout(() => setSearchOpenDesktop(false), 200)}
                   />
-
                   <Button
                     type="button"
                     className="cursor-pointer rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
@@ -266,10 +270,10 @@ export function Header() {
 
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {isAdminUser && (
-                      <Link href="/admin" className="hidden xl:block cursor-pointer">
+                <Link href="/admin" className="hidden xl:block">
                   <Button
                     variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                   >
                     <Pencil className="mr-2 h-4 w-4" />
                     Editar catálogo
@@ -280,7 +284,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="cursor-pointer text-primary hover:bg-primary/10 md:hidden"
+                className="md:hidden"
                 onClick={() => setSearchOpenMobile((prev) => !prev)}
               >
                 <Search className="h-5 w-5" />
@@ -291,7 +295,7 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="cursor-pointer relative text-primary hover:bg-primary/10"
+                  className="relative"
                 >
                   <Heart className="h-5 w-5" />
                   {wishlistItems > 0 && (
@@ -309,13 +313,11 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="cursor-pointer text-primary hover:bg-primary/10"
                     >
                       <User className="h-5 w-5" />
                       <span className="sr-only">Mi cuenta</span>
                     </Button>
                   </DropdownMenuTrigger>
-
                   <DropdownMenuContent align="end" className="w-56 z-[10000]">
                     <DropdownMenuLabel className="truncate">
                       {user.email}
@@ -323,15 +325,15 @@ export function Header() {
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem asChild className="cursor-pointer">
+                    <DropdownMenuItem asChild>
                       <Link href="/account/orders">Mis Pedidos</Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem asChild className="cursor-pointer">
+                    <DropdownMenuItem asChild>
                       <Link href="/wishlist">Mis Favoritos</Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem asChild className="cursor-pointer">
+                    <DropdownMenuItem asChild>
                       <Link href="/account">Mi Cuenta</Link>
                     </DropdownMenuItem>
 
@@ -345,7 +347,7 @@ export function Header() {
 
                     <DropdownMenuItem
                       onClick={handleSignOut}
-                      className="text-red-500 focus:text-red-500 cursor-pointer"
+                      className="text-red-500 focus:text-red-500"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       Cerrar Sesión
@@ -357,7 +359,6 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="cursor-pointer text-primary hover:bg-primary/10"
                   >
                     <User className="h-5 w-5" />
                     <span className="sr-only">Mi cuenta</span>
@@ -368,7 +369,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="cursor-pointer relative text-primary hover:bg-primary/10"
+                className="relative"
                 onClick={openCart}
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -396,7 +397,7 @@ export function Header() {
 
                 <Button
                   type="button"
-                  className="cursor-pointer rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
+                  className="rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
                 >
                   <Search className="h-5 w-5 text-foreground" />
                 </Button>
