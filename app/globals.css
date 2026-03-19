@@ -133,6 +133,16 @@
     overflow-x: hidden;
     overscroll-behavior-x: none;
   }
+  
+  @media (max-width: 768px) {
+    .account-page {
+      overflow-x: hidden !important;
+    }
+    .account-header {
+      overflow-x: hidden;
+      padding-right: env(safe-area-inset-right);
+    }
+  }
   html {
     overflow-x: hidden;
     overscroll-behavior-x: none;

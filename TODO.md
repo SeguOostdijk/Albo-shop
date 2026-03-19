@@ -1,26 +1,13 @@
-# TODO: Extras/Accesorios Stock-Only Form
+# TODO: Fix Mobile Logout Button Overflow
 
-## Steps to Complete:
+## Plan Steps (Approved by user)
+✅ **Step 1**: Create TODO.md tracking file  
+✅ **Step 2**: Edit `app/account/page.tsx` - Restructure logout button + parent flex for mobile (main fix)  
+✅ **Step 3**: Edit `components/header.tsx` - Add flex-shrink classes to user dropdown button  
+✅ **Step 4**: Edit `app/globals.css` - Add mobile-specific overflow rules  
+✅ **Step 5**: Test changes and complete task  
 
-### 1. ✅ Update lib/type/products.ts
-- Add `isExtrasAccesorios` helper ✓
+**Current status**: ✅ All steps completed successfully!
 
-### 2. ✅ Update app/admin/products/new/page.tsx
-- Add `stock` state ✓
-- Replace talles section → conditional UI (stock only) ✓
-- Update handleSubmit → size=null insert ✓
-
-### 3. 🔄 Update app/admin/products/[id]/edit/page.tsx
-- Add `stock` state + load existing ✓
-- Conditional UI ✓
-- Delete old stock + insert size=null ✓
-
-### 4. 🔄 Test
-- extras/accesorios → stock-only UI → DB size=null ✓
-- Edit same ✓
-- Other categories → full talles ✓
-
-### 5. ✅ Complete
-
-**Progress: 2/5 → Next: edit page**
+*Task finished - see completion message above.*
 

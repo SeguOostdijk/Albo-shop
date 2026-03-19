@@ -100,19 +100,23 @@ export default function AccountPage() {
     <div className="container mx-auto px-4 py-6">
       <Breadcrumbs items={[{ label: "Mi Cuenta" }]} />
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-6 mb-8 text-primary-foreground">
-          <div className="flex items-center justify-between">
+        <div className="account-header bg-gradient-to-r from-primary to-primary/80 rounded-xl p-6 mb-8 text-primary-foreground overflow-hidden">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
                 <User className="h-8 w-8 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">{user.user_metadata?.first_name || user.email?.split('@')[0]}</h1>
-                <p className="opacity-90">{user.email}</p>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold truncate">{user.user_metadata?.first_name || user.email?.split('@')[0]}</h1>
+                <p className="opacity-90 truncate">{user.email}</p>
               </div>
             </div>
-<Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-red-600 cursor-pointer" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" /> Cerrar Sesión
+            <Button 
+              variant="outline" 
+              className="w-full sm:w-auto justify-center text-sm sm:text-base bg-white/10 border-white/20 text-white hover:bg-red-600 flex-shrink-0 px-4 sm:px-6 py-2 min-h-[44px]" 
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4 mr-2 flex-shrink-0" /> Cerrar Sesión
             </Button>
           </div>
         </div>

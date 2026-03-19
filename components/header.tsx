@@ -313,6 +313,7 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="min-w-0 flex-shrink"
                     >
                       <User className="h-5 w-5" />
                       <span className="sr-only">Mi cuenta</span>
