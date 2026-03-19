@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { categories, subcategories, extrasSubcategories, isExtrasAccesorios } from '@/lib/type/products'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, X, Plus } from 'lucide-react'
+import { ArrowLeft, X, Plus, Trash2 } from 'lucide-react'
 import { ImageDropzone } from '@/components/ui/image-dropzone'
 
 const COLOR_MAP: Record<string, string> = {
@@ -762,10 +762,12 @@ export default function EditProductPage() {
                         <button
                           type='button'
                           onClick={() => removeSizeStockRow(index)}
-                          className='w-full rounded-md border px-3 py-2 text-sm text-red-600 cursor-pointer'
+                          className='w-full h-full rounded-md border px-3 py-2 text-sm text-red-600 cursor-pointer hover:bg-red-50 flex items-center justify-center gap-1 disabled:opacity-50'
                           disabled={sizeStocks.length === 1}
+                          title='Quitar talle'
                         >
-                          Quitar
+                          <Trash2 className='h-6 w-4' />
+                          {sizeStocks.length === 1 ? '' : 'Quitar'}
                         </button>
                       </div>
                     </div>
