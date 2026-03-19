@@ -3,12 +3,17 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-
 import Image from "next/image"
 import { Package, ChevronRight, ShoppingBag } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/currency"
@@ -47,10 +52,10 @@ export default function OrdersPage() {
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [openOrders, setOpenOrders] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (!authLoading && !user) {
-      // Redirect to login if not authenticated
       router.push("/account/login")
     }
   }, [user, authLoading, router])
@@ -76,6 +81,13 @@ export default function OrdersPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const toggleOrder = (orderId: string) => {
+    setOpenOrders((prev) => ({
+      ...prev,
+      [orderId]: !prev[orderId],
+    }))
   }
 
   if (authLoading || loading) {
@@ -115,7 +127,7 @@ export default function OrdersPage() {
             </div>
             <h2 className="text-xl font-semibold mb-2">Aún no tienes pedidos</h2>
             <p className="text-muted-foreground mb-6">
-              Cuando realices una compra, tus pedidos apareceran aqui
+              Cuando realices una compra, tus pedidos aparecerán aquí
             </p>
             <Button asChild>
               <Link href="/">Comenzar a Comprar</Link>
@@ -125,14 +137,24 @@ export default function OrdersPage() {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => {
-            const status = statusLabels[order.status] || { label: order.status, color: "bg-gray-500" }
-            
+            const status =
+              statusLabels[order.status] || {
+                label: order.status,
+                color: "bg-gray-500",
+              }
+
+            const orderId = String(order.id)
+            const orderCode = orderId.slice(-8).toUpperCase()
+            const isOpen = !!openOrders[orderId]
+
             return (
-              <Card key={order.id}>
+              <Card key={orderId}>
                 <CardHeader className="bg-muted/50">
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                      <CardTitle className="text-lg">Pedido #{order.id.slice(-8).toUpperCase()}</CardTitle>
+                      <CardTitle className="text-lg">
+                        Pedido #{orderCode}
+                      </CardTitle>
                       <CardDescription>
                         {new Date(order.created_at).toLocaleDateString("es-AR", {
                           year: "numeric",
@@ -141,49 +163,90 @@ export default function OrdersPage() {
                         })}
                       </CardDescription>
                     </div>
+
                     <div className="flex items-center gap-4">
-                      <span className={`px-3 py-1 rounded-full text-xs text-white ${status.color}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs text-white ${status.color}`}
+                      >
                         {status.label}
                       </span>
-                      <span className="font-semibold">{formatCurrency(order.total)}</span>
+                      <span className="font-semibold">
+                        {formatCurrency(order.total)}
+                      </span>
                     </div>
                   </div>
                 </CardHeader>
+
                 <CardContent className="pt-4">
-                  <div className="space-y-4">
-                    {order.items?.map((item) => (
-                      <div key={item.id} className="flex gap-4">
-                        <div className="relative w-20 h-20 rounded bg-muted flex-shrink-0">
-                          {item.productImage ? (
-                            <Image
-                              src={item.productImage}
-                              alt={item.productName}
-                              fill
-                              className="object-cover rounded"
-                            />
-                          ) : (
-                            <div className="flex items-center justify-center h-full">
-                              <Package className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{item.productName}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {item.color} / {item.size} | Cantidad: {item.quantity}
-                          </p>
-                          <p className="text-sm font-medium mt-1">
-                            {formatCurrency(item.price * item.quantity)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Cantidad de productos</p>
+                      <p className="font-medium">{order.items?.length || 0}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Envío</p>
+                      <p className="font-medium">{order.shippingMethod}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Costo de envío</p>
+                      <p className="font-medium">
+                        {formatCurrency(order.shippingCost)}
+                      </p>
+                    </div>
                   </div>
 
+                  {isOpen && (
+                    <div className="mt-4 pt-4 border-t space-y-4">
+                      {order.items?.map((item) => (
+                        <div key={item.id} className="flex gap-4">
+                          <div className="relative w-20 h-20 rounded bg-muted flex-shrink-0 overflow-hidden">
+                            {item.productImage ? (
+                              <Image
+                                src={item.productImage}
+                                alt={item.productName}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full">
+                                <Package className="h-8 w-8 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">
+                              {item.productName}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.color} / {item.size}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Cantidad: {item.quantity}
+                            </p>
+                            <p className="text-sm font-medium mt-1">
+                              {formatCurrency(item.price * item.quantity)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="mt-4 pt-4 border-t">
-                    <Button variant="outline" className="w-full">
-                      Ver Detalles
-                      <ChevronRight className="ml-2 h-4 w-4" />
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => toggleOrder(orderId)}
+                    >
+                      {isOpen ? "Ocultar Detalles" : "Ver Detalles"}
+                      <ChevronRight
+                        className={`ml-2 h-4 w-4 transition-transform ${
+                          isOpen ? "rotate-90" : ""
+                        }`}
+                      />
                     </Button>
                   </div>
                 </CardContent>
@@ -195,4 +258,3 @@ export default function OrdersPage() {
     </div>
   )
 }
-
