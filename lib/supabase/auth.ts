@@ -1,5 +1,8 @@
 import { createBrowserClient } from "@supabase/ssr"
 
+
+console.log("SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL)
+console.log("SUPABASE_ANON_KEY (primeros 10):", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 10))
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 

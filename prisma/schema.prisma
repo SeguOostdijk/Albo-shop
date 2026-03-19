@@ -21,7 +21,6 @@ datasource db {
 model orders {
   id              String      @id @default(cuid())
   user_id         String?
-  guest_email     String?
   guest_name      String?
   status          String      @default("pending")
   total           Float

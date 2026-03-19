@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/client'
 interface Order {
   id: string
   user_id: string | null
-  guest_email: string | null
+  email: string | null
   status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   total: number
   created_at: string
@@ -47,7 +47,7 @@ export function OrdersManager() {
         .select(`
           id
           user_id
-          guest_email
+          email
           status
           total
           created_at
@@ -149,7 +149,7 @@ export function OrdersManager() {
                         <div>
                           <h4 className="font-semibold text-lg"># {order.id.slice(-8)}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {order.guest_email || 'Cliente registrado'}
+                            {order.email || 'Cliente registrado'}
                           </p>
                         </div>
                       </div>

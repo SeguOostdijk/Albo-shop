@@ -34,6 +34,9 @@ export default function CheckoutPage() {
   const [memberValidated, setMemberValidated] = useState(false)
   const [memberError, setMemberError] = useState("")
   const [validatingMember, setValidatingMember] = useState(false)
+  const [province, setProvince] = useState("caba")
+  const [email, setEmail] = useState(user?.email || "")
+const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || "")
 
   const getUnitPrice = (product: {
     price: number
@@ -111,11 +114,12 @@ export default function CheckoutPage() {
     const firstName = formData.get("firstName") as string
     const lastName = formData.get("lastName") as string
     const email = formData.get("email") as string
-    const phone = formData.get("phone") as string
+    // phone SIEMPRE del estado
     const address = formData.get("address") as string
     const city = formData.get("city") as string
-    const province = formData.get("province") as string
     const postalCode = formData.get("postalCode") as string
+
+
 
     let paymentInfo: {
       method: string
@@ -150,7 +154,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items,
           email,
-          phone,
+          phone: phone || "", // siempre el valor del estado
           firstName,
           lastName,
           address,
@@ -167,10 +171,17 @@ export default function CheckoutPage() {
       })
 
       const data = await response.json()
+      console.log("Checkout response:", data)
 
       if (data.success) {
         toast.success("Pedido realizado con exito!")
         clearCart()
+
+        if (data.redirectTo) {
+          window.location.href = data.redirectTo
+          return
+        }
+
         window.location.href = "/account/orders"
       } else {
         toast.error(data.error || "Error al procesar el pago. Intenta nuevamente.")
@@ -250,30 +261,22 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Telefono</Label>
-                  {user ? (
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+54 11 1234-5678"
-                      className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
-                      value={user?.user_metadata?.phone || user?.phone || ""}
-                      readOnly
-                      required
-                    />
-                  ) : (
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+54 11 1234-5678"
-                      className="placeholder:text-muted-foreground/60"
-                      defaultValue=""
-                      required
-                    />
-                  )}
-                </div>
+  <Label htmlFor="phone">Telefono</Label>
+  <Input
+    id="phone"
+    type="tel"
+    placeholder="+54 11 1234-5678"
+    className={
+      user && phone
+        ? "placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
+        : "placeholder:text-muted-foreground/60"
+    }
+    value={phone}
+    onChange={(e) => setPhone(e.target.value)}
+    readOnly={!!user && !!phone}
+    required
+  />
+</div>
               </div>
 
               {user ? (
@@ -346,21 +349,18 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="province">Provincia</Label>
-                  <Select name="province" defaultValue="caba">
-                    <SelectTrigger id="province" className="cursor-pointer">
-                      <SelectValue placeholder="Seleccionar provincia" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="caba">CABA</SelectItem>
-                      <SelectItem value="buenosaires">Buenos Aires</SelectItem>
-                      <SelectItem value="cordoba">Cordoba</SelectItem>
-                      <SelectItem value="santafe">Santa Fe</SelectItem>
-                      <SelectItem value="mendoza">Mendoza</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <Select value={province} onValueChange={setProvince}>
+                <SelectTrigger id="province" className="cursor-pointer">
+                <SelectValue placeholder="Seleccionar provincia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="caba">CABA</SelectItem>
+                <SelectItem value="buenosaires">Buenos Aires</SelectItem>
+                <SelectItem value="cordoba">Cordoba</SelectItem>
+                <SelectItem value="santafe">Santa Fe</SelectItem>
+                <SelectItem value="mendoza">Mendoza</SelectItem>
+              </SelectContent>
+            </Select>
 
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">Codigo Postal</Label>
@@ -557,92 +557,7 @@ export default function CheckoutPage() {
                 </RadioGroup>
               </div>
 
-              {(paymentMethod === "credit-card" || paymentMethod === "debit-card") && (
-                <div className="space-y-4 pt-4 border-t border-border">
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Numero de Tarjeta</Label>
-                    <Input
-                      id="cardNumber"
-                      name="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      className="placeholder:text-muted-foreground/60"
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiry">Vencimiento</Label>
-                      <Input
-                        id="expiry"
-                        name="expiry"
-                        placeholder="MM/AA"
-                        className="placeholder:text-muted-foreground/60"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="cvv">CVV</Label>
-                      <Input
-                        id="cvv"
-                        name="cvv"
-                        placeholder="123"
-                        className="placeholder:text-muted-foreground/60"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cardName">Nombre en la Tarjeta</Label>
-                    <Input
-                      id="cardName"
-                      name="cardName"
-                      placeholder="JUAN PEREZ"
-                      className="placeholder:text-muted-foreground/60"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dni">DNI del titular</Label>
-                    <Input
-                      id="dni"
-                      name="dni"
-                      placeholder="12.345.678"
-                      className="placeholder:text-muted-foreground/60"
-                      required
-                    />
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === "mercadopago" && (
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Instrucciones de pago:</strong> Seras redirigido a Mercado Pago para completar tu pago de forma segura.
-                  </p>
-                </div>
-              )}
-
-              {paymentMethod === "transfer" && (
-                <div className="mt-4 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-                  <p className="text-sm text-green-800 dark:text-green-200 mb-2">
-                    <strong>Datos para transferencia:</strong>
-                  </p>
-                  <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
-                    <p>Banco: Banco de la Nacion Argentina</p>
-                    <p>CBU: 0110464040046411693330</p>
-                    <p>Nombre: Club Atletico Indendiente de San Cayet</p>
-                    <p>Cuit/Cuil: 30-70708050-3</p>
-                    <p className="mt-2">
-                      Una vez realizada la transferencia, envianos el comprobante a{" "}
-                      <strong>alboshop@example.com</strong>
-                    </p>
-                  </div>
-                </div>
-              )}
+              {/* El formulario de tarjeta se movió a la pantalla de transferencia */}
 
               <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
                 <Lock className="h-4 w-4" />
