@@ -77,8 +77,8 @@ export default async function AdminProductsPage() {
             <div className="w-20 sm:w-28" />
           </div>
           <div className="border-t">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs sm:text-sm">
+  <div className="overflow-x-auto max-w-full">
+              <table className="min-w-0 w-full table-auto text-xs sm:text-sm max-w-full">
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="h-10 sm:h-12 px-2 sm:px-4 text-left text-[10px] sm:text-xs font-medium uppercase text-muted-foreground">

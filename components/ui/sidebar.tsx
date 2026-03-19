@@ -371,9 +371,56 @@ function SidebarSeparator({
   )
 }
 
-export {}
-   />
+function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="sidebar-content"
+      className={cn(
+        'flex-1 overflow-auto',
+        className,
+      )}
+      {...props}
+    />
   )
 }
 
-export {}
+function SidebarGroup({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="sidebar-group"
+      className={cn(
+        'flex flex-col gap-2 p-2',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function SidebarGroupLabel({ className, ...props }: React.ComponentProps<'p'>) {
+  return (
+    <p
+      data-slot="sidebar-group-label"
+      className={cn(
+        'px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+export {
+  SidebarProvider,
+  Sidebar,
+  SidebarTrigger,
+  SidebarRail,
+  SidebarInset,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarInput,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarSeparator
+}
