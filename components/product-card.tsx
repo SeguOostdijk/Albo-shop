@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
+import React, { useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Heart, ShoppingBag, Check } from "lucide-react"
+import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Product } from "@/lib/type/products"
 import { formatCurrency } from "@/lib/currency"
@@ -20,8 +20,6 @@ interface ProductCardProps {
 export function ProductCard({ product, className }: ProductCardProps) {
   const { isInWishlist, toggleItem } = useWishlistStore()
   const addItem = useCartStore((state) => state.addItem)
-  const removeItem = useCartStore((state) => state.removeItem)
-  const items = useCartStore((state) => state.items)
   const openCart = useCartStore((state) => state.openCart)
 
   const inWishlist = isInWishlist(product.id)
@@ -32,28 +30,37 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
   const installmentPrice = product.price / 3
 
-  const defaultVariant = product.variants?.[0]
-  const defaultColor = defaultVariant?.color || "Unico"
-  const defaultSize = "Unico"
+  const sizes = useMemo(() => {
+    const preferredOrder = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"]
 
-  const inCart = items.some(
-    (item) =>
-      item.product.id === product.id &&
-      item.selectedColor === defaultColor &&
-      item.selectedSize === defaultSize
-  )
+    const rawSizes = Array.isArray(product.stockBySize) ? product.stockBySize : []
 
-  const handleCartAction = (e: React.MouseEvent) => {
+    return [...rawSizes].sort((a, b) => {
+      const ia = preferredOrder.indexOf(a.size)
+      const ib = preferredOrder.indexOf(b.size)
+
+      if (ia === -1 && ib === -1) return a.size.localeCompare(b.size)
+      if (ia === -1) return 1
+      if (ib === -1) return -1
+      return ia - ib
+    })
+  }, [product.stockBySize])
+
+  const defaultColor = product.variants?.[0]?.color || "Unico"
+
+  const handleAddSize = (
+    size: string,
+    stock: number,
+    e: React.MouseEvent
+  ) => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (inCart) {
-      removeItem(product.id, defaultColor, defaultSize)
-      toast.success(`${product.name} eliminado del carrito`)
-    } else {
-      addItem(product, defaultColor, defaultSize)
-      openCart()
-    }
+    if (stock <= 0) return
+
+    addItem(product, defaultColor, size)
+    openCart()
+    toast.success(`${product.name} agregado al carrito (${size})`)
   }
 
   return (
@@ -72,10 +79,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
           alt={product.name}
           fill
           className="object-contain p-4 transition-transform duration-500 group-hover:scale-110 sm:p-5 md:p-6"
-sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
-        {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-2 sm:left-4 sm:top-4">
           {discountPercent > 0 && (
             <span className="inline-flex items-center rounded-full bg-destructive px-2.5 py-1 text-[10px] font-bold tracking-wide text-destructive-foreground shadow-lg sm:px-3 sm:py-1.5 sm:text-xs">
@@ -90,7 +96,6 @@ sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           )}
         </div>
 
-        {/* Action Buttons */}
         <div className="absolute right-3 top-3 z-10 flex flex-col gap-2 opacity-100 transition-all duration-300 sm:right-4 sm:top-4 md:translate-x-4 md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
           <Button
             variant="secondary"
@@ -114,27 +119,6 @@ sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             <span className="sr-only">
               {inWishlist ? "Quitar de favoritos" : "Agregar a favoritos"}
             </span>
-          </Button>
-        </div>
-
-        {/* Quick Add Desktop - igual al estilo original */}
-        <div className="absolute bottom-0 left-0 right-0 hidden translate-y-full p-4 transition-transform duration-300 md:block md:group-hover:translate-y-0">
-          <Button
-            className={cn(
-              "w-full rounded-full font-semibold shadow-xl gap-2 cursor-pointer",
-              inCart
-                ? "bg-muted text-muted-foreground hover:bg-muted/80"
-                : "bg-primary text-primary-foreground hover:bg-primary/90"
-            )}
-            onClick={handleCartAction}
-          >
-            <div className="relative">
-              <ShoppingBag className="h-4 w-4" />
-              {inCart && (
-                <Check className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-white text-green-500" />
-              )}
-            </div>
-            {inCart ? "EN EL CARRITO" : "AGREGAR AL CARRITO"}
           </Button>
         </div>
       </Link>
@@ -192,18 +176,44 @@ sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           </div>
         )}
 
-        {/* Mobile / Tablet Add to Cart */}
-        <div className="mt-auto pt-3 md:hidden">
+        {sizes.length > 0 && (
+          <div className="pt-2">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-primary sm:text-xs">
+              Añadir talle
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {sizes.map((item) => {
+                const inStock = item.stock > 0
+
+                return (
+                  <button
+                    key={item.size}
+                    type="button"
+                    disabled={!inStock}
+                    onClick={(e) => handleAddSize(item.size, item.stock, e)}
+                    className={cn(
+                      "min-w-10 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition sm:min-w-11 sm:text-sm",
+                      inStock
+                        ? "cursor-pointer border-border bg-background hover:border-primary hover:text-primary"
+                        : "cursor-not-allowed border-border/60 text-muted-foreground line-through opacity-50"
+                    )}
+                    title={inStock ? `Agregar talle ${item.size}` : `Talle ${item.size} agotado`}
+                  >
+                    {item.size}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-auto pt-3">
           <Button
+            asChild
             className="w-full px-2 text-[11px] font-semibold cursor-pointer sm:px-3 sm:text-sm"
-            onClick={handleCartAction}
-            variant={inCart ? "secondary" : "default"}
           >
-            <ShoppingBag className="mr-1.5 h-4 w-4 shrink-0" />
-            <span className="sm:hidden">{inCart ? "EN CARRITO" : "AGREGAR"}</span>
-            <span className="hidden sm:inline">
-              {inCart ? "EN CARRITO" : "AÑADIR AL CARRITO"}
-            </span>
+            <Link href={`/product/${product.slug}`}>COMPRAR</Link>
           </Button>
         </div>
       </div>
