@@ -18,8 +18,8 @@ export default async function HomePage() {
     getAllProductsFromDb(),
   ])
 
-  const accessoriesProducts = allProducts.filter(
-    (product) => product.categorySlug === "accesorios"
+  const extrasProducts = allProducts.filter(
+    (product) => product.categorySlug === "extras"
   )
 
   return (
@@ -55,17 +55,17 @@ export default async function HomePage() {
             <div className="w-1 h-14 bg-primary mr-4" />
             <div>
               <p className="text-sm text-primary font-medium uppercase tracking-wider">
-                EXTRAS
+                Accesorios
               </p>
               <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">
-                ACCESORIOS
+                Extras
               </h2>
             </div>
           </div>
 
-          <ProductCarousel
-            products={accessoriesProducts}
-            viewAllHref="/category/accesorios"
+  <ProductCarousel
+            products={extrasProducts}
+            viewAllHref="/category/extras"
             showDots={false}
           />
         </div>

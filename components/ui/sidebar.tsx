@@ -259,7 +259,7 @@ function SidebarTrigger({
       {...props}
     >
       <motion.div
-        animate={{ rotate: open() ? 180 : 0 }}
+        animate={{ rotate: open ? 180 : 0 }}
         transition={{ duration: 0.2 }}
         {...({} as HTMLMotionProps<"div">)}
       >
