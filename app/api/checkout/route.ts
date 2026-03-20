@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 type CheckoutItem = {
   quantity: number
@@ -101,10 +102,15 @@ export async function POST(request: Request) {
       )
     }
 
-    // Este endpoint usa service role para operar sobre la DB.
-    // Si después querés asociar la orden al usuario autenticado,
-    // hay que leer la sesión con un cliente server-side atado a cookies.
-    const userId = null
+    const supabaseServer = await createSupabaseServerClient()
+    const userResult = await supabaseServer.auth.getUser()
+
+    console.log("CHECKOUT AUTH USER:", userResult.data.user)
+    console.log("CHECKOUT AUTH ERROR:", userResult.error)
+
+    const userId = userResult.data.user?.id ?? null
+
+    console.log("USER ID TO INSERT:", userId)
 
     let validMember = false
 
@@ -197,6 +203,7 @@ export async function POST(request: Request) {
       return {
         product_id: dbProduct.id,
         product_name: dbProduct.name,
+        product_image: dbProduct.images?.[0] || null,
         quantity: item.quantity,
         price: unitPrice,
         color: item.selectedColor,
@@ -207,33 +214,40 @@ export async function POST(request: Request) {
     const shippingCost = getShippingCost(subtotal, shippingMethod)
     const total = subtotal + shippingCost
 
+    const insertPayload = {
+      user_id: userId,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      address,
+      city,
+      province,
+      postal_code: postalCode,
+      shipping_method: shippingMethod,
+      shipping_cost: shippingCost,
+      total,
+      payment_method: paymentInfo.method,
+      payment_info: {
+        ...paymentInfo,
+        memberApplied: validMember,
+        memberNumber: validMember ? memberNumber?.trim() : null,
+      },
+      member_number: validMember ? memberNumber?.trim() : null,
+      member_validated: validMember,
+      status: "pending",
+      phone,
+    }
+
+    console.log("INSERT PAYLOAD:", insertPayload)
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
-      .insert({
-        user_id: userId,
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        address,
-        city,
-        province,
-        postal_code: postalCode,
-        shipping_method: shippingMethod,
-        shipping_cost: shippingCost,
-        total,
-        payment_method: paymentInfo.method,
-        payment_info: {
-          ...paymentInfo,
-          memberApplied: validMember,
-          memberNumber: validMember ? memberNumber?.trim() : null,
-        },
-        member_number: validMember ? memberNumber?.trim() : null,
-        member_validated: validMember,
-        status: "pending",
-        phone,
-      })
-      .select()
+      .insert(insertPayload)
+      .select("id, user_id, email, created_at")
       .single()
+
+    console.log("ORDER CREATED:", order)
+    console.log("ORDER ERROR:", orderError)
 
     if (orderError) {
       console.error("Error creating order:", orderError)
@@ -255,13 +269,33 @@ export async function POST(request: Request) {
     if (itemsError) {
       console.error("Error creating order items:", itemsError)
 
-      // rollback simple para no dejar orden huérfana
       await supabaseAdmin.from("orders").delete().eq("id", order.id)
 
       return NextResponse.json(
         { success: false, error: "Error al guardar los productos del pedido" },
         { status: 500 }
       )
+    }
+
+    for (const item of validatedOrderItems) {
+      const { data: stockUpdated, error: stockUpdateError } =
+        await supabaseAdmin.rpc("decrease_product_stock", {
+          p_product_id: item.product_id,
+          p_size: item.size,
+          p_quantity: item.quantity,
+        })
+
+      if (stockUpdateError || !stockUpdated) {
+        console.error("Error decreasing stock:", stockUpdateError)
+
+        await supabaseAdmin.from("order_items").delete().eq("order_id", order.id)
+        await supabaseAdmin.from("orders").delete().eq("id", order.id)
+
+        return NextResponse.json(
+          { success: false, error: "No se pudo descontar el stock del pedido" },
+          { status: 500 }
+        )
+      }
     }
 
     let redirectTo = "/account/orders"

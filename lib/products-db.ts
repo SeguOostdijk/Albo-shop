@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { Product } from "@/lib/type/products"
 
 type DbProductVariant = {
@@ -99,7 +99,7 @@ const PRODUCT_SELECT = `
 `
 
 export async function getAllProductsFromDb(): Promise<Product[]> {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
     .from("products")
@@ -111,7 +111,7 @@ export async function getAllProductsFromDb(): Promise<Product[]> {
 }
 
 export async function getFeaturedProductsFromDb(): Promise<Product[]> {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
     .from("products")
@@ -124,7 +124,7 @@ export async function getFeaturedProductsFromDb(): Promise<Product[]> {
 }
 
 export async function getNewProductsFromDb(): Promise<Product[]> {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
     .from("products")
@@ -137,7 +137,7 @@ export async function getNewProductsFromDb(): Promise<Product[]> {
 }
 
 export async function getSaleProductsFromDb(): Promise<Product[]> {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
     .from("products")
@@ -150,7 +150,7 @@ export async function getSaleProductsFromDb(): Promise<Product[]> {
 }
 
 export async function getProductBySlugFromDb(slug: string): Promise<Product | null> {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
     .from("products")
@@ -165,7 +165,7 @@ export async function getProductBySlugFromDb(slug: string): Promise<Product | nu
 }
 
 export async function getProductsByCategoryFromDb(categorySlug: string): Promise<Product[]> {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
     .from("products")

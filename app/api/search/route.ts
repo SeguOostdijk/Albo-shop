@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { Product } from "@/lib/type/products"
 
 type DbProductVariant = {
@@ -77,7 +77,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, data: [] })
   }
 
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase
     .from("products")

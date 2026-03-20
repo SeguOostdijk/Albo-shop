@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, Sparkles, Edit3 } from "lucide-react"
@@ -9,7 +9,7 @@ import { SponsorsManager } from "@/components/admin/sponsors-manager"
 export const revalidate = 0
 
 export default async function AdminPage() {
-  const supabase = await createClient()
+  const supabase = await createSupabaseServerClient()
 
   const {
     data: { user },

@@ -1,37 +1,79 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase/auth"
+import { supabaseAdmin } from "@/lib/supabase/admin"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export async function GET() {
   try {
-    // Get current user session
-    const { data: { session } } = await supabase.auth.getSession()
+    const supabaseServer = await createSupabaseServerClient()
+    const userResult = await supabaseServer.auth.getUser()
 
-    if (!session?.user) {
-      return NextResponse.json({ orders: [] })
+    const user = userResult.data.user
+    const userId = user?.id
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "No autenticado" },
+        { status: 401 }
+      )
     }
 
-    // Fetch orders for the current user
-    const { data: orders, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("orders")
-      .select("*, items:order_items(*)")
-      .eq("user_id", session.user.id)
+      .select(`
+        id,
+        status,
+        total,
+        shipping_cost,
+        shipping_method,
+        created_at,
+        order_items (
+          id,
+          product_id,
+          product_name,
+          product_image,
+          quantity,
+          price,
+          color,
+          size
+        )
+      `)
+      .eq("user_id", userId)
       .order("created_at", { ascending: false })
 
     if (error) {
-      console.error("Error fetching orders:", error)
+      console.error("Error al cargar los pedidos.", error)
       return NextResponse.json(
-        { error: "Error al obtener pedidos" },
+        { error: "Error al cargar los pedidos" },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({ orders: orders || [] })
+    const orders = (data ?? []).map((order) => ({
+      id: order.id,
+      status: order.status,
+      total: order.total,
+      shippingCost: order.shipping_cost,
+      shippingMethod: order.shipping_method,
+      created_at: order.created_at,
+      items: (order.order_items ?? []).map((item) => ({
+        id: item.id,
+        productId: item.product_id,
+        productName: item.product_name,
+        productImage: item.product_image,
+        quantity: item.quantity,
+        price: item.price,
+        color: item.color,
+        size: item.size,
+      })),
+    }))
+
+    return NextResponse.json({ orders })
   } catch (error) {
-    console.error("API error:", error)
+    console.error("API /orders unexpected error:", error)
+
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { error: "Error al cargar los pedidos" },
       { status: 500 }
     )
   }
 }
-
