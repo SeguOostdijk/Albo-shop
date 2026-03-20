@@ -23,7 +23,7 @@ const heroSlides = [
     eyebrow: "Albo Shop",
   },
   {
-    image: "/FutbolFemeninoHero.png",
+    image: "/HeroFemenino.jpeg",
     title: "FEMENINO",
     subtitle: "La misma ropa que usan las jugadoras",
     cta: "VER COLECCIÓN",
