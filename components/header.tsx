@@ -137,7 +137,7 @@ export function Header() {
               </div>
               {sheetOpen && (
                 <motion.div 
-className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6 overflow-hidden"
+className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6 pt-16 overflow-y-auto overscroll-contain touch-pan-y"
                   initial={{ x: '-100%', opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: '-100%', opacity: 0 }}
