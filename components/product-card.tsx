@@ -176,37 +176,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </div>
         )}
 
-        {sizes.length > 0 && (
-          <div className="pt-2">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-primary sm:text-xs">
-              Añadir talle
-            </p>
 
-            <div className="flex flex-wrap gap-2">
-              {sizes.map((item) => {
-                const inStock = item.stock > 0
-
-                return (
-                  <button
-                    key={item.size}
-                    type="button"
-                    disabled={!inStock}
-                    onClick={(e) => handleAddSize(item.size, item.stock, e)}
-                    className={cn(
-                      "min-w-10 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition sm:min-w-11 sm:text-sm",
-                      inStock
-                        ? "cursor-pointer border-border bg-background hover:border-primary hover:text-primary"
-                        : "cursor-not-allowed border-border/60 text-muted-foreground line-through opacity-50"
-                    )}
-                    title={inStock ? `Agregar talle ${item.size}` : `Talle ${item.size} agotado`}
-                  >
-                    {item.size}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
 
         <div className="mt-auto pt-3">
           <Button
