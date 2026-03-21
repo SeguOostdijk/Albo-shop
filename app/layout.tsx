@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { AuthProvider } from "@/lib/auth-context"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -38,7 +39,11 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <AuthProvider>
           <Header />
-        <main className="min-h-screen pt-0">{children}</main>
+          <SidebarProvider>
+            <SidebarInset className="min-h-screen pt-0">
+              <main>{children}</main>
+            </SidebarInset>
+          </SidebarProvider>
           <Footer />
           <Toaster />
           <Analytics />

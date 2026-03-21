@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import {
@@ -112,9 +111,7 @@ export function Header() {
     await signOut()
   }
 
-  function setMobileMenuOpen(arg0: boolean): void {
-    throw new Error("Function not implemented.")
-  }
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-[9999] w-full bg-background/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] isolate">
@@ -128,7 +125,7 @@ export function Header() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between gap-3 lg:gap-6">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-              <Sheet>
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}> 
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="lg:hidden">
                     <Menu className="h-5 w-5" />
@@ -136,7 +133,7 @@ export function Header() {
                 </SheetTrigger>
                 <SheetContent
                   side="left"
-                  className="w-[90vw] max-w-[420px] bg-gradient-to-b from-primary to-primary/90 backdrop-blur-xl text-primary-foreground border-primary/20 shadow-2xl p-0 sm:w-[380px]"
+                  className="w-[90vw] max-w-[420px] bg-gradient-to-b from-primary to-primary/90 backdrop-blur-xl text-primary-foreground border-primary/20 shadow-2xl p-0 sm:w-[380px] pt-20"
                 >
                   <SheetTitle className="sr-only">Menú principal</SheetTitle>
                   <SheetDescription className="sr-only">
@@ -145,23 +142,13 @@ export function Header() {
 
                   <div className="h-full overflow-y-auto pb-20 px-6 pt-12 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-primary-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent/60 [&::-webkit-scrollbar-thumb]:hover:bg-accent/80">
                     <nav className="flex flex-col gap-3">
-                      <Link
-                        href="/category/novedades"
-                        className="group relative block rounded-xl bg-gradient-to-r from-transparent to-primary/10 p-4 text-xl font-bold text-accent shadow-lg backdrop-blur-sm hover:shadow-xl hover:scale-[1.02] hover:from-primary/20 transition-all duration-300"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="absolute inset-0 bg-gradient-to-r from-accent/10 to-transparent rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                        NOVEDADES
-                      </Link>
-
                       {mainNavCategories.map((cat) => (
                         <div key={cat.slug} className="border-b border-primary-foreground/20 pb-2">
                           <Link
                             href={`/category/${cat.slug}`}
-                            className="group relative block rounded-lg bg-white/20 backdrop-blur-sm p-4 text-xl font-semibold text-white shadow-lg hover:shadow-xl hover:scale-[1.02] hover:bg-white/30 transition-all duration-300"
-                            onClick={() => setMobileMenuOpen(false)}
+                            className="block px-3 py-2.5 text-lg font-bold text-white border-l-2 border-accent/60 hover:border-accent hover:bg-white/10 rounded-r-lg transition-colors"
+                            onClick={() => setSheetOpen(false)}
                           >
-                            <span className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                             {cat.name.toUpperCase()}
                           </Link>
 
@@ -171,8 +158,8 @@ export function Header() {
                                 <Link
                                   key={sub.slug}
                                   href={`/category/${cat.slug}?tipo=${sub.slug}`}
-                                  className="group relative block rounded-lg bg-white/10 p-3 text-base font-medium text-white/90 shadow-md hover:shadow-lg hover:scale-[1.02] hover:bg-white/20 transition-all duration-300 ml-2 mr-4 my-1"
-                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="block px-4 py-2 text-base text-white/90 hover:text-white hover:bg-white/5 rounded-md transition-colors ml-3"
+                                  onClick={() => setSheetOpen(false)}
                                 >
                                   {sub.name}
                                 </Link>
@@ -182,20 +169,11 @@ export function Header() {
                         </div>
                       ))}
 
-                      <Link
-                        href="/category/oportunidades"
-                        className="group relative block rounded-xl bg-gradient-to-r from-orange-500/20 to-yellow-500/20 p-4 text-xl font-bold text-orange-400 shadow-lg backdrop-blur-sm border border-orange-500/30 hover:shadow-xl hover:scale-[1.02] hover:from-orange-500/30 transition-all duration-300"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                        OPORTUNIDADES
-                      </Link>
-
                       {isAdminUser && (
                         <Link
                           href="/admin"
                           className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
-                          onClick={() => setMobileMenuOpen(false)}
+                          onClick={() => setSheetOpen(false)}
                         >
                           EDITAR CATÁLOGO
                         </Link>
