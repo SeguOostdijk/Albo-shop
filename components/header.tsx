@@ -15,7 +15,8 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { motion } from "framer-motion"
+
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -42,14 +43,14 @@ import { CartDrawer } from "@/components/cart-drawer"
 import { SearchResults } from "@/components/search-results"
 
 const mainNavCategories = categories.filter((cat) =>
-  ["primera-division", "femenino", "infantiles", "accesorios", "extras"].includes(cat.slug))
+  ["primera-division", "femenino", "infantiles", "accesorios", "extras"].includes(cat.slug)
+)
 
 export function Header() {
-
   const [searchOpenMobile, setSearchOpenMobile] = useState(false)
   const [searchOpenDesktop, setSearchOpenDesktop] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  // const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [isAdminUser, setIsAdminUser] = useState(false)
@@ -111,8 +112,6 @@ export function Header() {
     await signOut()
   }
 
-  const [sheetOpen, setSheetOpen] = useState(false)
-
   return (
     <header className="sticky top-0 z-[9999] w-full bg-background/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] isolate">
       <div className="bg-accent px-3 py-2 text-center text-xs font-medium text-accent-foreground sm:text-sm">
@@ -125,63 +124,64 @@ export function Header() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between gap-3 lg:gap-6">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}> 
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="left"
-                  className="w-[90vw] max-w-[420px] bg-gradient-to-b from-primary to-primary/90 backdrop-blur-xl text-primary-foreground border-primary/20 shadow-2xl p-0 sm:w-[380px] pt-20"
+<div className="relative lg:hidden">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="z-[101]"
+                  onClick={() => setSheetOpen(prev => !prev)}
                 >
-                  <SheetTitle className="sr-only">Menú principal</SheetTitle>
-                  <SheetDescription className="sr-only">
-                    Navegación principal de la tienda.
-                  </SheetDescription>
-
-                  <div className="h-full overflow-y-auto pb-20 px-6 pt-12 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-primary-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent/60 [&::-webkit-scrollbar-thumb]:hover:bg-accent/80">
-                    <nav className="flex flex-col gap-3">
-                      {mainNavCategories.map((cat) => (
-                        <div key={cat.slug} className="border-b border-primary-foreground/20 pb-2">
-                          <Link
-                            href={`/category/${cat.slug}`}
-                            className="block px-3 py-2.5 text-lg font-bold text-white border-l-2 border-accent/60 hover:border-accent hover:bg-white/10 rounded-r-lg transition-colors"
-                            onClick={() => setSheetOpen(false)}
-                          >
-                            {cat.name.toUpperCase()}
-                          </Link>
-
-                          {cat.slug !== "accesorios" && (
-                            <div className="flex flex-col gap-1 pl-4">
-                              {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
-                                <Link
-                                  key={sub.slug}
-                                  href={`/category/${cat.slug}?tipo=${sub.slug}`}
-                                  className="block px-4 py-2 text-base text-white/90 hover:text-white hover:bg-white/5 rounded-md transition-colors ml-3"
-                                  onClick={() => setSheetOpen(false)}
-                                >
-                                  {sub.name}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-
-                      {isAdminUser && (
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </div>
+              {sheetOpen && (
+                <motion.div 
+className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6"
+                  initial={{ x: '-100%', opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: '-100%', opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <nav className="flex flex-col gap-3">
+                    {mainNavCategories.map((cat) => (
+                      <div key={cat.slug} className="border-b border-primary-foreground/20 pb-2">
                         <Link
-                          href="/admin"
-                          className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
+                          href={`/category/${cat.slug}`}
+                          className="block px-3 py-2.5 text-lg font-bold text-white border-l-2 border-accent/60 hover:border-accent hover:bg-white/10 rounded-r-lg transition-colors"
                           onClick={() => setSheetOpen(false)}
                         >
-                          EDITAR CATÁLOGO
+                          {cat.name.toUpperCase()}
                         </Link>
-                      )}
-                    </nav>
-                  </div>
-                </SheetContent>
-              </Sheet>
+
+                        {cat.slug !== "accesorios" && (
+                          <div className="flex flex-col gap-1 pl-4">
+                            {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
+                              <Link
+                                key={sub.slug}
+                                href={`/category/${cat.slug}?tipo=${sub.slug}`}
+                                className="block px-4 py-2 text-base text-white/90 hover:text-white hover:bg-white/5 rounded-md transition-colors ml-3"
+                                onClick={() => setSheetOpen(false)}
+                              >
+                                {sub.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {isAdminUser && (
+                      <Link
+                        href="/admin"
+                        className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
+                        onClick={() => setSheetOpen(false)}
+                      >
+                        EDITAR CATÁLOGO
+                      </Link>
+                    )}
+                  </nav>
+                </motion.div>
+              )}
 
               <Link href="/" className="flex min-w-0 items-center gap-2">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary sm:h-12 sm:w-12">
@@ -190,7 +190,8 @@ export function Header() {
                     alt="Escudo Albo"
                     width={48}
                     height={48}
-                    className="object-cover" />
+                    className="object-cover"
+                  />
                 </div>
 
                 <div className="min-w-0">
@@ -210,7 +211,8 @@ export function Header() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setSearchOpenDesktop(true)}
-                    onBlur={() => setTimeout(() => setSearchOpenDesktop(false), 200)} />
+                    onBlur={() => setTimeout(() => setSearchOpenDesktop(false), 200)}
+                  />
                   <Button
                     type="button"
                     className="cursor-pointer rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
@@ -220,7 +222,7 @@ export function Header() {
                 </div>
 
                 {searchOpenDesktop && searchLoading && (
-                  <div className="absolute left-0 right-0 top-full z-[10000] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
+                  <div className="absolute left-0 right-0 top-full z-[10005] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
                     Buscando...
                   </div>
                 )}
@@ -231,7 +233,8 @@ export function Header() {
                     onSelect={() => {
                       setSearchQuery("")
                       setSearchOpenDesktop(false)
-                    } } />
+                    }}
+                  />
                 )}
               </div>
             </div>
@@ -332,60 +335,64 @@ export function Header() {
                 </Link>
               )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              onClick={openCart}
-            >
-              <ShoppingBag className="h-5 w-5" />
-              {cartItems > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">
-                  {cartItems}
-                </span>
-              )}
-              <span className="sr-only">Carrito</span>
-            </Button>
-          </div>
-        </div>
-
-        {searchOpenMobile && (
-          <div className="relative pb-4 md:hidden">
-            <div className="relative flex">
-              <Input
-                type="search"
-                placeholder="Buscar productos"
-                className="w-full rounded-l-sm rounded-r-none border-2 border-border text-foreground"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus />
-
               <Button
-                type="button"
-                className="rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={openCart}
               >
-                <Search className="h-5 w-5 text-foreground" />
+                <ShoppingBag className="h-5 w-5" />
+                {cartItems > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">
+                    {cartItems}
+                  </span>
+                )}
+                <span className="sr-only">Carrito</span>
               </Button>
-
-              {searchLoading && (
-                <div className="absolute left-0 right-0 top-full z-[10000] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
-                  Buscando...
-                </div>
-              )}
-
-              {searchResults.length > 0 && (
-                <SearchResults
-                  results={searchResults.slice(0, 5)}
-                  onSelect={() => {
-                    setSearchQuery("")
-                    setSearchOpenMobile(false)
-                  } } />
-              )}
             </div>
           </div>
-        )}
+
+          {searchOpenMobile && (
+            <div className="relative pb-4 md:hidden">
+              <div className="relative flex">
+                <Input
+                  type="search"
+                  placeholder="Buscar productos"
+                  className="w-full rounded-l-sm rounded-r-none border-2 border-border text-foreground"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                />
+
+                <Button
+                  type="button"
+                  className="rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
+                >
+                  <Search className="h-5 w-5 text-foreground" />
+                </Button>
+
+                {searchLoading && (
+                  <div className="absolute left-0 right-0 top-full z-[10000] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
+                    Buscando...
+                  </div>
+                )}
+
+                {searchResults.length > 0 && (
+                  <SearchResults
+                    results={searchResults.slice(0, 5)}
+                    onSelect={() => {
+                      setSearchQuery("")
+                      setSearchOpenMobile(false)
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div><nav className="hidden bg-primary lg:block">
+
+      <nav className="hidden bg-primary lg:block">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center">
             <Link
@@ -409,7 +416,6 @@ export function Header() {
                   <div className="invisible absolute left-0 top-full z-[10020] opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
                     <div className="min-w-[200px] border border-border bg-background py-2 text-foreground shadow-lg">
                       {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
-
                         <Link
                           key={sub.slug}
                           href={`/category/${cat.slug}?tipo=${sub.slug}`}
