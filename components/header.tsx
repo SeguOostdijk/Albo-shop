@@ -12,6 +12,7 @@ import {
   LogOut,
   Pencil,
   Menu,
+  X
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -136,12 +137,18 @@ export function Header() {
               </div>
               {sheetOpen && (
                 <motion.div 
-className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6"
+className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6 overflow-hidden"
                   initial={{ x: '-100%', opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: '-100%', opacity: 0 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
                 >
+                  <motion.button
+                    className="absolute right-6 top-6 z-[102] text-white/90 hover:text-white size-12 flex items-center justify-center rounded-full hover:bg-white/20 hover:backdrop-blur-sm hover:shadow-lg transition-all duration-200"
+                    onClick={() => setSheetOpen(false)}
+                  >
+                    <X className="h-8 w-8 stroke-width-3 drop-shadow-lg" />
+                  </motion.button>
                   <nav className="flex flex-col gap-3">
                     {mainNavCategories.map((cat) => (
                       <div key={cat.slug} className="border-b border-primary-foreground/20 pb-2">
