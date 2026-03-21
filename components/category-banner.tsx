@@ -31,27 +31,19 @@ export function CategoryBanner() {
             <Link
               key={category.href}
               href={category.href}
-              className="group relative mx-auto block w-full max-w-[420px] overflow-hidden rounded-xl border border-border/20 shadow-lg transition-all duration-500 hover:scale-105 hover:border-primary/70 hover:shadow-xl md:mx-0 md:max-w-none"
+              className="group relative mx-auto block w-full overflow-hidden rounded-xl border border-border/20 shadow-lg transition-all duration-500 hover:scale-105 hover:border-primary/70 hover:shadow-xl"
             >
-              <div className="relative aspect-[3/3] md:aspect-[5/7] md:h-[650px] md:min-h-0">
+              {/* Mobile */}
+              <div
+                className="aspect-square md:hidden w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105 group-hover:brightness-105"
+                style={{ backgroundImage: `url(${category.imageMobile})` }}
+              />
 
-                {/* Mobile */}
-                <Image
-                  src={category.imageMobile || "/placeholder.svg"}
-                  alt={category.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105 group-hover:brightness-105 md:hidden"
-                />
-
-                {/* Desktop */}
-                <Image
-                  src={category.image || "/placeholder.svg"}
-                  alt={category.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105 group-hover:brightness-105 hidden md:block"
-                />
-
-              </div>
+              {/* Desktop */}
+              <div
+                className="hidden md:block md:h-[650px] w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105 group-hover:brightness-105"
+                style={{ backgroundImage: `url(${category.image})` }}
+              />
             </Link>
           ))}
         </div>

@@ -78,7 +78,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           src={product.images[0] || "/placeholder.svg"}
           alt={product.name}
           fill
-          className="object-contain p-4 transition-transform duration-500 group-hover:scale-110 sm:p-5 md:p-6"
+className="object-contain object-center p-3 transition-transform duration-500 group-hover:scale-[1.02] sm:p-4 md:p-5 object-[center]"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
