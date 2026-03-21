@@ -136,13 +136,25 @@ export function Header() {
                 </Button>
               </div>
               {sheetOpen && (
-                <motion.div 
-className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6 pt-16 overflow-y-auto overscroll-contain touch-pan-y"
+<motion.div 
+className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6 pt-24 overflow-y-auto overscroll-contain touch-pan-y"
                   initial={{ x: '-100%', opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: '-100%', opacity: 0 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
                 >
+                  <Link href="/" className="absolute left-6 top-6 flex items-center gap-2 z-[103]">
+                    <div className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                      <Image 
+                        src="/escudo.jpeg" 
+                        alt="CAI San Cayetano" 
+                        width={36}
+                        height={36}
+                        className="object-cover rounded-full"
+                      />
+                    </div>
+                    <span className="text-xl font-bold text-white drop-shadow-lg">Albo Shop</span>
+                  </Link>
                   <motion.button
                     className="absolute right-6 top-6 z-[102] text-white/90 hover:text-white size-12 flex items-center justify-center rounded-full hover:bg-white/20 hover:backdrop-blur-sm hover:shadow-lg transition-all duration-200"
                     onClick={() => setSheetOpen(false)}
@@ -177,7 +189,7 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                       </div>
                     ))}
 
-                    {isAdminUser && (
+{isAdminUser && (
                       <Link
                         href="/admin"
                         className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
@@ -186,6 +198,64 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                         EDITAR CATÁLOGO
                       </Link>
                     )}
+                    <div className="mt-4 mb-4 flex justify-center gap-6">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-12 w-12 text-white hover:bg-white/20"
+                        onClick={() => {openCart(); setSheetOpen(false);}}
+                      >
+                        <ShoppingBag className="h-6 w-6" />
+                      </Button>
+                      <Link href="/wishlist" onClick={() => setSheetOpen(false)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-12 w-12 text-white hover:bg-white/20 relative"
+                        >
+                          <Heart className="h-6 w-6" />
+                          {wishlistItems > 0 && (
+                            <span className="absolute -right-0 -top-0 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">
+                              {wishlistItems}
+                            </span>
+                          )}
+                        </Button>
+                      </Link>
+                      <Link href="/account" onClick={() => setSheetOpen(false)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-12 w-12 text-white hover:bg-white/20"
+                        >
+                          <User className="h-6 w-6" />
+                        </Button>
+                      </Link>
+                    </div>
+{user ? (
+                      <div className="px-6 pb-4">
+                        <div className="text-center text-white/90 font-medium py-1 px-4 mb-3">
+                          {user.email}
+                        </div>
+                        <Button
+                          variant="destructive"
+                          className="w-full text-red-100 hover:text-white hover:bg-red-500/30"
+                          onClick={handleSignOut}
+                        >
+                          Cerrar Sesión
+                        </Button>
+                      </div>
+                    ) : (
+                      <Link 
+                        href="/account/login"
+                        className="block w-full text-center text-white/90 font-medium py-3 px-6 rounded-lg hover:bg-white/20 transition-colors"
+                        onClick={() => setSheetOpen(false)}
+                      >
+                        Iniciar Sesión
+                      </Link>
+                    )}
+                    <div className="pb-12 px-6 text-center text-white/70 text-xs font-light tracking-wide">
+                      Club Atlético Independiente de San Cayetano
+                    </div>
                   </nav>
                 </motion.div>
               )}
