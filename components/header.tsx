@@ -317,11 +317,11 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
             </div>
 
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-              {isAdminUser && (
-                <Link href="/admin" className="hidden xl:block">
+{isAdminUser && (
+                <Link href="/admin" className="hidden xl:block cursor-pointer">
                   <Button
                     variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
                   >
                     <Pencil className="mr-2 h-4 w-4" />
                     Editar catálogo
@@ -343,7 +343,7 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative"
+className="relative cursor-pointer"
                 >
                   <Heart className="h-5 w-5" />
                   {wishlistItems > 0 && (
@@ -361,7 +361,7 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="min-w-0 flex-shrink"
+className="min-w-0 flex-shrink cursor-pointer"
                     >
                       <User className="h-5 w-5" />
                       <span className="sr-only">Mi cuenta</span>
@@ -415,7 +415,7 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative"
+className="relative cursor-pointer"
                 onClick={openCart}
               >
                 <ShoppingBag className="h-5 w-5" />

@@ -39,7 +39,8 @@ export default async function AdminProductsPage() {
       category_slug,
       price,
       is_featured,
-      is_new
+      is_new,
+      images
     `)
     .order("name")
 
@@ -107,8 +108,16 @@ export default async function AdminProductsPage() {
                       <tr key={product.id} className="border-b hover:bg-muted/50 transition-colors">
                         <td className="py-2 sm:py-4 px-2 sm:px-4">
                           <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
-                              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+                              {product.images?.[0] ? (
+                                <img
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                              )}
                             </div>
                             <div>
                               <div className="font-medium text-xs sm:text-sm">{product.name}</div>
