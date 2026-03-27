@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ImageDropzone } from '@/components/ui/image-dropzone'
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, Grip } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Label } from '@/components/ui/label'
@@ -26,38 +26,57 @@ interface Sponsor {
 export function SponsorsManager() {
   const [sponsors, setSponsors] = useState<Sponsor[]>([])
   const [loading, setLoading] = useState(true)
-  const [newSponsor, setNewSponsor] = useState({ name: '', image: '', url: '' })
+  const [newSponsor, setNewSponsor] = useState({
+    name: '',
+    image: '',
+    url: '',
+  })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+
+  // Edit state
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editForm, setEditForm] = useState({ name: '', image: '', url: '', position: '' })
+  const [editForm, setEditForm] = useState({
+    name: '',
+    image: '',
+    url: '',
+    position: '',
+  })
   const [editImageFile, setEditImageFile] = useState<File | null>(null)
   const [editUploading, setEditUploading] = useState(false)
 
+  // DnD state
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+
   const supabase = createClient()
 
-  const sanitizeFileName = (name: string) => {
-    return name
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-zA-Z0-9.-]/g, "-")
-      .toLowerCase()
+  const handleEditImageSelect = async (file: File) => {
+    setEditImageFile(file)
+    const imageUrl = await uploadImage(file)
+    if (imageUrl) {
+      setEditForm({ ...editForm, image: imageUrl })
+    }
   }
 
   const uploadImage = async (file: File): Promise<string | null> => {
     setUploading(true)
     try {
-      const sanitizedName = sanitizeFileName(file.name)
-      const fileName = `sponsors/${Date.now()}-${sanitizedName}`
-
+      const fileName = `sponsors/${Date.now()}-${file.name}`
+      
       const { error } = await supabase.storage
         .from('sponsors')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false })
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
       if (error) throw error
 
-      const { data } = supabase.storage.from('sponsors').getPublicUrl(fileName)
+      const { data } = supabase.storage
+        .from('sponsors')
+        .getPublicUrl(fileName)
+
       return data.publicUrl
     } catch (error: any) {
       console.error('Upload error:', error)
@@ -67,83 +86,29 @@ export function SponsorsManager() {
     }
   }
 
-  const handleImageSelect = async (file: File) => {
-    setImageFile(file)
-    const imageUrl = await uploadImage(file)
-    if (imageUrl) setNewSponsor({ ...newSponsor, image: imageUrl })
-  }
-
-  const handleEditImageSelect = async (file: File) => {
-    setEditImageFile(file)
-    const imageUrl = await uploadImage(file)
-    if (imageUrl) setEditForm({ ...editForm, image: imageUrl })
-  }
-
-  const fetchSponsors = async () => {
-    const { data, error } = await supabase.from('sponsors').select('*').order('position')
-    if (error) console.error('Error fetching sponsors:', error)
-    else setSponsors(data || [])
-    setLoading(false)
-  }
-
-  useEffect(() => { fetchSponsors() }, [])
-
-  const addSponsor = async () => {
-    if (!newSponsor.name || !newSponsor.image) return
-    try {
-      const nextPosition = sponsors.length ? Math.max(...sponsors.map(s => s.position)) + 1 : 1
-      const sponsorToAdd = { ...newSponsor, url: newSponsor.url || null, position: nextPosition }
-      const { data, error } = await supabase.from('sponsors').insert([sponsorToAdd]).select().single()
-      if (error) throw error
-      setSponsors([...sponsors, data])
-      setNewSponsor({ name: '', image: '', url: '' })
-      setImageFile(null)
-    } catch (error: any) {
-      console.error('Add sponsor error:', error)
-      alert('Error adding sponsor: ' + error.message)
-    }
-  }
-
   const updateSponsor = async () => {
     if (!editingSponsor) return
+
     try {
-      const newPosition = parseInt(editForm.position)
-      const oldPosition = editingSponsor.position
-
-      const updates: any = { name: editForm.name, url: editForm.url || null }
-      if (editForm.image !== editingSponsor.image) updates.image = editForm.image
-
-      const { error: targetError } = await supabase
-        .from('sponsors')
-        .update({ position: oldPosition })
-        .eq('id', editingSponsor.id)
-      if (targetError) throw targetError
-
-      const shiftDirection = newPosition < oldPosition ? -1 : 1
-      const startPos = Math.min(newPosition, oldPosition)
-      const endPos = Math.max(newPosition, oldPosition)
-
-      for (let pos = startPos; pos <= endPos; pos++) {
-        if (pos === newPosition) continue
-        const sponsor = sponsors.find(s => s.position === pos)
-        if (sponsor) {
-          const { error: shiftError } = await supabase
-            .from('sponsors')
-            .update({ position: pos + shiftDirection })
-            .eq('id', sponsor.id)
-          if (shiftError) console.error('Shift error:', shiftError)
-        }
+      const updates: any = {
+        name: editForm.name,
+        position: parseInt(editForm.position || editingSponsor.position.toString()),
+        url: editForm.url || null,
       }
 
-      updates.position = newPosition
-      const { error } = await supabase.from('sponsors').update(updates).eq('id', editingSponsor.id)
+      if (editForm.image !== editingSponsor.image) {
+        updates.image = editForm.image
+      }
+
+      const { error } = await supabase
+        .from('sponsors')
+        .update(updates)
+        .eq('id', editingSponsor.id)
+
       if (error) throw error
 
-      const updatedSponsors = sponsors.map(s =>
-        s.id === editingSponsor.id ? { ...s, ...updates } : s
-      ).sort((a, b) => a.position - b.position)
-
-      setSponsors(updatedSponsors)
+      // Update local state
+      setSponsors(sponsors.map(s => s.id === editingSponsor.id ? { ...s, ...updates } : s))
       setIsEditModalOpen(false)
       setEditingSponsor(null)
     } catch (error: any) {
@@ -152,18 +117,121 @@ export function SponsorsManager() {
     }
   }
 
+  useEffect(() => {
+    fetchSponsors()
+  }, [])
+
+  const fetchSponsors = async () => {
+    const { data, error } = await supabase
+      .from('sponsors')
+      .select('*')
+      .order('position')
+
+    if (error) console.error('Error fetching sponsors:', error)
+    else setSponsors(data || [])
+    setLoading(false)
+  }
+
+  const handleImageSelect = async (file: File) => {
+    setImageFile(file)
+    const imageUrl = await uploadImage(file)
+    if (imageUrl) {
+      setNewSponsor({ ...newSponsor, image: imageUrl })
+    }
+  }
+
+  const addSponsor = async () => {
+    if (!newSponsor.name || !newSponsor.image) return
+
+    try {
+      const nextPosition = sponsors.length ? Math.max(...sponsors.map(s => s.position)) + 1 : 1
+      const sponsorToAdd = { 
+        ...newSponsor, 
+        url: newSponsor.url || null,
+        position: nextPosition 
+      }
+
+      const { data, error } = await supabase
+        .from('sponsors')
+        .insert([sponsorToAdd])
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setSponsors([...sponsors, data])
+      setNewSponsor({ name: '', image: '', url: '' })
+      setImageFile(null)
+    } catch (error: any) {
+      console.error("Add sponsor error:", error)
+      alert("Error adding sponsor: " + error.message)
+    }
+  }
+
   const deleteSponsor = async (id: string) => {
-    const { error } = await supabase.from('sponsors').delete().eq('id', id)
-    if (error) console.error('Delete error:', error)
-    else setSponsors(sponsors.filter(s => s.id !== id))
+    const { error } = await supabase
+      .from('sponsors')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Delete error:', error)
+    } else {
+      setSponsors(sponsors.filter(s => s.id !== id))
+    }
   }
 
   const toggleActive = async (id: string) => {
     const sponsor = sponsors.find(s => s.id === id)
     if (!sponsor) return
-    const { error } = await supabase.from('sponsors').update({ is_active: !sponsor.is_active }).eq('id', id)
-    if (error) console.error('Toggle error:', error)
-    else setSponsors(sponsors.map(s => s.id === id ? { ...s, is_active: !sponsor.is_active } : s))
+
+    const { error } = await supabase
+      .from('sponsors')
+      .update({ is_active: !sponsor.is_active })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Toggle error:', error)
+    } else {
+      setSponsors(sponsors.map(s => s.id === id ? { ...s, is_active: !sponsor.is_active } : s))
+    }
+  }
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    setDraggedId(id)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDrop = async (e: React.DragEvent, targetSponsor: Sponsor) => {
+    e.preventDefault()
+    if (!draggedId || draggedId === targetSponsor.id) return
+
+    const dragSponsor = sponsors.find(s => s.id === draggedId)
+    if (!dragSponsor) return
+
+    try {
+      const [update1, update2] = await Promise.all([
+        supabase.from('sponsors').update({ position: targetSponsor.position }).eq('id', draggedId),
+        supabase.from('sponsors').update({ position: dragSponsor.position }).eq('id', targetSponsor.id)
+      ])
+
+      // Update local
+      setSponsors(sponsors.map(s => {
+        if (s.id === draggedId) return { ...s, position: targetSponsor.position }
+        if (s.id === targetSponsor.id) return { ...s, position: dragSponsor.position }
+        return s
+      }))
+
+      setDraggedId(null)
+    } catch (error: any) {
+      console.error('Reorder error:', error)
+      alert('Error reordering: ' + error.message)
+    }
   }
 
   if (loading) {
@@ -198,7 +266,7 @@ export function SponsorsManager() {
             />
             <ImageDropzone onImageSelect={handleImageSelect} />
           </div>
-          <Button
+          <Button 
             type="button"
             onClick={addSponsor}
             className="w-full h-12 text-base font-semibold shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 mt-4 cursor-pointer"
@@ -232,16 +300,24 @@ export function SponsorsManager() {
         <CardContent className="p-6 pt-0 max-h-[500px] overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sponsors.map((sponsor) => (
-              <div
-                key={sponsor.id}
-                className="group relative border rounded-xl p-4 h-48 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden bg-gradient-to-br from-background/50 to-muted/20 flex flex-col"
+              <div 
+                key={sponsor.id} 
+                draggable
+                onDragStart={(e) => handleDragStart(e, sponsor.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, sponsor)}
+                className="group relative border rounded-xl p-4 h-48 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden bg-gradient-to-br from-background/50 to-muted/20 flex flex-col cursor-grab active:cursor-grabbing [&[data-dragging='true']]:!opacity-30 [&[data-dragging='true']]:!scale-95"
               >
-                <div
+                <div 
                   className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 group-hover:opacity-50 transition-opacity duration-300"
                   style={{ backgroundImage: `url(${sponsor.image})` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 backdrop-blur-sm opacity-70 group-hover:opacity-90 transition-opacity duration-300" />
                 <div className="relative z-10 flex items-start">
+                  {/* Drag handle */}
+                  <div className="mr-2 mt-2 opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing">
+                    <Grip className="h-4 w-4 text-muted-foreground" />
+                  </div>
                   <div className="flex flex-col h-full space-y-3 pt-4 flex-1 min-w-0">
                     <div className="flex-1 min-h-0 text-center px-2 flex flex-col items-center justify-center space-y-1">
                       <h3 className="font-semibold line-clamp-1 text-sm bg-background/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">{sponsor.name}</h3>
@@ -250,19 +326,19 @@ export function SponsorsManager() {
                       )}
                     </div>
                     <div className="flex gap-1.5 bg-background/90 backdrop-blur-sm p-1.5 rounded-lg border shadow-sm">
-                      <Button
+                      <Button 
                         type="button"
-                        variant={sponsor.is_active ? "default" : "outline"}
+                        variant={sponsor.is_active ? "default" : "outline"} 
                         size="sm"
                         className="flex-1 text-xs font-bold cursor-pointer h-8"
                         onClick={() => toggleActive(sponsor.id)}
                       >
                         {sponsor.is_active ? 'ACTIVO' : 'INACTIVO'}
                       </Button>
-                      <Button
-                        variant="outline"
+                      <Button 
+                        variant="outline" 
                         size="sm"
-                        className="flex-none text-xs font-bold cursor-pointer h-8 px-2 hover:bg-accent hover:scale-[1.02] transition-all"
+                        className="flex-none text-xs font-bold cursor-pointer h-8 px-2"
                         onClick={() => {
                           setEditingSponsor(sponsor)
                           setEditForm({
@@ -276,9 +352,9 @@ export function SponsorsManager() {
                       >
                         Editar
                       </Button>
-                      <Button
+                      <Button 
                         type="button"
-                        variant="destructive"
+                        variant="destructive" 
                         size="sm"
                         className="flex-none text-xs font-bold cursor-pointer h-8 px-2"
                         onClick={() => deleteSponsor(sponsor.id)}
@@ -290,8 +366,56 @@ export function SponsorsManager() {
                 </div>
               </div>
             ))}
+            {/* Edit Modal */}
+            <AlertDialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+              <AlertDialogContent className="max-w-md">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Editar Sponsor</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Modifica los datos del sponsor y su posición.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="space-y-4 py-4">
+                  <div>
+                    <Label>Nombre</Label>
+                    <Input
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>URL (opcional)</Label>
+                    <Input
+                      placeholder="https://..."
+                      value={editForm.url}
+                      onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Nueva Imagen</Label>
+                    <ImageDropzone onImageSelect={handleEditImageSelect} />
+                  </div>
+                  <div>
+                    <Label>Posición</Label>
+                    <Select value={editForm.position} onValueChange={(v) => setEditForm({ ...editForm, position: v })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: sponsors.length + 1 }, (_, i) => i + 1).map(p => (
+                          <SelectItem key={p} value={p.toString()}>{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={updateSponsor}>Guardar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
-
           {sponsors.length === 0 && (
             <div className="grid place-items-center h-64 text-muted-foreground">
               <Plus className="h-16 w-16 mb-4" />
@@ -301,56 +425,6 @@ export function SponsorsManager() {
           )}
         </CardContent>
       </Card>
-
-      {/* Edit Modal - fuera del grid de sponsors */}
-      <AlertDialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <AlertDialogContent className="max-w-md sm:max-w-lg max-h-[90vh] mt-16">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Editar Sponsor</AlertDialogTitle>
-            <AlertDialogDescription>
-              Modifica los datos del sponsor y su posición.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label>Nombre</Label>
-              <Input
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label>URL (opcional)</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.url}
-                onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label>Nueva Imagen</Label>
-              <ImageDropzone onImageSelect={handleEditImageSelect} />
-            </div>
-            <div>
-              <Label>Posición</Label>
-              <Select value={editForm.position} onValueChange={(v) => setEditForm({ ...editForm, position: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: sponsors.length + 1 }, (_, i) => i + 1).map(p => (
-                    <SelectItem key={p} value={p.toString()}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel className='cursor-pointer'>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={updateSponsor} className='cursor-pointer'>Guardar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

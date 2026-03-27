@@ -28,7 +28,8 @@ export default function SponsorsPage() {
             SPONSORS
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Apoya a nuestros sponsors oficiales y descubre ofertas exclusivas para socios del club.
+            Apoyá a nuestros sponsors oficiales y descubrí ofertas exclusivas para socios del club.
+
           </p>
         </div>
 

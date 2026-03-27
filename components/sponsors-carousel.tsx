@@ -27,16 +27,16 @@ export function SponsorsCarousel() {
     try {
       const supabase = createClient()
       const { data } = await supabase
-        .from('sponsors')
+.from('sponsors')
         .select('*')
         .eq('is_active', true)
         .order('position')
-        .limit(4)
+
 
       const dynamicSponsors: SponsorSlide[] = data?.map((s: any) => ({
         src: s.image,
         alt: s.name,
-        href: s.url,
+        href: s.url || '#',
         isNormal: true
       })) || []
 
@@ -110,14 +110,14 @@ export function SponsorsCarousel() {
 
         <div className="relative">
           {/* Indicators */}
-          <div className="flex justify-center gap-2 mb-8">
-            {sponsors.map((_, index) => (
+          <div className="flex justify-center gap-2 mb-8 flex-wrap">
+            {Array.from({length: sponsors.length}, (_, i) => i).map((index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`
-                  w-3 h-3 rounded-full transition-all duration-300 cursor-pointer
-                  ${index === currentIndex ? 'w-8 bg-primary scale-110 shadow-lg' : 'w-3 bg-muted hover:bg-primary/50'}
+                className={` 
+                  w-3 h-3 rounded-full transition-all duration-300 cursor-pointer bg-primary/70 hover:bg-primary
+                  ${index === currentIndex ? 'w-8 bg-primary scale-110 shadow-lg shadow-primary/50' : 'hover:bg-primary'}
                 `}
               />
             ))}
@@ -127,10 +127,13 @@ export function SponsorsCarousel() {
           <div className="relative mx-auto max-w-4xl aspect-[16/9] rounded-3xl shadow-2xl overflow-hidden">
             {!isFinalSlide ? (
               /* Normal Sponsor Slide */
-              <Link 
+<Link 
                 href={currentSponsor.href} 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block h-full w-full hover:scale-105 transition-all duration-500 group relative"
               >
+
                 <Image
                   src={currentSponsor.src}
                   alt={currentSponsor.alt}

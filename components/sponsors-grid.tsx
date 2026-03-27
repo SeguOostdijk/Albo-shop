@@ -22,11 +22,14 @@ export function SponsorsGrid({ sponsors = [] }: SponsorsGridProps) {
       {sponsors.map((sponsor) => (
         <Link 
           key={sponsor.name}
-          href={sponsor.url}
+          href={sponsor.url || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
           className="group relative overflow-hidden rounded-2xl bg-background/50
                      border border-border/50 hover:border-primary/50 
                      shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500
                      aspect-[4/3] md:aspect-[5/4] cursor-pointer"
+
         >
           <div className="relative h-full w-full">
             <Image
@@ -69,12 +72,7 @@ export function SponsorsGrid({ sponsors = [] }: SponsorsGridProps) {
                 {sponsor.description}
               </p>
             )}
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 drop-shadow-md" />
-              <span className="text-xs font-semibold text-white/80 uppercase tracking-wide">
-                Ofertas exclusivas
-              </span>
-            </div>
+
           </div>
         </Link>
       ))}

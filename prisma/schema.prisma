@@ -51,7 +51,7 @@ model sponsors {
   id          String   @id @default(cuid())
   name        String
   image       String
-  url         String
+  url         String?
   position    Int      @default(0)
   is_active   Boolean  @default(true)
   type        String?  // "principal", "oficial", "logistica"
