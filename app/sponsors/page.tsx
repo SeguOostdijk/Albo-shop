@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SponsorsPage() {
-  const [sponsors, setSponsors] = useState([])
+  const [sponsors, setSponsors] = useState<any[]>([])
 
   useEffect(() => {
     const supabase = createClient()

@@ -97,13 +97,13 @@ export function SponsorsCarousel() {
   }
 
   return (
-    <section className="py-12 bg-gradient-to-b from-muted/50 to-background">
+    <section className="pt-12 md:pt-16 lg:pt-20 py-20 md:py-32 lg:py-40 bg-muted pb-32 md:pb-40">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-accent mb-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-accent mb-6">
             Nuestros Sponsors
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
             Apoya a los mejores sponsors del club
           </p>
         </div>
