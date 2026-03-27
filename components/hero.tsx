@@ -30,6 +30,14 @@ const heroSlides = [
     href: "/category/femenino",
     eyebrow: "Nueva temporada",
   },
+  {
+    image: "/sponsors.jpeg",
+    title: "Sponsors",
+    subtitle: "¿Queres ser sponsor? Contactanos",
+    cta: "CONTACTANOS",
+    href: "/contact",
+    eyebrow: "Sponsors",
+  }
 ]
 
 export function Hero() {
@@ -117,14 +125,14 @@ export function Hero() {
         </div>
       </section>
 
-      {/* Desktop: igual que antes */}
+      {/* Desktop */}
       <div className="relative hidden h-[80vh] min-h-[520px] max-h-[900px] w-full overflow-hidden md:flex">
         <div className="flex h-full w-full">
           <div className="relative w-1/2 overflow-hidden bg-background">
             {heroSlides.map((s, index) => (
               <div
                 key={`desktop-${index}`}
-                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ${
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-600 ${
                   index === currentSlide ? "opacity-100" : "opacity-0"
                 }`}
               >
@@ -138,6 +146,21 @@ export function Hero() {
                 />
               </div>
             ))}
+
+            {/* Dots navigation - matching mobile */}
+            <div className="absolute bottom-8 right-8 z-10 flex items-center gap-2">
+              {heroSlides.map((_, index) => (
+                <button
+                  key={`desktop-dot-${index}`}
+                  type="button"
+                  aria-label={`Ir al slide ${index + 1}`}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`h-3 rounded-full transition-all cursor-pointer ${
+                    index === currentSlide ? "w-8 bg-white" : "w-3 bg-white/45"
+                  } hover:w-6`}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="flex w-1/2 items-center justify-center bg-background/80 p-12">
