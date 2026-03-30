@@ -5,7 +5,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { ReactNode } from 'react'
+import type { HTMLAttributes } from 'react'
+
+interface SponsorsCarouselProps extends HTMLAttributes<HTMLElement> {}
 
 interface SponsorSlide {
   src: string
@@ -14,7 +19,8 @@ interface SponsorSlide {
   isNormal: boolean
 }
 
-export function SponsorsCarousel() {
+export function SponsorsCarousel({ className, ...props }: SponsorsCarouselProps) {
+  // Forward className to root section
   const [sponsors, setSponsors] = useState<SponsorSlide[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -97,7 +103,7 @@ export function SponsorsCarousel() {
   }
 
   return (
-    <section className="pt-12 md:pt-16 lg:pt-20 py-20 md:py-32 lg:py-40 bg-muted pb-32 md:pb-40">
+    <section className={cn("pt-12 md:pt-16 lg:pt-20 py-20 md:py-32 lg:py-40 bg-muted pb-32 md:pb-40", className)} {...props}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-accent mb-6">
