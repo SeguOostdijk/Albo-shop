@@ -28,7 +28,7 @@ export default function ReturnsPage() {
             <h2 className="text-xl font-semibold mb-4">Requisitos para realizar un cambio o devolución</h2>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li>El producto debe estar <strong>sin uso</strong></li>
-              <li>Debe tener <strong>todas las etiquetas originales</strong> affixed</li>
+              <li>Debe tener <strong>todas las etiquetas originales</strong></li>
               <li>El producto debe estar en su <strong>empaque original</strong></li>
               <li>No debe haber sido <strong>lavado ni modificado</strong></li>
               <li>Debés contar con el <strong>comprobante de compra</strong></li>
@@ -42,8 +42,14 @@ export default function ReturnsPage() {
             </p>
             <ol className="list-decimal pl-6 space-y-2 text-muted-foreground">
               <li><strong>En persona:</strong> Acercate a nuestro local en Rivadavia 105, San Cayetano</li>
-              <li><strong>Por WhatsApp:</strong> Escribinos al +54 9 2983 000000</li>
-              <li><strong>Por email:</strong> Contactanos a info@clubindependiente.com</li>
+              <li><strong>Por WhatsApp:</strong> Escribinos al <a  href="https://wa.me/5492983348357"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground font-bold hover:text-primary transition-colors">+54 9 2983 34-8357</a>
+              </li>
+              <li><strong>Por email:</strong> Contactanos a <a href="mailto:alboshopcai@gmail.com"
+                  className="text-foreground font-bold hover:text-primary transition-colors">alboshopcai@gmail.com</a>
+              </li>
             </ol>
           </section>
 
@@ -54,7 +60,7 @@ export default function ReturnsPage() {
             </p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li>Recibirás el reintegro en el <strong>mismo medio de pago</strong> utilizado</li>
-              <li>El plazo de reintegro es de <strong>7 a 15 días hábiles</strong> desde que receivedemos el producto</li>
+              <li>El plazo de reintegro es de <strong>7 a 15 días hábiles</strong> desde que recibimos el producto</li>
               <li>No se reintegra el costo de <strong>envío</strong> (salvo error nuestro)</li>
             </ul>
           </section>
@@ -71,9 +77,8 @@ export default function ReturnsPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">Costos de envío</h2>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>El <strong>primer cambio</strong> tiene costo cero de envío</li>
-              <li>Los cambios adicionales tienen un costo de envío de $2.500</li>
-              <li>Las devoluciones tienen un costo de envío de $2.500 que se descuenta del reintegro</li>
+              <li>El <strong>primer cambio</strong> tiene costo cero de envío (en caso de error nuestro)</li>
+              <li>Los cambios adicionales tienen costo de envío.</li>
             </ul>
           </section>
 
@@ -81,7 +86,7 @@ export default function ReturnsPage() {
             <h2 className="text-xl font-semibold mb-4">Producto defectuoso o incorrecto</h2>
             <p className="text-muted-foreground">
               Si recibiste un producto defectuoso o diferente al solicitado, contactanos dentro de las 
-              48hs de recibido el pedido. Gestionaremos el cambio o devolución <strong>sin costo adicional</strong> 
+              48hs de recibido el pedido. Gestionaremos el cambio o devolución <strong> sin costo adicional </strong> 
               y con prioridad.
             </p>
           </section>
@@ -89,10 +94,16 @@ export default function ReturnsPage() {
           <section className="bg-muted p-6 rounded-lg">
             <h2 className="text-xl font-semibold mb-4">Contacto para cambios y devoluciones</h2>
             <ul className="space-y-2 text-muted-foreground">
-              <li><strong>WhatsApp:</strong> +54 9 2983 000000</li>
-              <li><strong>Email:</strong> info@clubindependiente.com</li>
+              <li><strong>WhatsApp:</strong> <a  href="https://wa.me/5492983348357"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground font-bold hover:text-primary transition-colors">+54 9 2983 34-8357</a>
+              </li>
+              <li><strong>Email:</strong> <a href="mailto:alboshopcai@gmail.com"
+                  className="text-foreground font-bold hover:text-primary transition-colors">alboshopcai@gmail.com</a>
+              </li>
               <li><strong>Local:</strong> Rivadavia 105, San Cayetano</li>
-              <li><strong>Horario:</strong> Lun-Sáb 9:00 a 13:00 y 16:30 a 20:30hs</li>
+              <li><strong>Horario:</strong> Lun-Vie 9:00 a 12:00 y 17:00 a 20:00hs</li>
             </ul>
           </section>
         </div>

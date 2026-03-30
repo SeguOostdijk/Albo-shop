@@ -40,8 +40,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-4">3. Productos y precios</h2>
             <p>
-              Los precios de los productos displayed en el sitio están expresados en pesos argentinos 
-              e incluyen IVA. Nos reservamos el derecho de modificar precios en cualquier momento 
+              Los precios de los productos publicados en el sitio están expresados en pesos argentinos. Nos reservamos el derecho de modificar precios en cualquier momento 
               sin previo aviso.
             </p>
           </section>
@@ -93,7 +92,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">9. Limitación de responsabilidad</h2>
             <p>
               No seremos responsables por daños directos, indirectos, incidentales o 
-              consequenciales derivados del uso de este sitio o la compra de productos.
+              consecuenciales derivados del uso de este sitio o la compra de productos.
             </p>
           </section>
 
@@ -101,7 +100,11 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">10. Contacto</h2>
             <p>
               Para consultas sobre estos términos y condiciones, podés contactarnos a 
-              info@clubindependiente.com o al +54 9 2983 000000.
+              <a href="mailto:alboshopcai@gmail.com"
+                  className="text-foreground font-bold hover:text-primary transition-colors">alboshopcai@gmail.com</a> o al <a  href="https://wa.me/5492983348357"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground font-bold hover:text-primary transition-colors">+54 9 2983 34-8357</a>.
             </p>
           </section>
 

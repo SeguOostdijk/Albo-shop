@@ -189,8 +189,8 @@ export function Footer() {
                 </li>
               </ul>
 
-              <Link href="/policies/returns" className="inline-block w-full sm:w-auto">
-                <Button className="mt-4 h-auto w-full bg-primary px-4 py-2 text-xs text-primary-foreground hover:bg-primary/90 sm:w-auto">
+              <Link href="/policies/returns" className="inline-block w-full sm:w-auto cursor-pointer">
+                <Button className="mt-4 h-auto w-full bg-primary px-4 py-2 text-xs text-primary-foreground hover:bg-primary/90 sm:w-auto cursor-pointer">
                   BOTÓN DE ARREPENTIMIENTO
                 </Button>
               </Link>
@@ -208,8 +208,8 @@ export function Footer() {
                 Club Independiente San Cayetano
               </p>
 
-              <Link href="/contact" className="inline-block w-full sm:w-auto">
-                <Button className="h-auto w-full bg-primary px-4 py-2 text-xs uppercase text-primary-foreground hover:bg-primary/90 sm:w-auto">
+              <Link href="/contact" className="inline-block w-full sm:w-auto cursor-pointer">
+                <Button className="h-auto w-full bg-primary px-4 py-2 text-xs uppercase text-primary-foreground hover:bg-primary/90 sm:w-auto cursor-pointer">
                   Contactanos
                 </Button>
               </Link>

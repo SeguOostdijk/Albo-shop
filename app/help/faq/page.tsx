@@ -15,11 +15,11 @@ export default function FAQPage() {
     },
     {
       question: "¿Realizan envíos a todo el país?",
-      answer: "Sí, realizamos envíos a todo el país. El costo de envío varía según la zona y el peso del pedido. Para compras mayores a $75.000 el envío es gratis."
+      answer: "Sí, realizamos envíos a todo el país. El costo de envío varía según la zona y el peso del pedido."
     },
     {
       question: "¿Cuánto tiempo tarda el envío?",
-      answer: "Los tiempos de entrega varían según tu ubicación. En CABA y GBA el envío express demora 24-48hs hábiles. Para el resto del país, el envío estándar demora entre 3 y 7 días hábiles."
+      answer: "Los tiempos de entrega varían según tu ubicación. El envío estándar demora entre 3 y 7 días hábiles."
     },
     {
       question: "¿Cómo realizo un cambio o devolución?",
@@ -31,11 +31,11 @@ export default function FAQPage() {
     },
     {
       question: "¿Tienen local físico?",
-      answer: "Sí, nuestro local está ubicado en Rivadavia 105, San Cayetano. Nuestro horario de atención es de Lunes a Sábados de 9:00 a 13:00 y de 16:30 a 20:30hs."
+      answer: "Sí, nuestro local está ubicado en Rivadavia 105, San Cayetano. Nuestro horario de atención es de Lunes a Viernes de 9:00 a 12:00 y de 17:00 a 20:00hs."
     },
     {
       question: "¿Cómo me contacto con atención al cliente?",
-      answer: "Podés contactarnos al +54 9 2983 000000, escribrinos por WhatsApp, o mandarnos un email a info@clubindependiente.com"
+      answer: "Podés contactarnos al +54 9 2983 34-8357, escribrinos por WhatsApp, o mandarnos un email a alboshopcai@gmail.com"
     }
   ]
 
