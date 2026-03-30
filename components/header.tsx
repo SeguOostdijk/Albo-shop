@@ -17,7 +17,6 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -34,14 +33,13 @@ import { useAuth } from "@/lib/auth-context"
 import { createClient } from "@/lib/supabase/client"
 import { categories, subcategories } from "@/lib/type/products"
 import type { Product } from "@/lib/type/products"
+import { CartDrawer } from "@/components/cart-drawer"
+import { SearchResults } from "@/components/search-results"
 
 const extrasSubcategories = [
   { name: "Accesorios", slug: "accesorios" },
   { name: "Ropa", slug: "ropa" },
-];
-
-import { CartDrawer } from "@/components/cart-drawer"
-import { SearchResults } from "@/components/search-results"
+]
 
 const mainNavCategories = categories.filter((cat) =>
   ["primera-division", "femenino", "infantiles", "accesorios", "extras"].includes(cat.slug)
@@ -63,16 +61,13 @@ export function Header() {
 
   useEffect(() => {
     const q = searchQuery.trim()
-
     if (q.length < 2) {
       setSearchResults([])
       setSearchLoading(false)
       return
     }
-
     const id = setTimeout(async () => {
       setSearchLoading(true)
-
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`)
         const json = await res.json()
@@ -83,29 +78,21 @@ export function Header() {
         setSearchLoading(false)
       }
     }, 250)
-
     return () => clearTimeout(id)
   }, [searchQuery])
 
   useEffect(() => {
     const checkAdmin = async () => {
       setIsAdminUser(false)
-
       if (!user) return
-
       const supabase = createClient()
-
       const { data, error } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single()
-
-      if (!error && data?.role === "admin") {
-        setIsAdminUser(true)
-      }
+      if (!error && data?.role === "admin") setIsAdminUser(true)
     }
-
     checkAdmin()
   }, [user])
 
@@ -113,8 +100,10 @@ export function Header() {
     await signOut()
   }
 
+  const hasSearchResults = searchOpenDesktop && searchResults.length > 0
+
   return (
-    <header className="sticky top-0 z-[9999] w-full bg-background/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] isolate">
+    <header className="sticky top-0 w-full bg-background/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.3)]" style={{ zIndex: 9999 }}>
       <div className="bg-accent px-3 py-2 text-center text-xs font-medium text-accent-foreground sm:text-sm">
         <p className="line-clamp-2 sm:line-clamp-1">
           25% de reintegro + 3 cuotas sin interes pagando con tarjetas de credito Visa BBVA
@@ -125,29 +114,30 @@ export function Header() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between gap-3 lg:gap-6">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-<div className="relative lg:hidden">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="z-[101]"
+              <div className="relative lg:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setSheetOpen(prev => !prev)}
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
               </div>
+
               {sheetOpen && (
-<motion.div 
-className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6 pt-24 overflow-y-auto overscroll-contain touch-pan-y"
+                <motion.div
+                  className="lg:hidden fixed left-0 top-0 h-screen bg-primary text-primary-foreground border-r border-primary/20 shadow-2xl w-[80vw] max-w-md rounded-r-2xl p-6 pt-24 overflow-y-auto overscroll-contain touch-pan-y"
+                  style={{ zIndex: 100000 }}
                   initial={{ x: '-100%', opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: '-100%', opacity: 0 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
                 >
-                  <Link href="/" className="absolute left-6 top-6 flex items-center gap-2 z-[103]">
+                  <Link href="/" className="absolute left-6 top-6 flex items-center gap-2" style={{ zIndex: 100003 }}>
                     <div className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <Image 
-                        src="/escudo.jpeg" 
-                        alt="CAI San Cayetano" 
+                      <Image
+                        src="/escudo.jpeg"
+                        alt="CAI San Cayetano"
                         width={36}
                         height={36}
                         className="object-cover rounded-full"
@@ -156,10 +146,11 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                     <span className="text-xl font-bold text-white drop-shadow-lg">Albo Shop</span>
                   </Link>
                   <motion.button
-                    className="absolute right-6 top-6 z-[102] text-white/90 hover:text-white size-12 flex items-center justify-center rounded-full hover:bg-white/20 hover:backdrop-blur-sm hover:shadow-lg transition-all duration-200"
+                    className="absolute right-6 top-6 text-white/90 hover:text-white size-12 flex items-center justify-center rounded-full hover:bg-white/20 transition-all duration-200"
+                    style={{ zIndex: 100002 }}
                     onClick={() => setSheetOpen(false)}
                   >
-                    <X className="h-8 w-8 stroke-width-3 drop-shadow-lg" />
+                    <X className="h-8 w-8" />
                   </motion.button>
                   <nav className="flex flex-col gap-3">
                     {mainNavCategories.map((cat) => (
@@ -171,7 +162,6 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                         >
                           {cat.name.toUpperCase()}
                         </Link>
-
                         {cat.slug !== "accesorios" && (
                           <div className="flex flex-col gap-1 pl-4">
                             {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
@@ -188,8 +178,7 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                         )}
                       </div>
                     ))}
-
-{isAdminUser && (
+                    {isAdminUser && (
                       <Link
                         href="/admin"
                         className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
@@ -203,16 +192,12 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                         variant="ghost"
                         size="icon"
                         className="h-12 w-12 text-white hover:bg-white/20"
-                        onClick={() => {openCart(); setSheetOpen(false);}}
+                        onClick={() => { openCart(); setSheetOpen(false) }}
                       >
                         <ShoppingBag className="h-6 w-6" />
                       </Button>
                       <Link href="/wishlist" onClick={() => setSheetOpen(false)}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-12 w-12 text-white hover:bg-white/20 relative"
-                        >
+                        <Button variant="ghost" size="icon" className="h-12 w-12 text-white hover:bg-white/20 relative">
                           <Heart className="h-6 w-6" />
                           {wishlistItems > 0 && (
                             <span className="absolute -right-0 -top-0 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">
@@ -222,16 +207,12 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                         </Button>
                       </Link>
                       <Link href="/account" onClick={() => setSheetOpen(false)}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-12 w-12 text-white hover:bg-white/20"
-                        >
+                        <Button variant="ghost" size="icon" className="h-12 w-12 text-white hover:bg-white/20">
                           <User className="h-6 w-6" />
                         </Button>
                       </Link>
                     </div>
-{user ? (
+                    {user ? (
                       <div className="px-6 pb-4">
                         <div className="text-center text-white/90 font-medium py-1 px-4 mb-3">
                           {user.email}
@@ -245,7 +226,7 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                         </Button>
                       </div>
                     ) : (
-                      <Link 
+                      <Link
                         href="/account/login"
                         className="block w-full text-center text-white/90 font-medium py-3 px-6 rounded-lg hover:bg-white/20 transition-colors"
                         onClick={() => setSheetOpen(false)}
@@ -270,7 +251,6 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
                     className="object-cover"
                   />
                 </div>
-
                 <div className="min-w-0">
                   <span className="text-lg font-bold text-primary sm:text-xl">Albo</span>
                   <span className="ml-1 text-base font-light text-primary sm:text-lg">Shop</span>
@@ -278,33 +258,33 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
               </Link>
             </div>
 
-            <div className="relative hidden max-w-xl flex-1 md:flex">
+            <div className="absolute left-1/2 -translate-x-1/2 hidden w-full max-w-xl md:flex">
               <div className="relative w-full">
-                <div className="flex">
-                  <Input
+                <div className="flex items-center w-full bg-muted/60 border border-border rounded-2xl px-4 py-2 gap-2 focus-within:border-primary focus-within:bg-background focus-within:shadow-md transition-all duration-200">
+                  <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <input
                     type="search"
-                    placeholder="Buscar productos"
-                    className="w-full rounded-l-sm rounded-r-none border-2 border-border text-foreground focus-visible:border-primary focus-visible:ring-0"
+                    placeholder="Buscar productos..."
+                    className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none border-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setSearchOpenDesktop(true)}
                     onBlur={() => setTimeout(() => setSearchOpenDesktop(false), 200)}
                   />
-                  <Button
-                    type="button"
-                    className="cursor-pointer rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
-                  >
-                    <Search className="h-5 w-5 text-foreground" />
-                  </Button>
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery("")} className="text-muted-foreground hover:text-foreground transition-colors">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
 
                 {searchOpenDesktop && searchLoading && (
-                  <div className="absolute left-0 right-0 top-full z-[10005] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
+                  <div className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-border bg-background p-3 text-sm text-muted-foreground shadow-lg" style={{ zIndex: 99999 }}>
                     Buscando...
                   </div>
                 )}
 
-                {searchOpenDesktop && searchResults.length > 0 && (
+                {hasSearchResults && (
                   <SearchResults
                     results={searchResults.slice(0, 5)}
                     onSelect={() => {
@@ -317,12 +297,9 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
             </div>
 
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-{isAdminUser && (
+              {isAdminUser && (
                 <Link href="/admin" className="hidden xl:block cursor-pointer">
-                  <Button
-                    variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
-                  >
+                  <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer">
                     <Pencil className="mr-2 h-4 w-4" />
                     Editar catálogo
                   </Button>
@@ -340,11 +317,7 @@ className="lg:hidden fixed left-0 top-0 h-screen z-[100] bg-primary text-primary
               </Button>
 
               <Link href="/wishlist">
-                <Button
-                  variant="ghost"
-                  size="icon"
-className="relative cursor-pointer"
-                >
+                <Button variant="ghost" size="icon" className="relative cursor-pointer">
                   <Heart className="h-5 w-5" />
                   {wishlistItems > 0 && (
                     <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">
@@ -358,46 +331,30 @@ className="relative cursor-pointer"
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-className="min-w-0 flex-shrink cursor-pointer"
-                    >
+                    <Button variant="ghost" size="icon" className="min-w-0 flex-shrink cursor-pointer">
                       <User className="h-5 w-5" />
                       <span className="sr-only">Mi cuenta</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 z-[10030]">
-                    <DropdownMenuLabel className="truncate">
-                      {user.email}
-                    </DropdownMenuLabel>
-
+                  <DropdownMenuContent align="end" className="w-56" style={{ zIndex: 10030 }}>
+                    <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-
                     <DropdownMenuItem asChild>
                       <Link href="/account/orders">Mis Pedidos</Link>
                     </DropdownMenuItem>
-
                     <DropdownMenuItem asChild>
                       <Link href="/wishlist">Mis Favoritos</Link>
                     </DropdownMenuItem>
-
                     <DropdownMenuItem asChild>
                       <Link href="/account">Mi Cuenta</Link>
                     </DropdownMenuItem>
-
                     {isAdminUser && (
                       <DropdownMenuItem asChild className="xl:hidden">
                         <Link href="/admin">Editar catálogo</Link>
                       </DropdownMenuItem>
                     )}
-
                     <DropdownMenuSeparator />
-
-                    <DropdownMenuItem
-                      onClick={handleSignOut}
-                      className="text-red-500 focus:text-red-500"
-                    >
+                    <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500">
                       <LogOut className="mr-2 h-4 w-4" />
                       Cerrar Sesión
                     </DropdownMenuItem>
@@ -415,7 +372,7 @@ className="min-w-0 flex-shrink cursor-pointer"
               <Button
                 variant="ghost"
                 size="icon"
-className="relative cursor-pointer"
+                className="relative cursor-pointer"
                 onClick={openCart}
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -440,20 +397,17 @@ className="relative cursor-pointer"
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
                 />
-
                 <Button
                   type="button"
                   className="rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
                 >
                   <Search className="h-5 w-5 text-foreground" />
                 </Button>
-
                 {searchLoading && (
-                  <div className="absolute left-0 right-0 top-full z-[10000] mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
+                  <div className="absolute left-0 right-0 top-full mt-1 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground" style={{ zIndex: 99999 }}>
                     Buscando...
                   </div>
                 )}
-
                 {searchResults.length > 0 && (
                   <SearchResults
                     results={searchResults.slice(0, 5)}
@@ -472,15 +426,8 @@ className="relative cursor-pointer"
       <nav className="hidden bg-primary lg:block">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center">
-            <Link
-              href="/category/novedades"
-              className="px-5 py-3 text-sm font-medium text-accent transition-colors hover:bg-primary/80"
-            >
-              NOVEDADES
-            </Link>
-
             {mainNavCategories.map((cat) => (
-              <div key={cat.slug} className="group relative">
+              <div key={cat.slug} className={`group relative ${hasSearchResults ? 'pointer-events-none opacity-0' : ''}`}>
                 <Link
                   href={`/category/${cat.slug}`}
                   className="flex items-center gap-1 px-5 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
@@ -488,9 +435,8 @@ className="relative cursor-pointer"
                   {cat.name.toUpperCase()}
                   {cat.slug !== "accesorios" && <ChevronDown className="h-4 w-4" />}
                 </Link>
-
                 {cat.slug !== "accesorios" && (
-                  <div className="invisible absolute left-0 top-full z-[10020] opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                  <div className="invisible absolute left-0 top-full opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100" style={{ zIndex: 9000 }}>
                     <div className="min-w-[200px] border border-border bg-background py-2 text-foreground shadow-lg">
                       {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
                         <Link
@@ -506,17 +452,10 @@ className="relative cursor-pointer"
                 )}
               </div>
             ))}
-
-            <Link
-              href="/category/oportunidades"
-              className="px-5 py-3 text-sm font-medium text-accent transition-colors hover:bg-primary/80"
-            >
-              OPORTUNIDADES
-            </Link>
           </div>
         </div>
       </nav>
-      
+
       <CartDrawer />
     </header>
   )
