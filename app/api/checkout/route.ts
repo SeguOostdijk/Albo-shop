@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
+import { MercadoPagoConfig, Preference } from "mercadopago"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
+})
 
 type CheckoutItem = {
   quantity: number
@@ -302,13 +307,65 @@ export async function POST(request: Request) {
 
     if (paymentInfo.method === "transfer") {
       redirectTo = `/checkout/payment/transfer?orderId=${order.id}`
-    } else if (paymentInfo.method === "mercadopago") {
-      redirectTo = `/checkout/payment/mercadopago?orderId=${order.id}`
     } else if (
       paymentInfo.method === "credit-card" ||
       paymentInfo.method === "debit-card"
     ) {
       redirectTo = `/checkout/payment/card?orderId=${order.id}`
+    } else if (paymentInfo.method === "mercadopago") {
+      const preference = {
+        items: validatedOrderItems.map(item => ({
+          id: item.product_id,
+          title: item.product_name,
+          currency_id: "ARS",
+          picture_url: item.product_image || "https://via.placeholder.com/300",
+          description: `${item.color} / ${item.size}`,
+          category_id: "products",
+          quantity: item.quantity,
+          unit_price: item.price,
+        })),
+        payer: {
+          name: firstName,
+          surname: lastName,
+          email,
+          phone: { area_code: phone.slice(1,4), number: phone.slice(4) },
+          identification: { type: "DNI", number: "" }, // Optional
+          address: { street_name: address, zip_code: postalCode }
+        },
+        back_urls: {
+          success: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/account/orders`,
+          failure: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/checkout?error=pago-fallo`,
+          pending: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/checkout/payment/pending?orderId=${order.id}`
+        },
+        auto_return: "approved",
+        notification_url: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/api/webhooks/mercadopago`,
+        external_reference: order.id.toString(),
+        payment_methods: {
+          excluded_payment_methods: [],
+          installments: 12
+        },
+        shipments: {
+          cost: shippingCost,
+          mode: "not_specified"
+        }
+      }
+
+      const mpPreference = new Preference(client)
+      const response = await mpPreference.create({ body: preference })
+      const mpUrl = response.init_point
+
+      // Update order with MP preference ID
+      await supabaseAdmin
+        .from("orders")
+        .update({ external_payment_id: response.id })
+        .eq("id", order.id)
+
+      return NextResponse.json({
+        success: true,
+        orderId: order.id,
+        mpUrl,
+        message: "Redirigiendo a MercadoPago..."
+      })
     }
 
     return NextResponse.json({

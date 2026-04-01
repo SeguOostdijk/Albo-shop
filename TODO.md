@@ -1,9 +1,25 @@
-# TODO: Fix TypeScript style prop error in app/page.tsx
+# MercadoPago Integration TODO
 
-## Steps:
-1. [x] Edit app/page.tsx: Remove invalid `style={{ marginTop: '3rem' }}` from SponsorsCarousel and replace with `className="mt-[3rem]"`
-2. [x] Verify TypeScript compiles without errors (confirmed via file read, no edit needed)
-3. [x] Test page rendering and spacing (Tailwind mt-[3rem] equivalent, SponsorsCarousel now accepts className implicitly as HTML attr)
-4. [ ] attempt_completion
+## Steps from approved plan:
 
-Current progress: Steps 1-3 complete
+### ✅ 1. Install SDK
+- `npm install mercadopago` → ✅ COMPLETE
+
+### ✅ 2. Update API route (/api/checkout/route.ts)
+- Server-side MP preference creation ✅ COMPLETE
+
+### ✅ 3. Update MP page (app/checkout/payment/mercadopago/page.tsx)
+- Client-side redirect handling ✅ COMPLETE
+
+### ⬜ 4. Add env vars to .env.local (manual)
+```
+NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=your_public_key
+MERCADOPAGO_ACCESS_TOKEN=your_access_token
+```
+
+### ⬜ 5. Test checkout flow
+- `npm run dev`
+- Add to cart → checkout → select MP → verify redirect
+
+### ⬜ 6. Production: Add webhook endpoint
+

@@ -1,44 +1,70 @@
+"use client"
+
+import { useEffect, useState } from 'react'
+
 interface MercadoPagoPageProps {
-  searchParams: Promise<{ orderId?: string }>
+  searchParams: { orderId?: string }
 }
 
-export default async function MercadoPagoPage({ searchParams }: MercadoPagoPageProps) {
-  const { orderId } = await searchParams
+export default function MercadoPagoPage({ searchParams }: MercadoPagoPageProps) {
+  const [loading, setLoading] = useState(true)
+  const orderId = searchParams.orderId
+
+  useEffect(() => {
+    const initMP = async () => {
+      if (typeof window !== 'undefined') {
+        const mpPublicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY
+        if (!mpPublicKey) {
+          alert('Falta configuración de MercadoPago. Contacta al administrador.')
+          return
+        }
+
+        // Fetch MP payment URL from API if not direct
+        try {
+          const res = await fetch(`/api/checkout/mp-init?orderId=${orderId}`)
+          const data = await res.json()
+          
+          if (data.mpUrl) {
+            window.location.href = data.mpUrl
+          } else {
+            setLoading(false)
+          }
+        } catch (error) {
+          console.error('Error initializing MP:', error)
+          setLoading(false)
+        }
+      }
+    }
+
+    initMP()
+  }, [orderId])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p>Redirigiendo a Mercado Pago...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-3xl font-bold mb-4">Continuar con Mercado Pago</h1>
-
-      <p className="text-muted-foreground mb-6">
-        Tu pedido fue generado correctamente. Vas a ser redirigido a Mercado Pago para completar el pago.
-      </p>
-
-      <div className="rounded-lg border p-6 space-y-4">
-        <p>
-          <strong>Número de pedido:</strong> {orderId}
+      <h1 className="text-3xl font-bold mb-4 text-destructive">Error en pago</h1>
+      <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6">
+        <p>No se pudo inicializar Mercado Pago para el pedido <strong>{orderId}</strong></p>
+        <p className="text-sm text-destructive-foreground/80 mt-2">
+          Verifica tu conexión o contacta soporte.
         </p>
-
-        <p className="text-sm text-muted-foreground">
-          Al hacer clic en el botón, se abrirá Mercado Pago donde podrás pagar con:
-        </p>
-
-        <ul className="text-sm list-disc pl-5 text-muted-foreground">
-          <li>Tarjeta de crédito o débito</li>
-          <li>Saldo en cuenta</li>
-          <li>Transferencia</li>
-        </ul>
-
-        {/* Botón principal */}
-        <button
-          className="w-full rounded-md bg-[var(--accent)] text-white py-2.5 text-sm font-medium hover:brightness-110 transition"
-        >
-          Ir a Mercado Pago
-        </button>
       </div>
-
-      <p className="mt-6 text-sm text-muted-foreground text-center">
-        Una vez realizado el pago, se confirmará automáticamente tu pedido.
-      </p>
+      <div className="mt-6 flex gap-3">
+        <a href="/account/orders" className="flex-1 bg-card border text-center py-3 rounded-lg hover:bg-muted transition">
+          Ver pedidos
+        </a>
+        <a href="/cart" className="flex-1 bg-primary text-primary-foreground text-center py-3 rounded-lg hover:brightness-105 transition">
+          Nuevo pedido
+        </a>
+      </div>
     </div>
   )
 }

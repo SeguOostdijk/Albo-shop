@@ -174,8 +174,14 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
       console.log("Checkout response:", data)
 
       if (data.success) {
-        toast.success("Pedido realizado con exito!")
+        toast.success("Pedido creado! Redirigiendo a MercadoPago...")
         clearCart()
+
+        if (data.mpUrl) {
+          // MercadoPago special handling
+          window.location.href = data.mpUrl
+          return
+        }
 
         if (data.redirectTo) {
           window.location.href = data.redirectTo
@@ -184,7 +190,7 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
 
         window.location.href = "/account/orders"
       } else {
-        toast.error(data.error || "Error al procesar el pago. Intenta nuevamente.")
+        toast.error(data.error || "Error al procesar el pedido. Intenta nuevamente.")
       }
     } catch {
       toast.error("Error al procesar el pago. Intenta nuevamente.")
