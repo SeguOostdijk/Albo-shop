@@ -30,7 +30,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
 
   const [useMemberDiscount, setUseMemberDiscount] = useState(false)
-  const [memberNumber, setMemberNumber] = useState("")
+  const [memberName, setMemberName] = useState("")
   const [memberValidated, setMemberValidated] = useState(false)
   const [memberError, setMemberError] = useState("")
   const [validatingMember, setValidatingMember] = useState(false)
@@ -85,13 +85,13 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ memberNumber }),
+        body: JSON.stringify({ memberName }),
       })
 
       const json = await res.json()
 
       if (!json.ok || !json.valid) {
-        setMemberError("Número de socio inválido")
+setMemberError("Nombre de socio inválido")
         setMemberValidated(false)
         return
       }
@@ -165,7 +165,7 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
           shippingCost,
           total,
           paymentInfo,
-          memberNumber: memberValidated ? memberNumber.trim() : null,
+          memberName: memberValidated ? memberName.trim() : null,
           memberValidated,
         }),
       })
@@ -436,7 +436,7 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
                     onChange={(e) => {
                       setUseMemberDiscount(e.target.checked)
                       if (!e.target.checked) {
-                        setMemberNumber("")
+                        setMemberName("")
                         setMemberValidated(false)
                         setMemberError("")
                       }
@@ -448,12 +448,12 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
                 {useMemberDiscount && (
                   <div className="space-y-3">
                     <div>
-                      <Label htmlFor="memberNumber">Introduzca su numero de socio</Label>
+
                       <Input
-                        id="memberNumber"
-                        value={memberNumber}
-                        onChange={(e) => setMemberNumber(e.target.value)}
-                        placeholder="Ej: 123456"
+                        id="memberName"
+                        value={memberName}
+                        onChange={(e) => setMemberName(e.target.value)}
+                        placeholder="Ej: Perez Juan"
                         className="mt-2"
                       />
                     </div>
@@ -461,14 +461,14 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
                     <Button
                       type="button"
                       onClick={handleValidateMember}
-                      disabled={validatingMember || memberNumber.trim() === ""}
+                      disabled={validatingMember || memberName.trim() === ""}
                     >
-                      {validatingMember ? "Validando..." : "Validar numero"}
+                      {validatingMember ? "Validando..." : "Validar nombre de socio"}
                     </Button>
 
                     {memberValidated && (
                       <p className="text-sm text-green-600">
-                        Número válido. Se aplicó el precio de socio.
+                        Nombre válido. Se aplicó el precio de socio.
                       </p>
                     )}
 
