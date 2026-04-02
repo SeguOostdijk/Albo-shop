@@ -30,6 +30,7 @@ function getShippingCost(subtotal: number, shippingMethod: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    console.log("FULL BODY:", JSON.stringify(body, null, 2))
 
     const {
       items,
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
         cardName?: string
         dni?: string
       }
-      memberName?: string | null
+      memberNumber?: string | null
       memberValidated?: boolean
     }
 
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
       memberValidated,
       itemsCount: items?.length,
     })
+    console.log("Payment method:", paymentInfo.method)
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -273,35 +275,14 @@ export async function POST(request: Request) {
 
     if (itemsError) {
       console.error("Error creating order items:", itemsError)
-
       await supabaseAdmin.from("orders").delete().eq("id", order.id)
-
       return NextResponse.json(
         { success: false, error: "Error al guardar los productos del pedido" },
         { status: 500 }
       )
     }
 
-    for (const item of validatedOrderItems) {
-      const { data: stockUpdated, error: stockUpdateError } =
-        await supabaseAdmin.rpc("decrease_product_stock", {
-          p_product_id: item.product_id,
-          p_size: item.size,
-          p_quantity: item.quantity,
-        })
-
-      if (stockUpdateError || !stockUpdated) {
-        console.error("Error decreasing stock:", stockUpdateError)
-
-        await supabaseAdmin.from("order_items").delete().eq("order_id", order.id)
-        await supabaseAdmin.from("orders").delete().eq("id", order.id)
-
-        return NextResponse.json(
-          { success: false, error: "No se pudo descontar el stock del pedido" },
-          { status: 500 }
-        )
-      }
-    }
+    console.log(`Stock skip for MP order ${order.id}`)
 
     let redirectTo = "/account/orders"
 
@@ -313,6 +294,12 @@ export async function POST(request: Request) {
     ) {
       redirectTo = `/checkout/payment/card?orderId=${order.id}`
     } else if (paymentInfo.method === "mercadopago") {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || ""
+      const isLocalhost = !baseUrl || baseUrl.includes("localhost")
+
+      console.log("BASE URL:", baseUrl)
+      console.log("IS LOCALHOST:", isLocalhost)
+
       const preference = {
         items: validatedOrderItems.map(item => ({
           id: item.product_id,
@@ -328,17 +315,21 @@ export async function POST(request: Request) {
           name: firstName,
           surname: lastName,
           email,
-          phone: { area_code: phone.slice(1,4), number: phone.slice(4) },
-          identification: { type: "DNI", number: "" }, // Optional
+          phone: { area_code: phone.slice(1, 4), number: phone.slice(4) },
+          identification: { type: "DNI", number: "" },
           address: { street_name: address, zip_code: postalCode }
         },
         back_urls: {
-          success: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/account/orders`,
-          failure: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/checkout?error=pago-fallo`,
-          pending: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/checkout/payment/pending?orderId=${order.id}`
+          success: `${baseUrl}/account/orders`,
+          failure: `${baseUrl}/checkout?error=pago-fallo`,
+          pending: `${baseUrl}/checkout/payment/pending?orderId=${order.id}`
         },
-        auto_return: "approved",
-        notification_url: `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/api/webhooks/mercadopago`,
+        // auto_return solo funciona con URLs públicas, no con localhost
+        ...(!isLocalhost && { auto_return: "approved" as "approved" }),
+        // notification_url tampoco funciona en localhost
+        ...(!isLocalhost && {
+          notification_url: `${baseUrl}/api/webhooks/mercadopago`
+        }),
         external_reference: order.id.toString(),
         payment_methods: {
           excluded_payment_methods: [],
@@ -350,11 +341,12 @@ export async function POST(request: Request) {
         }
       }
 
+      console.log("PREFERENCE BODY:", JSON.stringify(preference, null, 2))
+
       const mpPreference = new Preference(client)
       const response = await mpPreference.create({ body: preference })
       const mpUrl = response.init_point
 
-      // Update order with MP preference ID
       await supabaseAdmin
         .from("orders")
         .update({ external_payment_id: response.id })
