@@ -11,11 +11,24 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       style={
         {
-          '--normal-bg': 'hsl(var(--background))',
+          '--normal-bg': '#f3f4f6',
           '--normal-text': 'hsl(var(--foreground))',
-          '--normal-border': 'hsl(var(--border))',
+          '--normal-border': '#000000',
+          '--width': '340px',
+          '--font-size': '15px',
         } as React.CSSProperties
       }
+      toastOptions={{
+        style: {
+          border: '1.5px solid #000000',
+          borderRadius: '10px',
+          padding: '14px 18px',
+          fontSize: '15px',
+          background: '#f3f4f6',
+          textAlign: 'center',
+          justifyContent: 'center',
+        }
+      }}
       {...props}
     />
   )
