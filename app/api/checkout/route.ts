@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         cardName?: string
         dni?: string
       }
-      memberName?: string | null
+      memberNumber?: string | null
       memberValidated?: boolean
     }
 
