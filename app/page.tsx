@@ -110,9 +110,6 @@ export default async function HomePage() {
 
       {/* Sponsors Carousel */}
       <SponsorsCarousel className="mt-[3rem]" />
-
-      {/* Benefits Bar */}
-      <BenefitsBar />
     </>
   )
 }
