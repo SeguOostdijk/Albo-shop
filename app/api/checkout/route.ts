@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { MercadoPagoConfig, Preference } from "mercadopago"
+import { MercadoPagoConfig, Payment, Preference } from "mercadopago"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
@@ -17,6 +17,21 @@ type CheckoutItem = {
     price: number
     memberPrice?: number
     images?: string[]
+  }
+}
+
+type CardPaymentPayload = {
+  token?: string
+  issuer_id?: string
+  payment_method_id?: string
+  transaction_amount?: number
+  installments?: number
+  payer?: {
+    email?: string
+    identification?: {
+      type?: string
+      number?: string
+    }
   }
 }
 
@@ -44,7 +59,7 @@ export async function POST(request: Request) {
       postalCode,
       shippingMethod,
       paymentInfo,
-      memberNumber,
+      memberName,
       memberValidated,
     } = body as {
       items: CheckoutItem[]
@@ -57,16 +72,15 @@ export async function POST(request: Request) {
       province: string
       postalCode: string
       shippingMethod: "pickup" | "standard" | "express"
-      shippingCost: number
-      total: number
       paymentInfo: {
         method: string
         last4?: string
         brand?: string
         cardName?: string
         dni?: string
+        mpCardData?: CardPaymentPayload
       }
-      memberNumber?: string | null
+      memberName?: string | null
       memberValidated?: boolean
     }
 
@@ -80,11 +94,11 @@ export async function POST(request: Request) {
       province,
       postalCode,
       shippingMethod,
-      memberNumber,
+      memberName,
       memberValidated,
       itemsCount: items?.length,
     })
-    console.log("Payment method:", paymentInfo.method)
+    console.log("Payment method:", paymentInfo?.method)
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -109,6 +123,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!paymentInfo?.method) {
+      return NextResponse.json(
+        { success: false, error: "Método de pago inválido" },
+        { status: 400 }
+      )
+    }
+
     const supabaseServer = await createSupabaseServerClient()
     const userResult = await supabaseServer.auth.getUser()
 
@@ -117,22 +138,20 @@ export async function POST(request: Request) {
 
     const userId = userResult.data.user?.id ?? null
 
-    console.log("USER ID TO INSERT:", userId)
-
     let validMember = false
 
-    if (memberValidated && memberNumber?.trim()) {
+    if (memberValidated && memberName?.trim()) {
       const { data: memberData, error: memberError } = await supabaseAdmin
         .from("members")
-        .select("id, member_number")
-        .eq("member_number", memberNumber.trim())
+        .select("id, member_name")
+        .eq("member_name", memberName.trim())
         .eq("is_active", true)
         .maybeSingle()
 
       if (memberError) {
         console.error("Error validating member:", memberError)
         return NextResponse.json(
-          { success: false, error: "No se pudo validar el número de socio" },
+          { success: false, error: "No se pudo validar el nombre de socio" },
           { status: 500 }
         )
       }
@@ -236,16 +255,15 @@ export async function POST(request: Request) {
       payment_method: paymentInfo.method,
       payment_info: {
         ...paymentInfo,
+        mpCardData: undefined,
         memberApplied: validMember,
-        memberNumber: validMember ? memberNumber?.trim() : null,
+        memberName: validMember ? memberName?.trim() : null,
       },
-      member_number: validMember ? memberNumber?.trim() : null,
+      member_number: validMember ? memberName?.trim() : null,
       member_validated: validMember,
       status: "pending",
       phone,
     }
-
-    console.log("INSERT PAYLOAD:", insertPayload)
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
@@ -253,10 +271,7 @@ export async function POST(request: Request) {
       .select("id, user_id, email, created_at")
       .single()
 
-    console.log("ORDER CREATED:", order)
-    console.log("ORDER ERROR:", orderError)
-
-    if (orderError) {
+    if (orderError || !order) {
       console.error("Error creating order:", orderError)
       return NextResponse.json(
         { success: false, error: "Error al crear el pedido" },
@@ -282,26 +297,25 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log(`Stock skip for MP order ${order.id}`)
-
-    let redirectTo = "/account/orders"
-
     if (paymentInfo.method === "transfer") {
-      redirectTo = `/checkout/payment/transfer?orderId=${order.id}`
-    } else if (
-      paymentInfo.method === "credit-card" ||
-      paymentInfo.method === "debit-card"
-    ) {
-      redirectTo = `/checkout/payment/card?orderId=${order.id}`
-    } else if (paymentInfo.method === "mercadopago") {
+      return NextResponse.json({
+        success: true,
+        orderId: order.id,
+        subtotal,
+        shippingCost,
+        total,
+        memberApplied: validMember,
+        redirectTo: `/checkout/payment/transfer?orderId=${order.id}`,
+        message: "Pedido procesado exitosamente",
+      })
+    }
+
+    if (paymentInfo.method === "mercadopago") {
       const baseUrl = process.env.NEXT_PUBLIC_URL || ""
       const isLocalhost = !baseUrl || baseUrl.includes("localhost")
 
-      console.log("BASE URL:", baseUrl)
-      console.log("IS LOCALHOST:", isLocalhost)
-
       const preference = {
-        items: validatedOrderItems.map(item => ({
+        items: validatedOrderItems.map((item) => ({
           id: item.product_id,
           title: item.product_name,
           currency_id: "ARS",
@@ -317,35 +331,30 @@ export async function POST(request: Request) {
           email,
           phone: { area_code: phone.slice(1, 4), number: phone.slice(4) },
           identification: { type: "DNI", number: "" },
-          address: { street_name: address, zip_code: postalCode }
+          address: { street_name: address, zip_code: postalCode },
         },
         back_urls: {
           success: `${baseUrl}/account/orders`,
           failure: `${baseUrl}/checkout?error=pago-fallo`,
-          pending: `${baseUrl}/checkout/payment/pending?orderId=${order.id}`
+          pending: `${baseUrl}/checkout/payment/pending?orderId=${order.id}`,
         },
-        // auto_return solo funciona con URLs públicas, no con localhost
-        ...(!isLocalhost && { auto_return: "approved" as "approved" }),
-        // notification_url tampoco funciona en localhost
+        ...(!isLocalhost && { auto_return: "approved" as const }),
         ...(!isLocalhost && {
-          notification_url: `${baseUrl}/api/webhooks/mercadopago`
+          notification_url: `${baseUrl}/api/webhooks/mercadopago`,
         }),
         external_reference: order.id.toString(),
         payment_methods: {
           excluded_payment_methods: [],
-          installments: 12
+          installments: 12,
         },
         shipments: {
           cost: shippingCost,
-          mode: "not_specified"
-        }
+          mode: "not_specified",
+        },
       }
-
-      console.log("PREFERENCE BODY:", JSON.stringify(preference, null, 2))
 
       const mpPreference = new Preference(client)
       const response = await mpPreference.create({ body: preference })
-      const mpUrl = response.init_point
 
       await supabaseAdmin
         .from("orders")
@@ -355,9 +364,86 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: true,
         orderId: order.id,
-        mpUrl,
-        message: "Redirigiendo a MercadoPago..."
+        mpUrl: response.init_point,
+        message: "Redirigiendo a MercadoPago...",
       })
+    }
+
+    if (
+      paymentInfo.method === "credit-card" ||
+      paymentInfo.method === "debit-card"
+    ) {
+      const mpCardData = paymentInfo.mpCardData
+
+      if (
+        !mpCardData?.token ||
+        !mpCardData?.payment_method_id ||
+        !mpCardData?.installments ||
+        !email
+      ) {
+        return NextResponse.json(
+          { success: false, error: "Faltan datos de la tarjeta" },
+          { status: 400 }
+        )
+      }
+
+      const payment = new Payment(client)
+
+      const paymentResult = await payment.create({
+        body: {
+          transaction_amount: Number(total),
+          token: mpCardData.token,
+          installments: Number(mpCardData.installments),
+          payment_method_id: mpCardData.payment_method_id,
+         issuer_id: mpCardData.issuer_id
+          ? Number(mpCardData.issuer_id)
+          : undefined,
+          description: `Pedido #${order.id}`,
+          external_reference: String(order.id),
+          payer: {
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            ...(mpCardData.payer?.identification?.number
+              ? {
+                  identification: {
+                    type:
+                      mpCardData.payer.identification.type || "DNI",
+                    number: mpCardData.payer.identification.number,
+                  },
+                }
+              : {}),
+          },
+        },
+      })
+
+      const mpStatus = paymentResult.status ?? "pending"
+      const mpStatusDetail = paymentResult.status_detail ?? null
+      const mpPaymentId = paymentResult.id ? String(paymentResult.id) : null
+
+      await supabaseAdmin
+        .from("orders")
+        .update({
+          status: mpStatus,
+          external_payment_id: mpPaymentId,
+          payment_info: {
+            ...insertPayload.payment_info,
+            mpStatus,
+            mpStatusDetail,
+            mpPaymentId,
+          },
+        })
+        .eq("id", order.id)
+
+        return NextResponse.json({
+    success: true,
+    orderId: order.id,
+    redirectTo: `/checkout/success?orderId=${order.id}&status=${mpStatus}&statusDetail=${encodeURIComponent(
+      mpStatusDetail || ""
+    )}`,
+    paymentStatus: mpStatus,
+    paymentStatusDetail: mpStatusDetail,
+  })
     }
 
     return NextResponse.json({
@@ -367,7 +453,7 @@ export async function POST(request: Request) {
       shippingCost,
       total,
       memberApplied: validMember,
-      redirectTo,
+      redirectTo: "/account/orders",
       message: "Pedido procesado exitosamente",
     })
   } catch (error) {
