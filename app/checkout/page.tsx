@@ -20,6 +20,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs"
 import { useCartStore } from "@/lib/cart-store"
 import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/currency"
+import { SiMercadopago } from "react-icons/si"
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore()
@@ -525,11 +526,12 @@ setMemberError("Nombre de socio inválido")
                     htmlFor="mercadopago"
                     className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
                       paymentMethod === "mercadopago"
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                        ? "border-[#00B4E6] bg-[#00B4E6]/5 ring-1 ring-[#00B4E6]"
+                        : "border-border hover:border-[#00B4E6]/50 hover:bg-muted/50"
                     }`}
                   >
                     <RadioGroupItem value="mercadopago" id="mercadopago" className="sr-only" />
+                    <SiMercadopago className="h-5 w-5 text-[#00B4E6]" />
                     <span className="text-sm font-medium text-[#00B4E6]">MercadoPago</span>
                   </label>
 
