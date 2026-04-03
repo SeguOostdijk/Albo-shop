@@ -104,12 +104,6 @@ export function Header() {
 
   return (
     <header className="sticky top-0 w-full bg-background/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.3)]" style={{ zIndex: 9999 }}>
-      <div className="bg-accent px-3 py-2 text-center text-xs font-medium text-accent-foreground sm:text-sm">
-        <p className="line-clamp-2 sm:line-clamp-1">
-          25% de reintegro + 3 cuotas sin interes pagando con tarjetas de credito Visa BBVA
-        </p>
-      </div>
-
       <div className="bg-background/95 backdrop-blur-sm shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between gap-3 lg:gap-6">
@@ -184,7 +178,7 @@ export function Header() {
                         className="mt-2 block border-t border-primary-foreground/20 py-2 text-lg font-medium text-white transition-colors hover:text-accent"
                         onClick={() => setSheetOpen(false)}
                       >
-                        EDITAR CATÁLOGO
+                        Panel Admin
                       </Link>
                     )}
                     <div className="mt-4 mb-4 flex justify-center gap-6">
@@ -301,7 +295,7 @@ export function Header() {
                 <Link href="/admin" className="hidden xl:block cursor-pointer">
                   <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer">
                     <Pencil className="mr-2 h-4 w-4" />
-                    Editar catálogo
+                    Panel Admin
                   </Button>
                 </Link>
               )}
