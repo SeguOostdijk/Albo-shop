@@ -92,12 +92,6 @@ import { createClient } from "@/lib/supabase/client"
 
         {/* Header */}
         <div className="text-center mb-10 sm:mb-16">
-            <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <Users className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
-                Socios
-            </h1>
-            </div>
             <div className="flex justify-start max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto mb-8">
             <Link
                 href="/admin"
@@ -106,6 +100,12 @@ import { createClient } from "@/lib/supabase/client"
                 <ArrowLeft className="h-4 w-4" />
                 Volver al panel
             </Link>
+            </div>
+            <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <Users className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
+                Socios
+            </h1>
             </div>
         </div>
 

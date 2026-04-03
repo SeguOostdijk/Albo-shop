@@ -74,19 +74,12 @@ export default async function AdminOrdersPage() {
     .order("created_at", { ascending: false })
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-8 sm:py-12 lg:py-20 pb-12 sm:pb-16 lg:pb-20">
+    <div className="container mx-auto px-2 px-4 py-8 sm:py-12 lg:py-20 pb-12 sm:pb-16 lg:pb-20">
 
-      {/* Header */}
-      <div className="text-center mb-10 sm:mb-16">
-        <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-          <ShoppingBag className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-r from-slate-700 via-blue-900 to-slate-800 bg-clip-text text-transparent">
-            Historial de pedidos
-          </h1>
-        </div>
+      <div className="flex justify-start max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mt-2"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-700 text-sm font-semibold text-slate-600 transition-all duration-200"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver al panel
@@ -102,7 +95,7 @@ export default async function AdminOrdersPage() {
             </div>
             <div>
               <CardTitle className="text-2xl sm:text-3xl font-black">
-                Todos los pedidos
+                Historial de pedidos
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 {orders?.length ?? 0} pedidos en total

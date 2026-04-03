@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Package, Edit3, Trash2, Sparkles, Star, Eye, Tag } from "lucide-react"
+import { ArrowLeft, Package, Edit3, Trash2, Sparkles, Star, Eye, Tag } from "lucide-react"
 import { DeleteProductButton } from "@/components/admin/delete-product-button"
 
 export const revalidate = 0
@@ -52,8 +52,12 @@ export default async function AdminProductsPage() {
     <div className="space-y-8 px-2 sm:px-0">
       <div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-4">
-          <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-            ← Volver al panel de administracion
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-700 text-sm font-semibold text-slate-600 transition-all duration-200"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver al panel
           </Link>
           <Link href="/admin/products/new">
             <Button className="cursor-pointer hover:shadow-md">
