@@ -55,16 +55,6 @@ export default function NewMemberPage() {
             </Link>
         </div>
 
-        {/* Header */}
-        <div className="text-center mb-10 sm:mb-16">
-            <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <Users className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
-                Nuevo socio
-            </h1>
-            </div>
-        </div>
-
         <Card className="max-w-full sm:max-w-xl mx-auto border border-slate-200/60 shadow-xl">
             <CardHeader className="pb-4">
             <div className="flex items-center gap-3">

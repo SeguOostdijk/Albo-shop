@@ -50,6 +50,9 @@ export async function sendOrderConfirmation({
     }),
   })
 
+  console.log("RESEND DATA:", data)
+  console.log("RESEND ERROR:", error)
+
   if (error) {
     console.error("Error enviando email:", error)
   }

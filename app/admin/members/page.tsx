@@ -90,9 +90,7 @@ import { createClient } from "@/lib/supabase/client"
     return (
         <div className="container mx-auto px-2 sm:px-4 py-8 sm:py-12 lg:py-20 pb-12 sm:pb-16 lg:pb-20">
 
-        {/* Header */}
-        <div className="text-center mb-10 sm:mb-16">
-            <div className="flex justify-start max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto mb-8">
+        <div className="flex justify-start max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto mb-8">
             <Link
                 href="/admin"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-700 text-sm font-semibold text-slate-600 transition-all duration-200"
@@ -100,13 +98,6 @@ import { createClient } from "@/lib/supabase/client"
                 <ArrowLeft className="h-4 w-4" />
                 Volver al panel
             </Link>
-            </div>
-            <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <Users className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
-                Socios
-            </h1>
-            </div>
         </div>
 
         <Card className="max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto border border-slate-200/60 shadow-xl">
@@ -186,34 +177,31 @@ import { createClient } from "@/lib/supabase/client"
 
                         <td className="px-4 py-3">
                             <div className="flex items-center justify-end gap-2">
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                title={member.is_active ? "Desactivar" : "Activar"}
-                                className={`h-8 w-8 cursor-pointer ${
-                                member.is_active
-                                    ? "text-orange-500 hover:text-orange-600 hover:bg-orange-50"
-                                    : "text-green-600 hover:text-green-700 hover:bg-green-50"
-                                }`}
+                                <button
                                 onClick={() => handleToggleActive(member)}
-                            >
-                                {member.is_active
-                                ? <XCircle className="h-4 w-4" />
-                                : <CheckCircle className="h-4 w-4" />
-                                }
-                            </Button>
+                                title={member.is_active ? "Desactivar" : "Activar"}
+                                className={`relative inline-flex h-4 w-10 items-center rounded-full transition-colors duration-300 cursor-pointer ${
+                                    member.is_active ? "bg-green-500" : "bg-slate-300"
+                                }`}
+                                >
+                                <span
+                                    className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+                                    member.is_active ? "translate-x-6" : "translate-x-1"
+                                    }`}
+                                />
+                                </button>
 
-                            <Button
+                                <Button
                                 size="icon"
                                 variant="ghost"
                                 title="Eliminar"
                                 className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 cursor-pointer"
                                 onClick={() => handleDelete(member.id)}
-                            >
+                                >
                                 <Trash2 className="h-4 w-4" />
-                            </Button>
+                                </Button>
                             </div>
-                        </td>
+                            </td>
                         </tr>
                     ))}
                     </tbody>
