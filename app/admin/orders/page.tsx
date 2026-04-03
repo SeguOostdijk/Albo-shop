@@ -1,10 +1,12 @@
-import { redirect } from "next/navigation"
-import Link from "next/link"
-import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ShoppingBag, ArrowLeft } from "lucide-react"
+"use client"
 
-export const revalidate = 0
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ShoppingBag, ArrowLeft, Truck, PackageCheck } from "lucide-react"
+import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 
 function formatPrice(value: number | null | undefined) {
   if (value == null) return "-"
@@ -29,71 +31,137 @@ function getFullName(
   return [firstName, lastName].filter(Boolean).join(" ") || "-"
 }
 
-export default async function AdminOrdersPage() {
-  const supabase = await createSupabaseServerClient()
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    pending: "bg-yellow-100 text-yellow-700",
+    dispatched: "bg-blue-100 text-blue-700",
+    delivered: "bg-green-100 text-green-700",
+  }
+  const labels: Record<string, string> = {
+    pending: "Pendiente",
+    dispatched: "Despachado",
+    delivered: "Entregado",
+  }
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${styles[status] ?? "bg-slate-100 text-slate-700"}`}>
+      {labels[status] ?? status}
+    </span>
+  )
+}
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+type OrderItem = {
+  id: number
+  product_name: string
+  price: number
+  member_price: number | null
+  quantity: number
+  color: string
+  size: string
+  product_image: string | null
+}
 
-  if (!user) redirect("/")
+type Order = {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  member_number: string | null
+  total: number
+  status: string
+  payment_method: string
+  shipping_method: string
+  shipping_cost: number
+  created_at: string
+  order_items: OrderItem[]
+}
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role, email")
-    .eq("id", user.id)
-    .single()
+export default function AdminOrdersPage() {
+  const supabase = createClient()
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [updatingId, setUpdatingId] = useState<number | null>(null)
 
-  if (profileError || !profile || profile.role !== "admin") redirect("/")
-
-  const { data: orders, error: ordersError } = await supabase
-    .from("orders")
-    .select(`
-      id,
-      first_name,
-      last_name,
-      email,
-      member_number,
-      total,
-      status,
-      payment_method,
-      shipping_method,
-      shipping_cost,
-      created_at,
-      order_items (
+  const fetchOrders = async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from("orders")
+      .select(`
         id,
-        product_name,
-        price,
-        member_price,
-        quantity,
-        color,
-        size,
-        product_image
+        first_name,
+        last_name,
+        email,
+        member_number,
+        total,
+        status,
+        payment_method,
+        shipping_method,
+        shipping_cost,
+        created_at,
+        order_items (
+          id,
+          product_name,
+          price,
+          member_price,
+          quantity,
+          color,
+          size,
+          product_image
+        )
+      `)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      toast.error("Error al cargar los pedidos")
+    } else {
+      setOrders(data ?? [])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const handleUpdateStatus = async (order: Order, newStatus: string) => {
+    setUpdatingId(order.id)
+
+    const res = await fetch("/api/admin/members/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: order.id,
+        status: newStatus,
+        email: order.email,
+        firstName: order.first_name,
+        shippingMethod: order.shipping_method,
+      }),
+    })
+
+    if (!res.ok) {
+      toast.error("Error al actualizar el pedido")
+    } else {
+      toast.success(
+        newStatus === "dispatched" ? "Pedido marcado como despachado" : "Pedido marcado como entregado"
       )
-    `)
-    .order("created_at", { ascending: false })
+      fetchOrders()
+    }
+
+    setUpdatingId(null)
+  }
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-8 sm:py-12 lg:py-20 pb-12 sm:pb-16 lg:pb-20">
+    <div className="container mx-auto px-4 py-8 pb-12 sm:pb-16 lg:pb-20">
 
-      {/* Header */}
-      <div className="text-center mb-10 sm:mb-16">
-        <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-          <ShoppingBag className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight bg-gradient-to-r from-slate-700 via-blue-900 to-slate-800 bg-clip-text text-transparent">
-            Historial de pedidos
-          </h1>
-        </div>
+      <div className="flex justify-start max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mt-2"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-700 text-sm font-semibold text-slate-600 transition-all duration-200"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver al panel
         </Link>
       </div>
 
-      {/* Tabla de pedidos */}
       <Card className="max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto border border-slate-200/60 shadow-xl">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
@@ -102,24 +170,22 @@ export default async function AdminOrdersPage() {
             </div>
             <div>
               <CardTitle className="text-2xl sm:text-3xl font-black">
-                Todos los pedidos
+                Historial de pedidos
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                {orders?.length ?? 0} pedidos en total
+                {orders.length} pedidos en total
               </p>
             </div>
           </div>
         </CardHeader>
 
         <CardContent>
-          {ordersError ? (
-            <p className="text-sm text-red-500">
-              Error al cargar los pedidos: {ordersError.message}
-            </p>
-          ) : !orders || orders.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No hay pedidos registrados.
-            </p>
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : orders.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No hay pedidos registrados.</p>
           ) : (
             <div className="space-y-4">
               {orders.map((order) => (
@@ -130,25 +196,21 @@ export default async function AdminOrdersPage() {
                   <summary className="cursor-pointer list-none p-4 sm:p-5 hover:bg-slate-50 transition">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                       <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">
-                          Pedido #{order.id}
-                        </p>
+                        <p className="text-sm text-muted-foreground">Pedido #{order.id}</p>
                         <h3 className="text-lg font-bold">
                           {getFullName(order.first_name, order.last_name)}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {order.email ?? "-"}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{order.email ?? "-"}</p>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                         <div>
                           <p className="text-muted-foreground">Fecha</p>
                           <p className="font-medium">{formatDate(order.created_at)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Estado</p>
-                          <p className="font-medium">{order.status ?? "-"}</p>
+                          <StatusBadge status={order.status} />
                         </div>
                         <div>
                           <p className="text-muted-foreground">Total</p>
@@ -174,6 +236,33 @@ export default async function AdminOrdersPage() {
                       </div>
                     </div>
 
+                    {/* Botón de acción según estado y método de envío */}
+                    {order.status === "pending" && (
+                      <div className="flex justify-end">
+                        {order.shipping_method === "pickup" ? (
+                          <Button
+                            size="sm"
+                            disabled={updatingId === order.id}
+                            onClick={() => handleUpdateStatus(order, "delivered")}
+                            className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold rounded-xl cursor-pointer"
+                          >
+                            <PackageCheck className="h-4 w-4 mr-2" />
+                            {updatingId === order.id ? "Actualizando..." : "Marcar como entregado"}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            disabled={updatingId === order.id}
+                            onClick={() => handleUpdateStatus(order, "dispatched")}
+                            className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold rounded-xl cursor-pointer"
+                          >
+                            <Truck className="h-4 w-4 mr-2" />
+                            {updatingId === order.id ? "Actualizando..." : "Marcar como despachado"}
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
                     <div>
                       <h4 className="text-base font-bold mb-3">Productos del pedido</h4>
                       {!order.order_items || order.order_items.length === 0 ? (
@@ -196,9 +285,7 @@ export default async function AdminOrdersPage() {
                             <tbody>
                               {order.order_items.map((item) => (
                                 <tr key={item.id} className="border-t">
-                                  <td className="px-4 py-3 font-medium">
-                                    {item.product_name ?? "-"}
-                                  </td>
+                                  <td className="px-4 py-3 font-medium">{item.product_name ?? "-"}</td>
                                   <td className="px-4 py-3">{item.color ?? "-"}</td>
                                   <td className="px-4 py-3">{item.size ?? "-"}</td>
                                   <td className="px-4 py-3">{item.quantity ?? "-"}</td>

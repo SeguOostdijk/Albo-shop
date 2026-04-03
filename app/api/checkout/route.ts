@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { MercadoPagoConfig, Payment, Preference } from "mercadopago"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation"
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
@@ -297,6 +298,10 @@ export async function POST(request: Request) {
       )
     }
 
+    console.log(`Stock skip for MP order ${order.id}`)
+
+    let redirectTo = "/account/orders"
+
     if (paymentInfo.method === "transfer") {
       return NextResponse.json({
         success: true,
@@ -338,7 +343,9 @@ export async function POST(request: Request) {
           failure: `${baseUrl}/checkout?error=pago-fallo`,
           pending: `${baseUrl}/checkout/payment/pending?orderId=${order.id}`,
         },
-        ...(!isLocalhost && { auto_return: "approved" as const }),
+        // auto_return solo funciona con URLs públicas, no con localhost
+        ...(!isLocalhost && { auto_return: "approved" as "approved" }),
+        // notification_url tampoco funciona en localhost
         ...(!isLocalhost && {
           notification_url: `${baseUrl}/api/webhooks/mercadopago`,
         }),

@@ -295,12 +295,13 @@ export default function NewProductPage() {
     <div className="container mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6">
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild className="cursor-pointer">
-            <Link href="/admin/products" className="flex items-center gap-1 cursor-pointer">
-              <ArrowLeft className="h-4 w-4" />
-              Volver a productos
-            </Link>
-          </Button>
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-700 text-sm font-semibold text-slate-600 transition-all duration-200"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver a panel
+          </Link>
         </div>
         <h1 className="text-3xl font-bold mt-4">Nuevo producto</h1>
         <p className="text-muted-foreground">
