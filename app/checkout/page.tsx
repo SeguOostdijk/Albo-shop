@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Lock, CreditCard, Truck } from "lucide-react"
 import { toast } from "sonner"
+import { initMercadoPago, CardPayment } from "@mercadopago/sdk-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,13 +23,20 @@ import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/currency"
 import { SiMercadopago } from "react-icons/si"
 
+const mpPublicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY
+
+if (mpPublicKey) {
+  initMercadoPago(mpPublicKey, { locale: "es-AR" })
+}
+
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore()
   const { user } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
   const [shippingMethod, setShippingMethod] = useState("standard")
-  const [paymentMethod, setPaymentMethod] = useState("credit-card")
+const [paymentMethod, setPaymentMethod] = useState("mercadopago")
+  
 
   const [useMemberDiscount, setUseMemberDiscount] = useState(false)
   const [memberName, setMemberName] = useState("")
@@ -37,7 +45,10 @@ export default function CheckoutPage() {
   const [validatingMember, setValidatingMember] = useState(false)
   const [province, setProvince] = useState("caba")
   const [email, setEmail] = useState(user?.email || "")
-const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || "")
+  const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || "")
+
+  const isCardPayment =
+    paymentMethod === "credit-card" || paymentMethod === "debit-card"
 
   const getUnitPrice = (product: {
     price: number
@@ -92,61 +103,54 @@ const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || 
       const json = await res.json()
 
       if (!json.ok || !json.valid) {
-setMemberError("Nombre de socio inválido")
+        setMemberError(json.message || "Nombre de socio inválido")
         setMemberValidated(false)
         return
       }
 
       setMemberValidated(true)
-      toast.success("Número de socio validado")
+      toast.success("Nombre de socio validado")
     } catch {
-      setMemberError("No se pudo validar el número de socio")
+      setMemberError("No se pudo validar el nombre de socio")
       setMemberValidated(false)
     } finally {
       setValidatingMember(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    const formData = new FormData(e.currentTarget)
-    const firstName = formData.get("firstName") as string
-    const lastName = formData.get("lastName") as string
-    const email = formData.get("email") as string
-    // phone SIEMPRE del estado
-    const address = formData.get("address") as string
-    const city = formData.get("city") as string
-    const postalCode = formData.get("postalCode") as string
-
-
-
-    let paymentInfo: {
-      method: string
-      last4?: string
-      brand?: string
-      cardName?: string
-      dni?: string
-    } = {
-      method: paymentMethod,
-    }
-
-    if (paymentMethod === "credit-card" || paymentMethod === "debit-card") {
-      const cardNumber = formData.get("cardNumber") as string
-      const cardName = formData.get("cardName") as string
-      const dni = formData.get("dni") as string
-
-      paymentInfo = {
-        method: paymentMethod,
-        last4: cardNumber ? cardNumber.replace(/\s/g, "").slice(-4) : "",
-        brand: "Visa",
-        cardName,
-        dni,
-      }
-    }
-
+  const handleCardPaymentSubmit = async (formData: any) => {
     try {
+      setIsLoading(true)
+
+      const firstNameInput = document.getElementById("firstName") as HTMLInputElement | null
+      const lastNameInput = document.getElementById("lastName") as HTMLInputElement | null
+      const addressInput = document.getElementById("address") as HTMLInputElement | null
+      const cityInput = document.getElementById("city") as HTMLInputElement | null
+      const postalCodeInput = document.getElementById("postalCode") as HTMLInputElement | null
+      const emailInput = document.getElementById("email") as HTMLInputElement | null
+
+      const firstName = firstNameInput?.value?.trim() || ""
+      const lastName = lastNameInput?.value?.trim() || ""
+      const address = addressInput?.value?.trim() || ""
+      const city = cityInput?.value?.trim() || ""
+      const postalCode = postalCodeInput?.value?.trim() || ""
+      const emailValue = emailInput?.value?.trim() || email || ""
+
+      if (
+        !emailValue ||
+        !phone ||
+        !firstName ||
+        !lastName ||
+        !address ||
+        !city ||
+        !province ||
+        !postalCode
+      ) {
+        toast.error("Completá los datos obligatorios antes de pagar.")
+        setIsLoading(false)
+        return
+      }
+
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
@@ -154,8 +158,8 @@ setMemberError("Nombre de socio inválido")
         },
         body: JSON.stringify({
           items,
-          email,
-          phone: phone || "", // siempre el valor del estado
+          email: emailValue,
+          phone: phone || "",
           firstName,
           lastName,
           address,
@@ -165,7 +169,80 @@ setMemberError("Nombre de socio inválido")
           shippingMethod,
           shippingCost,
           total,
-          paymentInfo,
+          paymentInfo: {
+            method: paymentMethod,
+            mpCardData: formData,
+          },
+          memberName: memberValidated ? memberName.trim() : null,
+          memberValidated,
+        }),
+      })
+
+      const data = await response.json()
+      console.log("Card checkout response:", data)
+
+      if (!data.success) {
+        toast.error(data.error || "Error al procesar el pago.")
+        setIsLoading(false)
+        return
+      }
+
+      clearCart()
+      toast.success("Pedido creado correctamente")
+
+      if (data.redirectTo) {
+        window.location.href = data.redirectTo
+        return
+      }
+
+      window.location.href = "/account/orders"
+    } catch (error) {
+      console.error("Card checkout error:", error)
+      toast.error("Error al procesar el pago.")
+      setIsLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    if (isCardPayment) {
+      toast.error("Completá el pago desde el formulario de tarjeta.")
+      return
+    }
+
+    setIsLoading(true)
+
+    const formData = new FormData(e.currentTarget)
+    const firstName = formData.get("firstName") as string
+    const lastName = formData.get("lastName") as string
+    const emailValue = formData.get("email") as string
+    const address = formData.get("address") as string
+    const city = formData.get("city") as string
+    const postalCode = formData.get("postalCode") as string
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items,
+          email: emailValue,
+          phone: phone || "",
+          firstName,
+          lastName,
+          address,
+          city,
+          province,
+          postalCode,
+          shippingMethod,
+          shippingCost,
+          total,
+          paymentInfo: {
+            method: paymentMethod,
+          },
           memberName: memberValidated ? memberName.trim() : null,
           memberValidated,
         }),
@@ -174,25 +251,27 @@ setMemberError("Nombre de socio inválido")
       const data = await response.json()
       console.log("Checkout response:", data)
 
-      if (data.success) {
-        toast.success("Pedido creado! Redirigiendo a MercadoPago...")
-        clearCart()
-
-        if (data.mpUrl) {
-          // MercadoPago special handling
-          window.location.href = data.mpUrl
-          return
-        }
-
-        if (data.redirectTo) {
-          window.location.href = data.redirectTo
-          return
-        }
-
-        window.location.href = "/account/orders"
-      } else {
+      if (!data.success) {
         toast.error(data.error || "Error al procesar el pedido. Intenta nuevamente.")
+        return
       }
+
+      clearCart()
+
+      if (paymentMethod === "mercadopago" && data.mpUrl) {
+        toast.success("Pedido creado! Redirigiendo a MercadoPago...")
+        window.location.href = data.mpUrl
+        return
+      }
+
+      toast.success("Pedido creado correctamente")
+
+      if (data.redirectTo) {
+        window.location.href = data.redirectTo
+        return
+      }
+
+      window.location.href = "/account/orders"
     } catch {
       toast.error("Error al procesar el pago. Intenta nuevamente.")
     } finally {
@@ -261,29 +340,30 @@ setMemberError("Nombre de socio inválido")
                       type="email"
                       placeholder="tu@email.com"
                       className="placeholder:text-muted-foreground/60"
-                      defaultValue=""
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   )}
                 </div>
 
                 <div className="space-y-2">
-  <Label htmlFor="phone">Telefono</Label>
-  <Input
-    id="phone"
-    type="tel"
-    placeholder="+54 11 1234-5678"
-    className={
-      user && phone
-        ? "placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
-        : "placeholder:text-muted-foreground/60"
-    }
-    value={phone}
-    onChange={(e) => setPhone(e.target.value)}
-    readOnly={!!user && !!phone}
-    required
-  />
-</div>
+                  <Label htmlFor="phone">Telefono</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+54 11 1234-5678"
+                    className={
+                      user && phone
+                        ? "placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
+                        : "placeholder:text-muted-foreground/60"
+                    }
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    readOnly={!!user && !!phone}
+                    required
+                  />
+                </div>
               </div>
 
               {user ? (
@@ -356,18 +436,21 @@ setMemberError("Nombre de socio inválido")
                   />
                 </div>
 
-            <Select value={province} onValueChange={setProvince}>
-                <SelectTrigger id="province" className="cursor-pointer">
-                <SelectValue placeholder="Seleccionar provincia" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="caba">CABA</SelectItem>
-                <SelectItem value="buenosaires">Buenos Aires</SelectItem>
-                <SelectItem value="cordoba">Cordoba</SelectItem>
-                <SelectItem value="santafe">Santa Fe</SelectItem>
-                <SelectItem value="mendoza">Mendoza</SelectItem>
-              </SelectContent>
-            </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="province">Provincia</Label>
+                  <Select value={province} onValueChange={setProvince}>
+                    <SelectTrigger id="province" className="cursor-pointer">
+                      <SelectValue placeholder="Seleccionar provincia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="caba">CABA</SelectItem>
+                      <SelectItem value="buenosaires">Buenos Aires</SelectItem>
+                      <SelectItem value="cordoba">Cordoba</SelectItem>
+                      <SelectItem value="santafe">Santa Fe</SelectItem>
+                      <SelectItem value="mendoza">Mendoza</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">Codigo Postal</Label>
@@ -442,7 +525,6 @@ setMemberError("Nombre de socio inválido")
                 {useMemberDiscount && (
                   <div className="space-y-3">
                     <div>
-
                       <Input
                         id="memberName"
                         value={memberName}
@@ -544,15 +626,54 @@ setMemberError("Nombre de socio inválido")
                     }`}
                   >
                     <RadioGroupItem value="transfer" id="transfer" className="sr-only" />
-                    <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
                     <span className="text-sm font-medium">Transferencia</span>
                   </label>
                 </RadioGroup>
               </div>
 
-              {/* El formulario de tarjeta se movió a la pantalla de transferencia */}
+              {isCardPayment && (
+                <div className="mt-6 space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Completá los datos de la tarjeta en el formulario de Mercado Pago.
+                  </p>
+
+                  {!mpPublicKey ? (
+                    <p className="text-sm text-red-600">
+                      Falta configurar NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY
+                    </p>
+                  ) : (
+                    <div className="rounded-lg border p-3 bg-white">
+                      <CardPayment
+                        initialization={{
+                          amount: total,
+                          payer: {
+                            email,
+                          },
+                        }}
+                        customization={{
+                          paymentMethods: {
+                            maxInstallments: 12,
+                          },
+                          visual: {
+                            style: {
+                              theme: "default",
+                            },
+                          },
+                        }}
+                        onReady={() => {
+                          console.log("CardPayment listo")
+                        }}
+                        onSubmit={handleCardPaymentSubmit}
+                        onError={(error) => {
+                          if (error?.type === "non_critical") return
+                          console.error("Mercado Pago CardPayment error:", JSON.stringify(error))
+                          toast.error("No se pudo cargar el formulario de tarjeta")
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
                 <Lock className="h-4 w-4" />
@@ -673,21 +794,12 @@ setMemberError("Nombre de socio inválido")
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full mt-6 cursor-pointer"
-                size="lg"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  "Procesando..."
-                ) : (
-                  <>
-                    <Lock className="h-4 w-4 mr-2" />
-                    Pagar {formatCurrency(total)}
-                  </>
-                )}
-              </Button>
+
+              {isCardPayment && (
+                <p className="text-sm text-muted-foreground text-center mt-6">
+                  Completá el formulario de tarjeta de arriba para finalizar el pago.
+                </p>
+              )}
 
               <p className="text-xs text-muted-foreground text-center mt-4">
                 Al completar tu compra, aceptas nuestros{" "}
