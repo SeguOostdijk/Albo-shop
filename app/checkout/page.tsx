@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Lock, CreditCard, Truck } from "lucide-react"
+import { ArrowLeft, Lock, CreditCard, Truck, Check, ChevronDown, Pencil } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,140 +21,156 @@ import { useCartStore } from "@/lib/cart-store"
 import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/currency"
 
+const PROVINCES: Record<string, string> = {
+  caba: "CABA",
+  buenosaires: "Buenos Aires",
+  cordoba: "Córdoba",
+  santafe: "Santa Fe",
+  mendoza: "Mendoza",
+}
+
+const PAYMENT_LABELS: Record<string, string> = {
+  "credit-card": "Tarjeta de crédito",
+  "debit-card": "Tarjeta de débito",
+  mercadopago: "MercadoPago",
+  transfer: "Transferencia bancaria",
+}
+
+const SHIPPING_LABELS: Record<string, string> = {
+  pickup: "Retiro en local (gratis)",
+  standard: "Envío estándar (5-7 días hábiles)",
+}
+
+type Step = 1 | 2 | 3
+
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore()
   const { user } = useAuth()
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [shippingMethod, setShippingMethod] = useState("standard")
-  const [paymentMethod, setPaymentMethod] = useState("credit-card")
+  // Step state
+  const [currentStep, setCurrentStep] = useState<Step>(1)
+  const [doneSteps, setDoneSteps] = useState<Set<Step>>(new Set())
 
-  const [useMemberDiscount, setUseMemberDiscount] = useState(false)
+  // Contact
+  const [email, setEmail] = useState(user?.email || "")
+  const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || "")
+
+  // Shipping
+  const [firstName, setFirstName] = useState(user?.user_metadata?.first_name || "")
+  const [lastName, setLastName] = useState(user?.user_metadata?.last_name || "")
+  const [address, setAddress] = useState("")
+  const [city, setCity] = useState("")
+  const [province, setProvince] = useState("caba")
+  const [postalCode, setPostalCode] = useState("")
+  const [shippingMethod, setShippingMethod] = useState("standard")
+
+  // Payment
+  const [paymentMethod, setPaymentMethod] = useState("credit-card")
   const [memberName, setMemberName] = useState("")
   const [memberValidated, setMemberValidated] = useState(false)
   const [memberError, setMemberError] = useState("")
   const [validatingMember, setValidatingMember] = useState(false)
-  const [province, setProvince] = useState("caba")
-  const [email, setEmail] = useState(user?.email || "")
-const [phone, setPhone] = useState(user?.user_metadata?.phone || user?.phone || "")
 
-  const getUnitPrice = (product: {
-    price: number
-    memberPrice?: number
-  }) => {
-    if (memberValidated && product.memberPrice) {
-      return product.memberPrice
-    }
+  const [isLoading, setIsLoading] = useState(false)
 
-    return product.price
-  }
+  // Pricing
+  const getUnitPrice = (product: { price: number; memberPrice?: number }) =>
+    memberValidated && product.memberPrice ? product.memberPrice : product.price
 
-  const subtotalWithoutMemberDiscount = useMemo(() => {
-    return items.reduce((acc, item) => {
-      return acc + item.product.price * item.quantity
-    }, 0)
-  }, [items])
+  const subtotalWithoutMemberDiscount = useMemo(
+    () => items.reduce((acc, item) => acc + item.product.price * item.quantity, 0),
+    [items]
+  )
 
-  const subtotal = useMemo(() => {
-    return items.reduce((acc, item) => {
-      return acc + getUnitPrice(item.product) * item.quantity
-    }, 0)
-  }, [items, memberValidated])
+  const subtotal = useMemo(
+    () => items.reduce((acc, item) => acc + getUnitPrice(item.product) * item.quantity, 0),
+    [items, memberValidated]
+  )
 
   const memberSavings = Math.max(0, subtotalWithoutMemberDiscount - subtotal)
 
   const shippingCost =
-    shippingMethod === "express"
-      ? 9999
-      : shippingMethod === "pickup"
-        ? 0
-        : subtotal >= 75000
-          ? 0
-          : 5999
+    shippingMethod === "pickup" ? 0 : subtotal >= 75000 ? 0 : 5999
 
   const total = subtotal + shippingCost
+
+  // Step helpers
+  const markDone = (step: Step, next: Step) => {
+    setDoneSteps((prev) => new Set([...prev, step]))
+    setCurrentStep(next)
+  }
+
+  const editStep = (step: Step) => {
+    setDoneSteps((prev) => {
+      const next = new Set(prev)
+      next.delete(step)
+      // Also un-complete subsequent steps
+      if (step <= 2) next.delete((step + 1) as Step)
+      if (step === 1) next.delete(3)
+      return next
+    })
+    setCurrentStep(step)
+  }
+
+  // Validators
+  const handleContinueContact = () => {
+    if (!email.trim() || !phone.trim()) {
+      toast.error("Completá todos los campos de contacto")
+      return
+    }
+    markDone(1, 2)
+  }
+
+  const handleContinueShipping = () => {
+    if (!firstName.trim() || !lastName.trim() || !address.trim() || !city.trim() || !postalCode.trim()) {
+      toast.error("Completá todos los campos de envío")
+      return
+    }
+    markDone(2, 3)
+  }
+
+  const handleContinuePayment = () => {
+    markDone(3, 3)
+  }
 
   const handleValidateMember = async () => {
     setMemberError("")
     setMemberValidated(false)
     setValidatingMember(true)
-
     try {
       const res = await fetch("/api/validate-member", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ memberName }),
       })
-
       const json = await res.json()
-
       if (!json.ok || !json.valid) {
-setMemberError("Nombre de socio inválido")
-        setMemberValidated(false)
+        setMemberError("Nombre de socio inválido")
         return
       }
-
       setMemberValidated(true)
       toast.success("Número de socio validado")
     } catch {
       setMemberError("No se pudo validar el número de socio")
-      setMemberValidated(false)
     } finally {
       setValidatingMember(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
+    if (!doneSteps.has(1) || !doneSteps.has(2) || !doneSteps.has(3)) {
+      toast.error("Completá todos los pasos antes de continuar")
+      return
+    }
     setIsLoading(true)
-
-    const formData = new FormData(e.currentTarget)
-    const firstName = formData.get("firstName") as string
-    const lastName = formData.get("lastName") as string
-    const email = formData.get("email") as string
-    // phone SIEMPRE del estado
-    const address = formData.get("address") as string
-    const city = formData.get("city") as string
-    const postalCode = formData.get("postalCode") as string
-
-
-
-    let paymentInfo: {
-      method: string
-      last4?: string
-      brand?: string
-      cardName?: string
-      dni?: string
-    } = {
-      method: paymentMethod,
-    }
-
-    if (paymentMethod === "credit-card" || paymentMethod === "debit-card") {
-      const cardNumber = formData.get("cardNumber") as string
-      const cardName = formData.get("cardName") as string
-      const dni = formData.get("dni") as string
-
-      paymentInfo = {
-        method: paymentMethod,
-        last4: cardNumber ? cardNumber.replace(/\s/g, "").slice(-4) : "",
-        brand: "Visa",
-        cardName,
-        dni,
-      }
-    }
-
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
           email,
-          phone: phone || "", // siempre el valor del estado
+          phone,
           firstName,
           lastName,
           address,
@@ -164,30 +180,17 @@ setMemberError("Nombre de socio inválido")
           shippingMethod,
           shippingCost,
           total,
-          paymentInfo,
+          paymentInfo: { method: paymentMethod },
           memberName: memberValidated ? memberName.trim() : null,
           memberValidated,
         }),
       })
-
       const data = await response.json()
-      console.log("Checkout response:", data)
-
       if (data.success) {
-        toast.success("Pedido creado! Redirigiendo a MercadoPago...")
+        toast.success("Pedido creado! Redirigiendo...")
         clearCart()
-
-        if (data.mpUrl) {
-          // MercadoPago special handling
-          window.location.href = data.mpUrl
-          return
-        }
-
-        if (data.redirectTo) {
-          window.location.href = data.redirectTo
-          return
-        }
-
+        if (data.mpUrl) { window.location.href = data.mpUrl; return }
+        if (data.redirectTo) { window.location.href = data.redirectTo; return }
         window.location.href = "/account/orders"
       } else {
         toast.error(data.error || "Error al procesar el pedido. Intenta nuevamente.")
@@ -217,486 +220,407 @@ setMemberError("Nombre de socio inválido")
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <Breadcrumbs
-        items={[
-          { label: "Carrito", href: "/cart" },
-          { label: "Checkout" },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: "Carrito", href: "/cart" }, { label: "Checkout" }]} />
 
-      <Link
-        href="/cart"
-        className="inline-flex items-center text-sm text-secondary hover:underline mt-4"
-      >
+      <Link href="/cart" className="inline-flex items-center text-sm text-secondary hover:underline mt-4">
         <ArrowLeft className="h-4 w-4 mr-2" />
         Volver al carrito
       </Link>
 
       <h1 className="text-3xl font-bold mt-4 mb-8">Checkout</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <section className="bg-card rounded-lg border border-border p-6">
-              <h2 className="text-lg font-semibold mb-4">Informacion de Contacto</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  {user ? (
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="tu@email.com"
-                      className="placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
-                      value={user?.email || ""}
-                      readOnly
-                      required
-                    />
-                  ) : (
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="tu@email.com"
-                      className="placeholder:text-muted-foreground/60"
-                      defaultValue=""
-                      required
-                    />
-                  )}
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-4">
 
-                <div className="space-y-2">
-  <Label htmlFor="phone">Telefono</Label>
-  <Input
-    id="phone"
-    type="tel"
-    placeholder="+54 11 1234-5678"
-    className={
-      user && phone
-        ? "placeholder:text-muted-foreground/60 bg-muted cursor-not-allowed"
-        : "placeholder:text-muted-foreground/60"
-    }
-    value={phone}
-    onChange={(e) => setPhone(e.target.value)}
-    readOnly={!!user && !!phone}
-    required
-  />
-</div>
+          {/* ── STEP 1: Contacto ── */}
+          <StepCard
+            number={1}
+            title="Información de Contacto"
+            icon={<span className="text-base">✉️</span>}
+            isOpen={currentStep === 1}
+            isDone={doneSteps.has(1)}
+            onEdit={() => editStep(1)}
+            summary={
+              doneSteps.has(1)
+                ? <p className="text-sm text-muted-foreground">{email} · {phone}</p>
+                : null
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
-
-              {user ? (
-                <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
-                  <span className="text-sm text-green-600 font-medium">
-                    ✓ Datos cargados automáticamente
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="ml-auto cursor-pointer"
-                    onClick={() => window.open("/account/profile", "_blank")}
-                  >
-                    Cambiar Datos
-                  </Button>
-                </div>
-              ) : null}
-            </section>
-
-            <section className="bg-card rounded-lg border border-border p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Truck className="h-5 w-5 text-secondary" />
-                <h2 className="text-lg font-semibold">Direccion de Envio</h2>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+54 11 1234-5678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
               </div>
+            </div>
+<Button type="button" className="mt-5 cursor-pointer" onClick={handleContinueContact}>
+              Continuar
+            </Button>
+          </StepCard>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Nombre</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    placeholder="Juan"
-                    className="placeholder:text-muted-foreground/60"
-                    defaultValue={user?.user_metadata?.first_name || ""}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Apellido</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    placeholder="Perez"
-                    className="placeholder:text-muted-foreground/60"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Direccion</Label>
-                  <Input
-                    id="address"
-                    name="address"
-                    placeholder="Av. Corrientes 1234, Piso 5, Depto A"
-                    className="placeholder:text-muted-foreground/60"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="city">Ciudad</Label>
-                  <Input
-                    id="city"
-                    name="city"
-                    placeholder="Buenos Aires"
-                    className="placeholder:text-muted-foreground/60"
-                    required
-                  />
-                </div>
-
-            <Select value={province} onValueChange={setProvince}>
-                <SelectTrigger id="province" className="cursor-pointer">
-                <SelectValue placeholder="Seleccionar provincia" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="caba">CABA</SelectItem>
-                <SelectItem value="buenosaires">Buenos Aires</SelectItem>
-                <SelectItem value="cordoba">Cordoba</SelectItem>
-                <SelectItem value="santafe">Santa Fe</SelectItem>
-                <SelectItem value="mendoza">Mendoza</SelectItem>
-              </SelectContent>
-            </Select>
-
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Codigo Postal</Label>
-                  <Input
-                    id="postalCode"
-                    name="postalCode"
-                    placeholder="1000"
-                    className="placeholder:text-muted-foreground/60"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-border">
-                <h3 className="font-medium mb-4">Metodo de Envio</h3>
-                <RadioGroup
-                  value={shippingMethod}
-                  onValueChange={setShippingMethod}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-green-50">
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="pickup" id="pickup" />
-                      <Label htmlFor="pickup" className="cursor-pointer hover:text-primary transition-colors">
-                        <span className="font-medium text-green-700">Retirar en Local</span>
-                        <span className="text-sm text-muted-foreground block">
-                          Retiralo gratis en Av. Rivadavia 4700
-                        </span>
-                      </Label>
-                    </div>
-                    <span className="font-medium text-success">Gratis</span>
+          {/* ── STEP 2: Envío ── */}
+          <StepCard
+            number={2}
+            title="Dirección de Envío"
+            icon={<Truck className="h-4 w-4" />}
+            isOpen={currentStep === 2}
+            isDone={doneSteps.has(2)}
+            isLocked={!doneSteps.has(1) && currentStep !== 2}
+            onEdit={() => editStep(2)}
+            summary={
+              doneSteps.has(2)
+                ? (
+                  <div className="text-sm text-muted-foreground space-y-0.5">
+                    <p>{firstName} {lastName}</p>
+                    <p>{address}, {city}, {PROVINCES[province]}, CP {postalCode}</p>
+                    <p>{SHIPPING_LABELS[shippingMethod]}</p>
                   </div>
+                )
+                : null
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Nombre</Label>
+                <Input placeholder="Juan" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Apellido</Label>
+                <Input placeholder="Perez" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Dirección</Label>
+                <Input placeholder="Av. Corrientes 1234, Piso 5, Depto A" value={address} onChange={(e) => setAddress(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Ciudad</Label>
+                <Input placeholder="Buenos Aires" value={city} onChange={(e) => setCity(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Provincia</Label>
+                <Select value={province} onValueChange={setProvince}>
+                  <SelectTrigger className="cursor-pointer"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(PROVINCES).map(([v, l]) => (
+                      <SelectItem key={v} value={v}>{l}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Código Postal</Label>
+                <Input placeholder="1000" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required />
+              </div>
+            </div>
 
-                  <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="standard" id="standard" />
-                      <Label htmlFor="standard" className="cursor-pointer hover:text-primary transition-colors">
-                        <span className="font-medium">Envio Estandar</span>
-                        <span className="text-sm text-muted-foreground block">
-                          5-7 dias habiles
-                        </span>
-                      </Label>
-                    </div>
-                    <span className="font-medium">
-                      {subtotal >= 75000 ? "Gratis" : formatCurrency(5999)}
-                    </span>
+            <div className="mt-6 pt-5 border-t border-border">
+              <h3 className="font-medium mb-4">Método de Envío</h3>
+              <RadioGroup value={shippingMethod} onValueChange={setShippingMethod} className="space-y-3">
+                <div className={`flex items-center justify-between p-4 border rounded-lg ${shippingMethod === "pickup" ? "border-primary bg-primary/5" : "border-border"}`}>
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="pickup" id="pickup" />
+                    <Label htmlFor="pickup" className="cursor-pointer">
+                      <span className="font-medium text-green-700">Retirar en Local</span>
+                      <span className="text-sm text-muted-foreground block">Retiralo gratis en Av. Rivadavia 4700</span>
+                    </Label>
                   </div>
-                </RadioGroup>
-              </div>
-            </section>
-
-            <section className="bg-card rounded-lg border border-border p-6">
-              <h2 className="text-lg font-semibold mb-4">Beneficio de socio</h2>
-
-              <div className="rounded-lg border border-border p-4 space-y-3">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={useMemberDiscount}
-                    onChange={(e) => {
-                      setUseMemberDiscount(e.target.checked)
-                      if (!e.target.checked) {
-                        setMemberName("")
-                        setMemberValidated(false)
-                        setMemberError("")
-                      }
-                    }}
-                  />
-                  Aplicar descuento de socio
-                </label>
-
-                {useMemberDiscount && (
-                  <div className="space-y-3">
-                    <div>
-
-                      <Input
-                        id="memberName"
-                        value={memberName}
-                        onChange={(e) => setMemberName(e.target.value)}
-                        placeholder="Ej: Perez Juan"
-                        className="mt-2"
-                      />
-                    </div>
-
-                    <Button
-                      type="button"
-                      onClick={handleValidateMember}
-                      disabled={validatingMember || memberName.trim() === ""}
-                    >
-                      {validatingMember ? "Validando..." : "Validar nombre de socio"}
-                    </Button>
-
-                    {memberValidated && (
-                      <p className="text-sm text-green-600">
-                        Nombre válido. Se aplicó el precio de socio.
-                      </p>
-                    )}
-
-                    {memberError && (
-                      <p className="text-sm text-red-600">{memberError}</p>
-                    )}
-
-                    <a
-                      href="https://wa.me/5491123456789?text=Hola,%20quiero%20hacerme%20socio"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-sm text-primary underline"
-                    >
-                      ¿No sos socio? Hacete socio
-                    </a>
+                  <span className="font-medium text-success">Gratis</span>
+                </div>
+                <div className={`flex items-center justify-between p-4 border rounded-lg ${shippingMethod === "standard" ? "border-primary bg-primary/5" : "border-border"}`}>
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="standard" id="standard" />
+                    <Label htmlFor="standard" className="cursor-pointer">
+                      <span className="font-medium">Envío Estándar</span>
+                      <span className="text-sm text-muted-foreground block">5-7 días hábiles</span>
+                    </Label>
                   </div>
-                )}
+                  <span className="font-medium">{subtotal >= 75000 ? "Gratis" : formatCurrency(5999)}</span>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Button type="button" className="mt-5 cursor-pointer" onClick={handleContinueShipping}>
+              Continuar
+            </Button>
+          </StepCard>
+
+          {/* ── STEP 3: Pago ── */}
+          <StepCard
+            number={3}
+            title="Información de Pago"
+            icon={<CreditCard className="h-4 w-4" />}
+            isOpen={currentStep === 3}
+            isDone={doneSteps.has(3)}
+            isLocked={!doneSteps.has(2) && currentStep !== 3}
+            onEdit={() => editStep(3)}
+            summary={
+              doneSteps.has(3)
+                ? (
+                  <div className="text-sm text-muted-foreground space-y-0.5">
+                    <p>{PAYMENT_LABELS[paymentMethod]}</p>
+                    {memberValidated && <p className="text-green-600">✓ Precio socio aplicado</p>}
+                  </div>
+                )
+                : null
+            }
+          >
+            {/* Beneficio socio */}
+            <div className="rounded-lg border border-border p-4 space-y-3 mb-6">
+              <Label className="text-sm font-medium">Ingresa tu Nombre y Apellido de socio</Label>
+              <div className="space-y-3">
+                <Input
+                  value={memberName}
+                  onChange={(e) => setMemberName(e.target.value)}
+                  placeholder="Ej: Perez Juan"
+                />
+                <Button type="button" onClick={handleValidateMember} disabled={validatingMember || !memberName.trim()} className="cursor-pointer">
+                  {validatingMember ? "Validando..." : "Validar nombre de socio"}
+                </Button>
+                {memberValidated && <p className="text-sm text-green-600">✓ Nombre válido. Se aplicó el precio de socio.</p>}
+                {memberError && <p className="text-sm text-red-600">{memberError}</p>}
+                <a href="https://wa.me/5491123456789?text=Hola,%20quiero%20hacerme%20socio" target="_blank" rel="noopener noreferrer" className="block text-sm text-primary underline">
+                  ¿No sos socio? Hacete socio
+                </a>
               </div>
-            </section>
+            </div>
 
-            <section className="bg-card rounded-lg border border-border p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <CreditCard className="h-5 w-5 text-secondary" />
-                <h2 className="text-lg font-semibold">Informacion de Pago</h2>
-              </div>
-
-              <div className="space-y-2 mb-6">
-                <Label className="text-sm font-medium">Metodo de Pago</Label>
-                <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={setPaymentMethod}
-                  className="grid grid-cols-2 gap-2"
-                >
-                  <label
-                    htmlFor="credit-card"
-                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "credit-card"
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
-                    }`}
-                  >
-                    <RadioGroupItem value="credit-card" id="credit-card" className="sr-only" />
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Credito</span>
-                  </label>
-
-                  <label
-                    htmlFor="debit-card"
-                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "debit-card"
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
-                    }`}
-                  >
-                    <RadioGroupItem value="debit-card" id="debit-card" className="sr-only" />
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Debito</span>
-                  </label>
-
-                  <label
-                    htmlFor="mercadopago"
-                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "mercadopago"
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
-                    }`}
-                  >
-                    <RadioGroupItem value="mercadopago" id="mercadopago" className="sr-only" />
-                    <span className="text-sm font-medium text-[#00B4E6]">MercadoPago</span>
-                  </label>
-
-                  <label
-                    htmlFor="transfer"
-                    className={`cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
-                      paymentMethod === "transfer"
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
-                    }`}
-                  >
-                    <RadioGroupItem value="transfer" id="transfer" className="sr-only" />
+            {/* Método de pago */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Método de Pago</Label>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-2">
+                {[
+                  { value: "credit-card", label: "Crédito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
+                  { value: "debit-card", label: "Débito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
+                  { value: "mercadopago", label: "MercadoPago", icon: (
+                    <svg viewBox="0 0 100 100" className="h-5 w-5" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="50" r="50" fill="#009EE3"/>
+                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(0 50 50)"/>
+                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(60 50 50)"/>
+                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(120 50 50)"/>
+                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(180 50 50)"/>
+                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(240 50 50)"/>
+                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(300 50 50)"/>
+                    </svg>
+                  ) },
+                  { value: "transfer", label: "Transferencia", icon: (
                     <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
-                    <span className="text-sm font-medium">Transferencia</span>
+                  )},
+                ].map((opt) => (
+                  <label
+                    key={opt.value}
+                    htmlFor={opt.value}
+                    className={
+                      opt.value === "mercadopago"
+                        ? `cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all border-[#009EE3] bg-[#009EE3] text-white ring-1 ring-[#009EE3] ${paymentMethod === "mercadopago" ? "shadow-md" : "opacity-80 hover:opacity-100"}`
+                        : `cursor-pointer p-3 border rounded-lg flex items-center gap-2 transition-all ${
+                            paymentMethod === opt.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/50 hover:bg-muted/50"
+                          }`
+                    }
+                  >
+                    <RadioGroupItem value={opt.value} id={opt.value} className="sr-only" />
+                    {opt.icon}
+                    <span className="text-sm font-medium">{opt.label}</span>
                   </label>
-                </RadioGroup>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+              <Lock className="h-4 w-4" />
+              <span>Tus datos están protegidos con encriptación SSL</span>
+            </div>
+
+            <Button type="button" className="mt-5 cursor-pointer" onClick={handleContinuePayment}>
+              Confirmar
+            </Button>
+          </StepCard>
+        </div>
+
+        {/* ── SIDEBAR ── */}
+        <div className="lg:col-span-1">
+          <div className="bg-card rounded-lg border border-border p-6 sticky top-24">
+            <h2 className="text-lg font-semibold mb-4">Resumen del Pedido</h2>
+
+            {memberValidated && memberSavings > 0 && (
+              <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3">
+                <p className="text-sm font-medium text-green-700">Precio socio aplicado</p>
+                <p className="text-xs text-green-600">Ahorrás {formatCurrency(memberSavings)} en tus productos</p>
               </div>
+            )}
 
-              {/* El formulario de tarjeta se movió a la pantalla de transferencia */}
+            <div className="space-y-3 mb-6">
+              {items.map((item) => {
+                const unitPrice = getUnitPrice(item.product)
+                const lineTotal = unitPrice * item.quantity
+                const originalLineTotal = item.product.price * item.quantity
+                const hasMemberDiscount = memberValidated && !!item.product.memberPrice && item.product.memberPrice < item.product.price
 
-              <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
-                <Lock className="h-4 w-4" />
-                <span>Tus datos estan protegidos con encriptacion SSL</span>
-              </div>
-            </section>
-          </div>
+                return (
+                  <div key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}`} className="flex gap-3">
+                    <div className="relative w-16 h-20 rounded overflow-hidden bg-muted flex-shrink-0">
+                      <Image src={item.product.images[0] || "/placeholder.svg"} alt={item.product.name} fill className="object-cover" />
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center">
+                        {item.quantity}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.product.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.selectedColor} / {item.selectedSize}</p>
+                      {hasMemberDiscount ? (
+                        <div className="mt-1">
+                          <p className="text-xs text-muted-foreground line-through">{formatCurrency(originalLineTotal)}</p>
+                          <p className="text-sm font-medium text-primary">{formatCurrency(lineTotal)}</p>
+                          <p className="text-[11px] text-green-600">Precio socio</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-medium mt-1">{formatCurrency(lineTotal)}</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-card rounded-lg border border-border p-6 sticky top-24">
-              <h2 className="text-lg font-semibold mb-4">Resumen del Pedido</h2>
-
+            <div className="space-y-3 text-sm border-t border-border pt-4">
               {memberValidated && memberSavings > 0 && (
-                <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3">
-                  <p className="text-sm font-medium text-green-700">
-                    Precio socio aplicado
-                  </p>
-                  <p className="text-xs text-green-600">
-                    Ahorrás {formatCurrency(memberSavings)} en tus productos
-                  </p>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal original</span>
+                  <span className="line-through text-muted-foreground">{formatCurrency(subtotalWithoutMemberDiscount)}</span>
                 </div>
               )}
-
-              <div className="space-y-3 mb-6">
-                {items.map((item) => {
-                  const unitPrice = getUnitPrice(item.product)
-                  const lineTotal = unitPrice * item.quantity
-                  const originalLineTotal = item.product.price * item.quantity
-                  const hasMemberDiscount =
-                    memberValidated &&
-                    !!item.product.memberPrice &&
-                    item.product.memberPrice < item.product.price
-
-                  return (
-                    <div
-                      key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}`}
-                      className="flex gap-3"
-                    >
-                      <div className="relative w-16 h-20 rounded overflow-hidden bg-muted flex-shrink-0">
-                        <Image
-                          src={item.product.images[0] || "/placeholder.svg"}
-                          alt={item.product.name}
-                          fill
-                          className="object-cover"
-                        />
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center">
-                          {item.quantity}
-                        </span>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{item.product.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {item.selectedColor} / {item.selectedSize}
-                        </p>
-
-                        {hasMemberDiscount ? (
-                          <div className="mt-1">
-                            <p className="text-xs text-muted-foreground line-through">
-                              {formatCurrency(originalLineTotal)}
-                            </p>
-                            <p className="text-sm font-medium text-primary">
-                              {formatCurrency(lineTotal)}
-                            </p>
-                            <p className="text-[11px] text-green-600">
-                              Precio socio
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-sm font-medium mt-1">
-                            {formatCurrency(lineTotal)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{memberValidated && memberSavings > 0 ? "Subtotal con socio" : "Subtotal"}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
-
-              <div className="space-y-3 text-sm border-t border-border pt-4">
-                {memberValidated && memberSavings > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal original</span>
-                    <span className="line-through text-muted-foreground">
-                      {formatCurrency(subtotalWithoutMemberDiscount)}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    {memberValidated && memberSavings > 0 ? "Subtotal con socio" : "Subtotal"}
-                  </span>
-                  <span>{formatCurrency(subtotal)}</span>
+              {memberValidated && memberSavings > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Ahorro socio</span>
+                  <span>-{formatCurrency(memberSavings)}</span>
                 </div>
-
-                {memberValidated && memberSavings > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Ahorro socio</span>
-                    <span>-{formatCurrency(memberSavings)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Envio</span>
-                  {shippingCost === 0 ? (
-                    <span className="text-success">Gratis</span>
-                  ) : (
-                    <span>{formatCurrency(shippingCost)}</span>
-                  )}
-                </div>
-
-                <div className="border-t border-border pt-3">
-                  <div className="flex justify-between font-semibold text-base">
-                    <span>Total</span>
-                    <span>{formatCurrency(total)}</span>
-                  </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Envío</span>
+                {shippingCost === 0 ? <span className="text-success">Gratis</span> : <span>{formatCurrency(shippingCost)}</span>}
+              </div>
+              <div className="border-t border-border pt-3">
+                <div className="flex justify-between font-semibold text-base">
+                  <span>Total</span>
+                  <span>{formatCurrency(total)}</span>
                 </div>
               </div>
-
-              <Button
-                type="submit"
-                className="w-full mt-6 cursor-pointer"
-                size="lg"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  "Procesando..."
-                ) : (
-                  <>
-                    <Lock className="h-4 w-4 mr-2" />
-                    Pagar {formatCurrency(total)}
-                  </>
-                )}
-              </Button>
-
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                Al completar tu compra, aceptas nuestros{" "}
-                <a href="/terms" className="underline">
-                  Terminos y Condiciones
-                </a>
-              </p>
             </div>
+
+            <Button
+              type="button"
+              className="w-full mt-6 cursor-pointer"
+              size="lg"
+              disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2) || !doneSteps.has(3)}
+              onClick={handleSubmit}
+            >
+              {isLoading ? "Procesando..." : (
+                <>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Pagar {formatCurrency(total)}
+                </>
+              )}
+            </Button>
+
+            {(!doneSteps.has(1) || !doneSteps.has(2) || !doneSteps.has(3)) && (
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Completá todos los pasos para continuar
+              </p>
+            )}
+
+            <p className="text-xs text-muted-foreground text-center mt-4">
+              Al completar tu compra, aceptas nuestros{" "}
+              <a href="/terms" className="underline">Términos y Condiciones</a>
+            </p>
           </div>
         </div>
-      </form>
+      </div>
+    </div>
+  )
+}
+
+// ── StepCard component ──
+interface StepCardProps {
+  number: number
+  title: string
+  icon: React.ReactNode
+  isOpen: boolean
+  isDone: boolean
+  isLocked?: boolean
+  onEdit: () => void
+  summary: React.ReactNode
+  children: React.ReactNode
+}
+
+function StepCard({ number, title, icon, isOpen, isDone, isLocked, onEdit, summary, children }: StepCardProps) {
+  return (
+    <div className={`rounded-xl border bg-card transition-all duration-200 ${isLocked ? "opacity-50" : ""}`}>
+      {/* Header */}
+      <div className="flex items-center gap-3 p-5">
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${
+          isDone ? "bg-primary text-primary-foreground" : isOpen ? "bg-primary/10 text-primary border-2 border-primary" : "bg-muted text-muted-foreground"
+        }`}>
+          {isDone ? <Check className="h-4 w-4" /> : number}
+        </div>
+
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-muted-foreground">{icon}</span>
+          <h2 className="font-semibold text-base">{title}</h2>
+        </div>
+
+        {isDone && !isOpen && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="shrink-0 gap-1.5 text-primary hover:text-primary cursor-pointer"
+            onClick={onEdit}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Editar
+          </Button>
+        )}
+
+        {!isDone && !isOpen && !isLocked && (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
+      </div>
+
+      {/* Summary (done + collapsed) */}
+      {isDone && !isOpen && summary && (
+        <div className="px-5 pb-4 pt-0 border-t border-border/50">
+          <div className="mt-3">{summary}</div>
+        </div>
+      )}
+
+      {/* Form (open) */}
+      {isOpen && !isLocked && (
+        <div className="px-5 pb-5 border-t border-border/50 pt-4">
+          {children}
+        </div>
+      )}
     </div>
   )
 }
