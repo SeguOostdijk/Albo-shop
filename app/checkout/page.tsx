@@ -288,7 +288,7 @@ setMemberError("Nombre de socio inválido")
               {user ? (
                 <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
                   <span className="text-sm text-green-600 font-medium">
-                    ✓ Datos precargados automáticamente
+                    ✓ Datos cargados automáticamente
                   </span>
                   <Button
                     type="button"
@@ -413,19 +413,6 @@ setMemberError("Nombre de socio inválido")
                     <span className="font-medium">
                       {subtotal >= 75000 ? "Gratis" : formatCurrency(5999)}
                     </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="express" id="express" />
-                      <Label htmlFor="express" className="cursor-pointer hover:text-primary transition-colors">
-                        <span className="font-medium">Envio Express</span>
-                        <span className="text-sm text-muted-foreground block">
-                          24-48 horas (CABA y GBA)
-                        </span>
-                      </Label>
-                    </div>
-                    <span className="font-medium">{formatCurrency(9999)}</span>
                   </div>
                 </RadioGroup>
               </div>

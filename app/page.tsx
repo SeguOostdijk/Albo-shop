@@ -8,7 +8,6 @@ import {
   getSaleProductsFromDb,
   getAllProductsFromDb,
 } from "@/lib/products-db"
-import { BenefitsBar } from "@/components/benefits-bar"
 import { SponsorsCarousel } from "@/components/sponsors-carousel"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -110,9 +109,6 @@ export default async function HomePage() {
 
       {/* Sponsors Carousel */}
       <SponsorsCarousel className="mt-[3rem]" />
-
-      {/* Benefits Bar */}
-      <BenefitsBar />
     </>
   )
 }
