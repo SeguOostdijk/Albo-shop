@@ -20,7 +20,6 @@ export const metadata: Metadata = {
   description:
     "Tienda oficial del club. Encontra camisetas, indumentaria deportiva, accesorios y mas productos exclusivos.",
   keywords: ["futbol", "camisetas", "club", "tienda oficial", "indumentaria deportiva"],
-    generator: 'v0.app'
 }
 
 export const viewport: Viewport = {

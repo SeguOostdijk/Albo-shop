@@ -31,18 +31,13 @@ import { useCartStore } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
 import { useAuth } from "@/lib/auth-context"
 import { createClient } from "@/lib/supabase/client"
-import { categories, subcategories } from "@/lib/type/products"
+import { categories, subcategories, extrasSubcategories } from "@/lib/type/products"
 import type { Product } from "@/lib/type/products"
 import { CartDrawer } from "@/components/cart-drawer"
 import { SearchResults } from "@/components/search-results"
 
-const extrasSubcategories = [
-  { name: "Accesorios", slug: "accesorios" },
-  { name: "Ropa", slug: "ropa" },
-]
-
 const mainNavCategories = categories.filter((cat) =>
-  ["primera-division", "femenino", "infantiles", "accesorios", "extras"].includes(cat.slug)
+  ["primera-division", "femenino", "infantiles", "extras"].includes(cat.slug)
 )
 
 export function Header() {

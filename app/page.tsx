@@ -5,23 +5,21 @@ import { ProductCarousel } from "@/components/product-carousel"
 import { CategoryBanner } from "@/components/category-banner"
 import {
   getFeaturedProductsFromDb,
+  getNewProductsFromDb,
   getSaleProductsFromDb,
-  getAllProductsFromDb,
+  getProductsByCategoryFromDb,
 } from "@/lib/products-db"
 import { SponsorsCarousel } from "@/components/sponsors-carousel"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default async function HomePage() {
-  const [featuredProducts, saleProducts, allProducts] = await Promise.all([
+  const [featuredProducts, newProducts, saleProducts, extrasProducts] = await Promise.all([
     getFeaturedProductsFromDb(),
+    getNewProductsFromDb(),
     getSaleProductsFromDb(),
-    getAllProductsFromDb(),
+    getProductsByCategoryFromDb("extras"),
   ])
-
-  const extrasProducts = allProducts.filter(
-    (product) => product.categorySlug === "extras"
-  )
 
   return (
     <>
@@ -38,6 +36,16 @@ export default async function HomePage() {
         products={featuredProducts}
         viewAllHref="/category/novedades"
       />
+
+      {/* New Products */}
+      {newProducts.length > 0 && (
+        <ProductCarousel
+          title="Novedades"
+          subtitle="NUEVOS PRODUCTOS"
+          products={newProducts}
+          viewAllHref="/category/novedades"
+        />
+      )}
 
       {/* Sale Products */}
       {saleProducts.length > 0 && (

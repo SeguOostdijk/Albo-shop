@@ -32,7 +32,7 @@ interface Sponsor {
   description?: string
 }
 
-export function SponsorsManager() {
+export function SponsorsManager({ mode }: { mode?: "add" | "manage" }) {
   const [sponsors, setSponsors] = useState<Sponsor[]>([])
   const [loading, setLoading] = useState(true)
   const [newSponsor, setNewSponsor] = useState({ name: "", image: "", url: "" })
@@ -228,8 +228,8 @@ export function SponsorsManager() {
     )
   }
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-[minmax(350px,1fr)_2.3fr] gap-12 max-w-[95vw] mx-auto min-h-[450px] pb-12">
+  if (mode === "add") return (
+    <div className="max-w-md mx-auto">
       <Card className="border-0 bg-gradient-to-br from-muted/30 backdrop-blur-sm shadow-xl h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-xl">
@@ -275,7 +275,11 @@ export function SponsorsManager() {
           </Button>
         </CardContent>
       </Card>
+    </div>
+  )
 
+  return (
+    <div className="max-w-[95vw] mx-auto pb-12">
       <Card className="border-0 shadow-2xl backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
