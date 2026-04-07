@@ -339,30 +339,30 @@ export function Header() {
                   <DropdownMenuContent align="end" className="w-56" style={{ zIndex: 10030 }}>
                     <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                       <Link href="/account/orders">Mis Pedidos</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                       <Link href="/wishlist">Mis Favoritos</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                       <Link href="/account">Mi Cuenta</Link>
                     </DropdownMenuItem>
                     {isAdminUser && (
-                      <DropdownMenuItem asChild className="xl:hidden">
+                    <DropdownMenuItem asChild className="xl:hidden cursor-pointer">
                         <Link href="/admin">Editar catálogo</Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500">
+                    <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500 cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
                       Cerrar Sesión
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Link href="/account">
-                  <Button variant="ghost" size="icon">
+                <Link href="/account" className="cursor-pointer">
+                  <Button variant="ghost" size="icon" className="cursor-pointer">
                     <User className="h-5 w-5" />
                     <span className="sr-only">Mi cuenta</span>
                   </Button>
