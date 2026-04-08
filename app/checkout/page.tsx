@@ -541,14 +541,36 @@ export default function CheckoutPage() {
             </div>
 
             {paymentMethod === "mercadopago" && (
-              <p className="mt-4 text-sm text-muted-foreground">
-                Al presionar Pagar serás redirigido a MercadoPago para completar el pago de forma segura.
-              </p>
+              <>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Al presionar Pagar serás redirigido a MercadoPago para completar el pago de forma segura.
+                </p>
+                <button
+                  type="button"
+                  className="w-full mt-4 rounded-lg py-3 text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: "#009EE3" }}
+                  disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
+                  onClick={handleSubmit}
+                >
+                  {isLoading ? "Procesando..." : `Pagar ${formatCurrency(total)}`}
+                </button>
+              </>
             )}
             {paymentMethod === "transfer" && (
-              <p className="mt-4 text-sm text-muted-foreground">
-                Al presionar Pagar se mostrarán los datos de la cuenta bancaria y las instrucciones para completar la transferencia.
-              </p>
+              <>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Al presionar Pagar se mostrarán los datos de la cuenta bancaria y las instrucciones para completar la transferencia.
+                </p>
+                <button
+                  type="button"
+                  className="w-full mt-4 rounded-lg py-3 text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: "#009EE3" }}
+                  disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
+                  onClick={handleSubmit}
+                >
+                  {isLoading ? "Procesando..." : `Pagar ${formatCurrency(total)}`}
+                </button>
+              </>
             )}
 
             <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
@@ -650,35 +672,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              className="w-full mt-6 cursor-pointer"
-              size="lg"
-              disabled={
-                isLoading ||
-                isCard ||
-                !doneSteps.has(1) ||
-                !doneSteps.has(2)
-              }
-              onClick={handleSubmit}
-            >
-              {isLoading ? "Procesando..." : (
-                <>
-                  <Lock className="h-4 w-4 mr-2" />
-                  Pagar {formatCurrency(total)}
-                </>
-              )}
-            </Button>
-
-            {isCard ? (
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Usá el botón Pagar del formulario de tarjeta
-              </p>
-            ) : (!doneSteps.has(1) || !doneSteps.has(2)) && (
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Completá todos los pasos para continuar
-              </p>
-            )}
 
             <p className="text-xs text-muted-foreground text-center mt-4">
               Al completar tu compra, aceptas nuestros{" "}

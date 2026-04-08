@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 
 interface InlineCardBrickProps {
   amount: number
@@ -25,6 +25,30 @@ declare global {
   }
 }
 
+const CONTAINER_ID = "inlineCardBrick_container"
+
+const loadMPSDK = (): Promise<void> => {
+  const scriptId = "mp-sdk"
+  const existing = document.getElementById(scriptId)
+
+  if (existing) {
+    if (typeof window.MercadoPago === "function") return Promise.resolve()
+    return new Promise((resolve, reject) => {
+      existing.addEventListener("load", () => resolve())
+      existing.addEventListener("error", () => reject(new Error("No se pudo cargar el SDK de MercadoPago")))
+    })
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script")
+    script.id = scriptId
+    script.src = "https://sdk.mercadopago.com/js/v2"
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error("No se pudo cargar el SDK de MercadoPago"))
+    document.head.appendChild(script)
+  })
+}
+
 export function InlineCardBrick({
   amount,
   email,
@@ -33,40 +57,19 @@ export function InlineCardBrick({
   onPayment,
   onBrickError,
 }: InlineCardBrickProps) {
-  const brickRef = useRef<{ unmount: () => void } | null>(null)
-  const [brickReady, setBrickReady] = useState(false)
-  const containerId = "inlineCardBrick_container"
+  const controllerRef = useRef<{ unmount: () => void } | null>(null)
 
   useEffect(() => {
-    const scriptId = "mp-sdk"
-
-    const waitForConstructor = () =>
-      new Promise<void>((resolve, reject) => {
-        let attempts = 0
-        const id = setInterval(() => {
-          if (typeof window.MercadoPago === "function") { clearInterval(id); resolve() }
-          if (++attempts > 100) { clearInterval(id); reject(new Error("SDK de MercadoPago no disponible")) }
-        }, 50)
-      })
+    let active = true
 
     const init = async () => {
-      if (!document.getElementById(scriptId)) {
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement("script")
-          script.id = scriptId
-          script.src = "https://sdk.mercadopago.com/js/v2"
-          script.onload = () => resolve()
-          script.onerror = () => reject(new Error("No se pudo cargar el SDK de MercadoPago"))
-          document.head.appendChild(script)
-        })
-      }
-
-      await waitForConstructor()
+      await loadMPSDK()
+      if (!active) return
 
       const mp = new window.MercadoPago(publicKey, { locale: "es-AR" })
       const bricks = mp.bricks()
 
-      const settings = {
+      const controller = await bricks.create("cardPayment", CONTAINER_ID, {
         initialization: {
           amount,
           payer: { email },
@@ -82,50 +85,49 @@ export function InlineCardBrick({
               : { debitCard: "all", maxInstallments: 1 },
         },
         callbacks: {
-          onReady: () => {
-            setBrickReady(true)
-          },
+          onReady: () => {},
           onSubmit: async (formData: unknown) => {
             await onPayment(formData)
           },
-          onError: (error: { type?: string } | unknown) => {
+          onError: (error: unknown) => {
             const e = error as { type?: string }
             if (e?.type === "non_critical") return
-            console.error("Brick critical error:", error)
+            console.error("Brick error:", error)
             onBrickError("Ocurrió un error con el formulario de pago")
           },
         },
+      })
+
+      if (!active) {
+        try { controller.unmount() } catch {}
+        return
       }
 
-      brickRef.current = await bricks.create("cardPayment", containerId, settings)
+      controllerRef.current = controller
     }
 
     init().catch((err) => {
       console.error(err)
-      onBrickError("No se pudo cargar el formulario de pago")
+      if (active) onBrickError("No se pudo cargar el formulario de pago")
     })
 
     return () => {
-      brickRef.current?.unmount()
+      active = false
+      try {
+        controllerRef.current?.unmount()
+      } catch {}
+      controllerRef.current = null
+      const container = document.getElementById(CONTAINER_ID)
+      if (container) container.innerHTML = ""
     }
   }, [])
 
   return (
     <div>
-      {!brickReady && (
-        <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary shrink-0" />
-          <span>Cargando formulario de pago...</span>
-        </div>
-      )}
-
-      {brickReady && (
-        <p className="text-sm font-semibold mb-3">
-          {paymentType === "credit-card" ? "Tarjeta de crédito" : "Tarjeta de débito"}
-        </p>
-      )}
-
-      <div id={containerId} style={{ display: brickReady ? "block" : "none" }} />
+      <p className="text-sm font-semibold mb-3">
+        {paymentType === "credit-card" ? "Tarjeta de crédito" : "Tarjeta de débito"}
+      </p>
+      <div id={CONTAINER_ID} />
     </div>
   )
 }

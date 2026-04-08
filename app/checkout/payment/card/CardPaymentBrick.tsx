@@ -152,7 +152,7 @@ export function CardPaymentBrick({
 
       <div
         id={containerRef.current}
-        style={{ display: status === "ready" || status === "loading" ? "block" : "none" }}
+        style={{ display: status === "ready" ? "block" : "none" }}
       />
     </div>
   )
