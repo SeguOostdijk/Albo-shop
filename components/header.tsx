@@ -30,7 +30,6 @@ import {
 import { useCartStore } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
 import { useAuth } from "@/lib/auth-context"
-import { createClient } from "@/lib/supabase/client"
 import { categories, subcategories, extrasSubcategories } from "@/lib/type/products"
 import type { Product } from "@/lib/type/products"
 import { CartDrawer } from "@/components/cart-drawer"
@@ -80,13 +79,13 @@ export function Header() {
     const checkAdmin = async () => {
       setIsAdminUser(false)
       if (!user) return
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single()
-      if (!error && data?.role === "admin") setIsAdminUser(true)
+      try {
+        const res = await fetch("/api/admin/check")
+        const json = await res.json()
+        if (json.isAdmin) setIsAdminUser(true)
+      } catch {
+        // silently ignore
+      }
     }
     checkAdmin()
   }, [user])
