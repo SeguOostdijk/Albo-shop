@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       postalCode,
       shippingMethod,
       paymentInfo,
-      memberNumber,
+      memberName,
       memberValidated,
     } = body as {
       items: CheckoutItem[]
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         cardName?: string
         dni?: string
       }
-      memberNumber?: string | null
+      memberName?: string | null
       memberValidated?: boolean
     }
 
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       province,
       postalCode,
       shippingMethod,
-      memberNumber,
+      memberName,
       memberValidated,
       itemsCount: items?.length,
     })
@@ -122,11 +122,11 @@ export async function POST(request: Request) {
 
     let validMember = false
 
-    if (memberValidated && memberNumber?.trim()) {
+    if (memberValidated && memberName?.trim()) {
       const { data: memberData, error: memberError } = await supabaseAdmin
         .from("members")
         .select("id, member_number")
-        .eq("member_number", memberNumber.trim())
+        .eq("member_number", memberName.trim())
         .eq("is_active", true)
         .maybeSingle()
 
@@ -238,9 +238,9 @@ export async function POST(request: Request) {
       payment_info: {
         ...paymentInfo,
         memberApplied: validMember,
-        memberNumber: validMember ? memberNumber?.trim() : null,
+        memberName: validMember ? memberName?.trim() : null,
       },
-      member_number: validMember ? memberNumber?.trim() : null,
+      member_number: validMember ? memberName?.trim() : null,
       member_validated: validMember,
       status: "pending",
       phone,
@@ -284,23 +284,27 @@ export async function POST(request: Request) {
     }
 
     // Enviar email de confirmación
-    await sendOrderConfirmation({
-      to: email,
-      firstName,
-      orderId: order.id,
-      items: validatedOrderItems.map(item => ({
-        product_name: item.product_name,
-        quantity: item.quantity,
-        price: item.price,
-        color: item.color,
-        size: item.size,
-      })),
-      subtotal,
-      shippingCost,
-      total,
-      shippingMethod,
-      paymentMethod: paymentInfo.method,
-    })
+    try {
+      await sendOrderConfirmation({
+        to: email,
+        firstName,
+        orderId: order.id,
+        items: validatedOrderItems.map(item => ({
+          product_name: item.product_name,
+          quantity: item.quantity,
+          price: item.price,
+          color: item.color,
+          size: item.size,
+        })),
+        subtotal,
+        shippingCost,
+        total,
+        shippingMethod,
+        paymentMethod: paymentInfo.method,
+      })
+    } catch (emailError) {
+      console.error("Error enviando email de confirmación:", emailError)
+    }
 
     console.log(`Stock skip for MP order ${order.id}`)
 
@@ -312,7 +316,7 @@ export async function POST(request: Request) {
       paymentInfo.method === "credit-card" ||
       paymentInfo.method === "debit-card"
     ) {
-      redirectTo = `/checkout/payment/card?orderId=${order.id}`
+      redirectTo = `/checkout/payment/card?orderId=${order.id}&type=${paymentInfo.method}`
     } else if (paymentInfo.method === "mercadopago") {
       const baseUrl = process.env.NEXT_PUBLIC_URL || ""
       const isLocalhost = !baseUrl || baseUrl.includes("localhost")

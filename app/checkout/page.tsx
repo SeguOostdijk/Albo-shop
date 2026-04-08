@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Lock, CreditCard, Truck, Check, ChevronDown, Pencil } from "lucide-react"
+import { InlineCardBrick } from "./InlineCardBrick"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -72,6 +73,14 @@ export default function CheckoutPage() {
   const [validatingMember, setValidatingMember] = useState(false)
 
   const [isLoading, setIsLoading] = useState(false)
+  const [transferInfo, setTransferInfo] = useState<{ orderId: number } | null>(null)
+
+  const isCard = paymentMethod === "credit-card" || paymentMethod === "debit-card"
+  const mpPublicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY ?? ""
+
+  const handlePaymentMethodChange = (value: string) => {
+    setPaymentMethod(value)
+  }
 
   // Pricing
   const getUnitPrice = (product: { price: number; memberPrice?: number }) =>
@@ -157,52 +166,104 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleSubmit = async () => {
-    if (!doneSteps.has(1) || !doneSteps.has(2) || !doneSteps.has(3)) {
-      toast.error("Completá todos los pasos antes de continuar")
-      return
-    }
+  const buildOrderBody = () => ({
+    items,
+    email,
+    phone,
+    firstName,
+    lastName,
+    address,
+    city,
+    province,
+    postalCode,
+    shippingMethod,
+    shippingCost,
+    total,
+    paymentInfo: { method: paymentMethod },
+    memberName: memberValidated ? memberName.trim() : null,
+    memberValidated,
+  })
+
+  const handleCardPayment = async (formData: unknown) => {
     setIsLoading(true)
     try {
-      const response = await fetch("/api/checkout", {
+      // 1. Crear el pedido
+      const orderRes = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items,
-          email,
-          phone,
-          firstName,
-          lastName,
-          address,
-          city,
-          province,
-          postalCode,
-          shippingMethod,
-          shippingCost,
-          total,
-          paymentInfo: { method: paymentMethod },
-          memberName: memberValidated ? memberName.trim() : null,
-          memberValidated,
-        }),
+        body: JSON.stringify(buildOrderBody()),
       })
-      const data = await response.json()
-      if (data.success) {
-        toast.success("Pedido creado! Redirigiendo...")
+      const orderData = await orderRes.json()
+      if (!orderData.success) {
+        toast.error(orderData.error || "Error al crear el pedido")
+        setIsLoading(false)
+        return
+      }
+
+      // 2. Procesar el pago con el token del Brick
+      const payRes = await fetch("/api/checkout/card", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderData.orderId, formData }),
+      })
+      const payData = await payRes.json()
+
+      if (payData.success) {
         clearCart()
-        if (data.mpUrl) { window.location.href = data.mpUrl; return }
-        if (data.redirectTo) { window.location.href = data.redirectTo; return }
-        window.location.href = "/account/orders"
+        window.location.href = payData.redirectTo ?? "/account/orders"
       } else {
-        toast.error(data.error || "Error al procesar el pedido. Intenta nuevamente.")
+        toast.error(payData.error || "El pago fue rechazado")
+        setIsLoading(false)
       }
     } catch {
-      toast.error("Error al procesar el pago. Intenta nuevamente.")
-    } finally {
+      toast.error("Error al procesar el pago")
       setIsLoading(false)
     }
   }
 
-  if (items.length === 0) {
+  const handleSubmit = async () => {
+    if (!doneSteps.has(1) || !doneSteps.has(2)) {
+      toast.error("Completá todos los pasos antes de continuar")
+      return
+    }
+
+    if (isCard) return
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildOrderBody()),
+      })
+      const data = await response.json()
+
+      if (!data.success) {
+        toast.error(data.error || "Error al procesar el pedido. Intenta nuevamente.")
+        return
+      }
+
+      clearCart()
+
+      // Transferencia: mostrar datos bancarios inline
+      if (paymentMethod === "transfer") {
+        setTransferInfo({ orderId: data.orderId })
+        return
+      }
+
+      // MercadoPago: redirigir al checkout de MP
+      if (data.mpUrl) { window.location.href = data.mpUrl; return }
+      if (data.redirectTo) { window.location.href = data.redirectTo; return }
+      window.location.href = "/account/orders"
+    } catch {
+      toast.error("Error al procesar el pago. Intenta nuevamente.")
+    } finally {
+      if (paymentMethod !== "transfer") setIsLoading(false)
+    }
+  }
+
+  if (items.length === 0 && !transferInfo) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto text-center">
@@ -213,6 +274,41 @@ export default function CheckoutPage() {
           <Button asChild>
             <Link href="/category/hombre">Explorar Productos</Link>
           </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (transferInfo) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4">Pago por transferencia</h1>
+          <p className="text-muted-foreground mb-6">
+            Tu pedido fue generado correctamente. Realizá la transferencia con los datos que figuran abajo.
+          </p>
+          <div className="rounded-lg border p-6 space-y-2 mb-6">
+            <p><strong>Número de pedido:</strong> {transferInfo.orderId}</p>
+            <p><strong>Banco:</strong> Banco de la Nación Argentina</p>
+            <p><strong>CBU:</strong> 0110464040046411693330</p>
+            <p><strong>Alias:</strong> ALBO.SHOP</p>
+            <p><strong>Nombre:</strong> Club Atlético Independiente de San Cayetano</p>
+            <p><strong>CUIT:</strong> 30-70708050-3</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigator.clipboard.writeText("0110464040046411693330").then(() => toast.success("CBU copiado")).catch(() => toast.error("No se pudo copiar"))}
+            className="w-full mb-4 rounded-md border py-2 text-sm"
+          >
+            Copiar CBU
+          </button>
+          <p className="text-sm text-muted-foreground text-center">
+            Una vez realizada la transferencia, enviá el comprobante a{" "}
+            <strong>alboshopcai@gmail.com</strong> indicando tu número de pedido.
+          </p>
+          <div className="mt-6 text-center">
+            <Link href="/account/orders" className="underline">Ver mis pedidos</Link>
+          </div>
         </div>
       </div>
     )
@@ -404,10 +500,10 @@ export default function CheckoutPage() {
             {/* Método de pago */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Método de Pago</Label>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-2">
+              <RadioGroup value={paymentMethod} onValueChange={handlePaymentMethodChange} className="grid grid-cols-2 gap-2">
                 {[
-                  { value: "credit-card", label: "Crédito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
-                  { value: "debit-card", label: "Débito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
+                  { value: "credit-card", label: "Tarjeta de Crédito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
+                  { value: "debit-card", label: "Tarjeta de Débito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
                   { value: "mercadopago", label: "MercadoPago", icon: (
                     <svg viewBox="0 0 100 100" className="h-5 w-5" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="50" cy="50" r="50" fill="#009EE3"/>
@@ -444,15 +540,40 @@ export default function CheckoutPage() {
               </RadioGroup>
             </div>
 
+            {paymentMethod === "mercadopago" && (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Al presionar Pagar serás redirigido a MercadoPago para completar el pago de forma segura.
+              </p>
+            )}
+            {paymentMethod === "transfer" && (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Al presionar Pagar se mostrarán los datos de la cuenta bancaria y las instrucciones para completar la transferencia.
+              </p>
+            )}
+
             <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
               <Lock className="h-4 w-4" />
               <span>Tus datos están protegidos con encriptación SSL</span>
             </div>
 
-            <Button type="button" className="mt-5 cursor-pointer" onClick={handleContinuePayment}>
-              Confirmar
-            </Button>
           </StepCard>
+          {/* ── Card Payment Brick inline ── */}
+          {isCard && mpPublicKey && (currentStep === 3 || doneSteps.has(3)) && (
+            <div className="rounded-xl border bg-card p-5">
+              <InlineCardBrick
+                key={paymentMethod}
+                amount={total}
+                email={email}
+                paymentType={paymentMethod as "credit-card" | "debit-card"}
+                publicKey={mpPublicKey}
+                onPayment={handleCardPayment}
+                onBrickError={(msg) => {
+                  toast.error(msg)
+                  setIsLoading(false)
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* ── SIDEBAR ── */}
@@ -533,7 +654,12 @@ export default function CheckoutPage() {
               type="button"
               className="w-full mt-6 cursor-pointer"
               size="lg"
-              disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2) || !doneSteps.has(3)}
+              disabled={
+                isLoading ||
+                isCard ||
+                !doneSteps.has(1) ||
+                !doneSteps.has(2)
+              }
               onClick={handleSubmit}
             >
               {isLoading ? "Procesando..." : (
@@ -544,7 +670,11 @@ export default function CheckoutPage() {
               )}
             </Button>
 
-            {(!doneSteps.has(1) || !doneSteps.has(2) || !doneSteps.has(3)) && (
+            {isCard ? (
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Usá el botón Pagar del formulario de tarjeta
+              </p>
+            ) : (!doneSteps.has(1) || !doneSteps.has(2)) && (
               <p className="text-xs text-muted-foreground text-center mt-2">
                 Completá todos los pasos para continuar
               </p>
