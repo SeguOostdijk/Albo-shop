@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 
 const heroSlides = [
     {
-      image: "/campeonato.jpg",
+      image: "/Camiseta Nueva Hero.JPG",
       title: "NUEVA CAMISETA",
       subtitle: "Temporada 2025/26 ya disponible",
       cta: "COMPRAR AHORA",

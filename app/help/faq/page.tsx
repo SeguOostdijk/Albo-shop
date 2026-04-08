@@ -31,7 +31,7 @@ export default function FAQPage() {
     },
     {
       question: "¿Tienen local físico?",
-      answer: "Sí, nuestro local está ubicado en Rivadavia 105, San Cayetano. Nuestro horario de atención es de Lunes a Viernes de 9:00 a 12:00 y de 17:00 a 20:00hs."
+      answer: "Sí, nuestro local está ubicado en Rivadavia 150, San Cayetano. Nuestro horario de atención es de Lunes a Viernes de 9:00 a 12:00 y de 17:00 a 20:00hs."
     },
     {
       question: "¿Cómo me contacto con atención al cliente?",

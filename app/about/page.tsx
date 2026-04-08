@@ -78,7 +78,7 @@ export default function AboutPage() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">Visítanos</h2>
             <p>
-              Te esperamos en nuestro local comercial ubicado en <strong className="text-foreground">Rivadavia 105, San Cayetano</strong>. 
+              Te esperamos en nuestro local comercial ubicado en <strong className="text-foreground">Rivadavia 150, San Cayetano</strong>. 
               Nuestro horario de atención es de Lunes a Viernes de 9:00 a 12:00 y de 17:00 a 20:00hs.
             </p>
             <p className="mt-2">

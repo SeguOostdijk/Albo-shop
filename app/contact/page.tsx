@@ -55,7 +55,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">Dirección</h3>
-                    <p className="text-muted-foreground">Rivadavia 105<br />San Cayetano, Buenos Aires</p>
+                    <p className="text-muted-foreground">Rivadavia 150<br />San Cayetano, Buenos Aires</p>
                   </div>
                 </div>
 
@@ -157,7 +157,7 @@ export default function ContactPage() {
           <h2 className="text-xl font-semibold mb-4">Nuestra ubicación</h2>
           <div className="bg-muted rounded-xl overflow-hidden h-64 flex items-center justify-center">
             <p className="text-muted-foreground">
-              Rivadavia 105, San Cayetano, Buenos Aires
+              Rivadavia 150, San Cayetano, Buenos Aires
             </p>
           </div>
         </div>

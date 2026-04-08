@@ -41,7 +41,7 @@ export default function ReturnsPage() {
               Para realizar un cambio, tenés las siguientes opciones:
             </p>
             <ol className="list-decimal pl-6 space-y-2 text-muted-foreground">
-              <li><strong>En persona:</strong> Acercate a nuestro local en Rivadavia 105, San Cayetano</li>
+              <li><strong>En persona:</strong> Acercate a nuestro local en Rivadavia 150, San Cayetano</li>
               <li><strong>Por WhatsApp:</strong> Escribinos al <a  href="https://wa.me/5492983348357"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -102,7 +102,7 @@ export default function ReturnsPage() {
               <li><strong>Email:</strong> <a href="mailto:alboshopcai@gmail.com"
                   className="text-foreground font-bold hover:text-primary transition-colors">alboshopcai@gmail.com</a>
               </li>
-              <li><strong>Local:</strong> Rivadavia 105, San Cayetano</li>
+              <li><strong>Local:</strong> Rivadavia 150, San Cayetano</li>
               <li><strong>Horario:</strong> Lun-Vie 9:00 a 12:00 y 17:00 a 20:00hs</li>
             </ul>
           </section>
