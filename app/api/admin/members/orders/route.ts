@@ -53,7 +53,7 @@ export async function PATCH(request: Request) {
       : `Tu pedido está listo para retirar en Av. Rivadavia 4700.`
 
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "noreply@alboshop.com.ar",
       to: email,
       subject,
       html: `

@@ -35,7 +35,7 @@ export async function sendOrderConfirmation({
   paymentMethod,
 }: SendOrderConfirmationProps) {
   const { data, error } = await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: "noreply@alboshop.com.ar",
     to,
     subject: `✅ Pedido #${orderId} confirmado — CAI Tienda`,
     react: OrderConfirmationEmail({
