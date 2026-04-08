@@ -31,7 +31,7 @@ const heroSlides = [
     eyebrow: "Nueva temporada",
   },
   {
-    image: "/sponsors.jpeg",
+    image: "/Sponsors.jpeg",
     title: "Sponsors",
     subtitle: "¿Queres ser sponsor? Contactanos",
     cta: "CONTACTANOS",
