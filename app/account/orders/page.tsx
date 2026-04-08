@@ -181,11 +181,11 @@ export default function OrdersPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs text-white ${status.color}`}
-                      >
-                        {status.label}
-                      </span>
+                      {order.status === "paid" && (
+                        <span className="px-3 py-1 rounded-full text-xs text-white bg-green-500">
+                          Pagado
+                        </span>
+                      )}
                       <span className="font-semibold">
                         {formatCurrency(order.total)}
                       </span>
@@ -202,7 +202,13 @@ export default function OrdersPage() {
 
                     <div>
                       <p className="text-muted-foreground">Envío</p>
-                      <p className="font-medium">{order.shippingMethod}</p>
+                      <p className="font-medium">
+                        {order.shippingMethod === "pickup"
+                          ? "Recoger en local"
+                          : order.shippingMethod === "standard"
+                          ? "Envío estándar"
+                          : order.shippingMethod}
+                      </p>
                     </div>
 
                     <div>
