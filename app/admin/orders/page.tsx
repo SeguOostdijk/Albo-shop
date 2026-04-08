@@ -34,11 +34,17 @@ function getFullName(
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-700",
+    paid: "bg-green-100 text-green-700",
+    in_process: "bg-blue-100 text-blue-700",
+    payment_failed: "bg-red-100 text-red-700",
     dispatched: "bg-blue-100 text-blue-700",
     delivered: "bg-green-100 text-green-700",
   }
   const labels: Record<string, string> = {
     pending: "Pendiente",
+    paid: "Pagado",
+    in_process: "En proceso",
+    payment_failed: "Pago fallido",
     dispatched: "Despachado",
     delivered: "Entregado",
   }
@@ -68,6 +74,7 @@ type Order = {
   member_number: string | null
   total: number
   status: string
+  shipping_status: string
   payment_method: string
   shipping_method: string
   shipping_cost: number
@@ -93,6 +100,7 @@ export default function AdminOrdersPage() {
         member_number,
         total,
         status,
+        shipping_status,
         payment_method,
         shipping_method,
         shipping_cost,
@@ -209,8 +217,12 @@ export default function AdminOrdersPage() {
                           <p className="font-medium">{formatDate(order.created_at)}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">Estado</p>
+                          <p className="text-muted-foreground">Pago</p>
                           <StatusBadge status={order.status} />
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Envío</p>
+                          <StatusBadge status={order.shipping_status} />
                         </div>
                         <div>
                           <p className="text-muted-foreground">Total</p>
@@ -236,8 +248,8 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
 
-                    {/* Botón de acción según estado y método de envío */}
-                    {order.status === "pending" && (
+                    {/* Botón de acción según estado de envío y método de envío */}
+                    {order.shipping_status === "pending" && (
                       <div className="flex justify-end">
                         {order.shipping_method === "pickup" ? (
                           <Button
@@ -260,6 +272,19 @@ export default function AdminOrdersPage() {
                             {updatingId === order.id ? "Actualizando..." : "Marcar como despachado"}
                           </Button>
                         )}
+                      </div>
+                    )}
+                    {order.shipping_status === "dispatched" && (
+                      <div className="flex justify-end">
+                        <Button
+                          size="sm"
+                          disabled={updatingId === order.id}
+                          onClick={() => handleUpdateStatus(order, "delivered")}
+                          className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold rounded-xl cursor-pointer"
+                        >
+                          <PackageCheck className="h-4 w-4 mr-2" />
+                          {updatingId === order.id ? "Actualizando..." : "Marcar como entregado"}
+                        </Button>
                       </div>
                     )}
 

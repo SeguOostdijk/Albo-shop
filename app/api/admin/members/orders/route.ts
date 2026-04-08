@@ -31,7 +31,7 @@ export async function PATCH(request: Request) {
 
   const { error } = await supabaseAdmin
     .from("orders")
-    .update({ status })
+    .update({ shipping_status: status })
     .eq("id", id)
 
   console.log("UPDATE ERROR:", error)

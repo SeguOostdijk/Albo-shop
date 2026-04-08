@@ -70,7 +70,7 @@ export function OrderConfirmationEmail({
             {/* Header */}
             <Section style={{ backgroundColor: "#0f2f98", padding: "32px 24px", textAlign: "center" }}>
                 <Img
-                src="https://plkkwwumczomxgnhgeze.supabase.co/storage/v1/object/public/assets/escudo.jpeg"
+                src="https://alboshop.com.ar/escudo.jpeg"
                 alt="Club Atlético Independiente"
                 width="80"
                 height="80"

@@ -22,6 +22,7 @@ export async function GET() {
       .select(`
         id,
         status,
+        shipping_status,
         total,
         shipping_cost,
         shipping_method,
@@ -51,6 +52,7 @@ export async function GET() {
     const orders = (data ?? []).map((order) => ({
       id: order.id,
       status: order.status,
+      shippingStatus: order.shipping_status,
       total: order.total,
       shippingCost: order.shipping_cost,
       shippingMethod: order.shipping_method,

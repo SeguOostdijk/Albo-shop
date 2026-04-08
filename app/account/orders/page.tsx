@@ -32,6 +32,7 @@ interface OrderItem {
 interface Order {
   id: string
   status: string
+  shippingStatus: string
   total: number
   shippingCost: number
   shippingMethod: string
@@ -41,10 +42,19 @@ interface Order {
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   pending: { label: "Pendiente", color: "bg-yellow-500" },
+  paid: { label: "Pagado", color: "bg-green-500" },
+  in_process: { label: "En proceso", color: "bg-blue-500" },
+  payment_failed: { label: "Pago fallido", color: "bg-red-500" },
   processing: { label: "Procesando", color: "bg-blue-500" },
   shipped: { label: "Enviado", color: "bg-purple-500" },
   delivered: { label: "Entregado", color: "bg-green-500" },
   cancelled: { label: "Cancelado", color: "bg-red-500" },
+}
+
+const shippingStatusLabels: Record<string, { label: string; color: string }> = {
+  pending: { label: "Pendiente", color: "bg-yellow-500" },
+  dispatched: { label: "Despachado", color: "bg-blue-500" },
+  delivered: { label: "Entregado", color: "bg-green-500" },
 }
 
 export default function OrdersPage() {
@@ -143,6 +153,12 @@ export default function OrdersPage() {
                 color: "bg-gray-500",
               }
 
+            const shippingStatus =
+              shippingStatusLabels[order.shippingStatus] || {
+                label: order.shippingStatus,
+                color: "bg-gray-500",
+              }
+
             const orderId = String(order.id)
             const orderCode = orderId.slice(-8).toUpperCase()
             const isOpen = !!openOrders[orderId]
@@ -194,6 +210,13 @@ export default function OrdersPage() {
                       <p className="font-medium">
                         {formatCurrency(order.shippingCost)}
                       </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Estado del envío</p>
+                      <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs text-white ${shippingStatus.color}`}>
+                        {shippingStatus.label}
+                      </span>
                     </div>
                   </div>
 
