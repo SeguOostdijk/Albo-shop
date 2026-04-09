@@ -351,6 +351,100 @@ export async function POST(request: Request) {
       console.error("Error enviando email de confirmación:", emailError)
     }
 
+    // Notificación interna al admin
+    try {
+      const shippingLabels: Record<string, string> = {
+        pickup: "Retiro en local",
+        standard: "Envío estándar",
+        express: "Envío express",
+      }
+      const paymentLabels: Record<string, string> = {
+        transfer: "Transferencia bancaria",
+        mercadopago: "MercadoPago",
+        "credit-card": "Tarjeta de crédito",
+        "debit-card": "Tarjeta de débito",
+      }
+
+      const itemsRows = validatedOrderItems.map(item => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">${item.product_name}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${item.color}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${item.size}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; text-align: center;">${item.quantity}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b; text-align: right;">$${item.price.toLocaleString("es-AR")}</td>
+        </tr>
+      `).join("")
+
+      await resend.emails.send({
+        from: "noreply@alboshop.com.ar",
+        to: "alboshopcai@gmail.com",
+        subject: `🛒 Nuevo pedido #${order.id} — ${firstName} ${lastName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="background: #0f2f98; padding: 32px 24px; text-align: center;">
+              <img src="https://alboshop.com.ar/escudo.jpeg" alt="CAI" width="80" height="80" style="border-radius: 8px; margin-bottom: 16px;" />
+              <p style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 0;">Nuevo Pedido Recibido</p>
+              <p style="color: #a5b4fc; font-size: 14px; margin: 4px 0 0;">Pedido #${order.id}</p>
+            </div>
+            <div style="padding: 32px 24px;">
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Comprador</td>
+                  <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: bold;">${firstName} ${lastName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Email</td>
+                  <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">${email}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Método de envío</td>
+                  <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">${shippingLabels[shippingMethod] ?? shippingMethod}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Método de pago</td>
+                  <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">${paymentLabels[paymentInfo.method] ?? paymentInfo.method}</td>
+                </tr>
+              </table>
+
+              <p style="font-size: 14px; font-weight: bold; color: #1e293b; margin-bottom: 8px;">Productos:</p>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
+                <thead>
+                  <tr style="background: #f1f5f9;">
+                    <th style="padding: 10px 12px; text-align: left; color: #64748b; font-weight: 600;">Producto</th>
+                    <th style="padding: 10px 12px; text-align: left; color: #64748b; font-weight: 600;">Color</th>
+                    <th style="padding: 10px 12px; text-align: left; color: #64748b; font-weight: 600;">Talle</th>
+                    <th style="padding: 10px 12px; text-align: center; color: #64748b; font-weight: 600;">Cant.</th>
+                    <th style="padding: 10px 12px; text-align: right; color: #64748b; font-weight: 600;">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>${itemsRows}</tbody>
+              </table>
+
+              <div style="background: #f8fafc; border-radius: 8px; padding: 16px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-size: 14px; color: #64748b;">Subtotal</span>
+                  <span style="font-size: 14px; color: #1e293b;">$${subtotal.toLocaleString("es-AR")}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-size: 14px; color: #64748b;">Envío</span>
+                  <span style="font-size: 14px; color: #1e293b;">${shippingCost === 0 ? "Gratis" : "$" + shippingCost.toLocaleString("es-AR")}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 6px;">
+                  <span style="font-size: 15px; font-weight: bold; color: #1e293b;">Total</span>
+                  <span style="font-size: 15px; font-weight: bold; color: #0f2f98;">$${total.toLocaleString("es-AR")}</span>
+                </div>
+              </div>
+            </div>
+            <div style="background: #f8fafc; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="font-size: 12px; color: #94a3b8; margin: 0;">Club Atlético Independiente de San Cayetano — Tienda Oficial</p>
+            </div>
+          </div>
+        `,
+      })
+    } catch (adminEmailError) {
+      console.error("Error enviando notificación al admin:", adminEmailError)
+    }
+
     let redirectTo = "/account/orders"
 
     if (paymentInfo.method === "transfer") {
