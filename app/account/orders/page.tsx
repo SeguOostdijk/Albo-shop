@@ -224,9 +224,13 @@ export default function OrdersPage() {
                     </div>
 
                     <div>
-                      <p className="text-muted-foreground">Estado del envío</p>
+                      <p className="text-muted-foreground">
+                        {order.shippingMethod === "pickup" ? "Estado de la compra" : "Estado del envío"}
+                      </p>
                       <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs text-white ${shippingStatus.color}`}>
-                        {shippingStatus.label}
+                        {order.shippingMethod === "pickup" && shippingStatus.label === "Pendiente"
+                          ? "Por retirar"
+                          : shippingStatus.label}
                       </span>
                     </div>
                   </div>
