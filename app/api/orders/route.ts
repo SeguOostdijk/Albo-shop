@@ -23,6 +23,7 @@ export async function GET() {
         id,
         status,
         shipping_status,
+        payment_method,
         total,
         shipping_cost,
         shipping_method,
@@ -39,6 +40,7 @@ export async function GET() {
         )
       `)
       .eq("user_id", userId)
+      .or("status.eq.paid,payment_method.eq.transfer")
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -53,6 +55,7 @@ export async function GET() {
       id: order.id,
       status: order.status,
       shippingStatus: order.shipping_status,
+      paymentMethod: order.payment_method,
       total: order.total,
       shippingCost: order.shipping_cost,
       shippingMethod: order.shipping_method,

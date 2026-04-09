@@ -33,6 +33,7 @@ interface Order {
   id: string
   status: string
   shippingStatus: string
+  paymentMethod: string
   total: number
   shippingCost: number
   shippingMethod: string
@@ -181,11 +182,15 @@ export default function OrdersPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                      {order.status === "paid" && (
+                      {order.paymentMethod === "transfer" ? (
+                        <span className="px-3 py-1 rounded-full text-xs text-white bg-yellow-500">
+                          Pendiente de pago
+                        </span>
+                      ) : order.status === "paid" ? (
                         <span className="px-3 py-1 rounded-full text-xs text-white bg-green-500">
                           Pagado
                         </span>
-                      )}
+                      ) : null}
                       <span className="font-semibold">
                         {formatCurrency(order.total)}
                       </span>
