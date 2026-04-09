@@ -81,33 +81,32 @@ export default async function HomePage() {
       </section>
 
       {/* Associate CTA - ABOVE Sponsors */}
-      <section className="py-10 sm:py-14 md:py-28 lg:py-32 bg-gradient-to-b from-background/50 to-muted/20 border-t border-border/30">
+      <section className="py-14 sm:py-16 md:py-20 bg-primary">
         <div className="container mx-auto px-4 text-center">
-          <div className="max-w-4xl mx-auto mb-8 sm:mb-10 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary via-accent to-destructive bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8 tracking-tight leading-tight">
+          <div className="max-w-4xl mx-auto mb-8 sm:mb-10 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 sm:mb-6 tracking-tight leading-tight">
               ¡Convertite en Socio!
             </h2>
-            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl text-muted-foreground leading-relaxed max-w-2xl md:max-w-4xl mx-auto">
-              Y accede a precios exclusivos en indumentaria y accesorios.
+            <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl mx-auto">
+              Y accedé a precios exclusivos en indumentaria y accesorios.
             </p>
           </div>
 
-          <Link href="/sponsors/associate" className="inline-block w-full sm:w-auto group">
+          <Link href="/sponsors/associate" className="inline-block w-full sm:w-auto">
             <Button
               size="lg"
-              className="w-full sm:w-auto bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:to-emerald-700
-                         text-white font-black text-sm sm:text-base md:text-2xl
-                         px-4 sm:px-8 md:px-16
-                         py-6 sm:py-5 md:py-10
-                         shadow-lg md:shadow-2xl hover:shadow-xl md:hover:shadow-3xl
-                         rounded-xl sm:rounded-2xl md:rounded-3xl
-                         border-2 md:border-4 border-white/30 hover:border-white/50 backdrop-blur-sm
-                         transition-all duration-500 cursor-pointer whitespace-normal"
+              className="w-full sm:w-auto bg-white text-primary hover:bg-white/90
+                         font-black text-sm sm:text-base
+                         px-8 sm:px-12
+                         py-6
+                         shadow-lg hover:shadow-xl
+                         rounded-2xl
+                         transition-all duration-300 cursor-pointer whitespace-normal"
             >
               <span className="text-center leading-snug">
                 ¿No sos socio?{" "}
-                <span className="inline md:block lg:inline">
-                  Asociate ya y accede a los mejores precios
+                <span className="inline sm:block md:inline">
+                  Asociate ya y accedé a los mejores precios
                 </span>
               </span>
             </Button>
@@ -116,7 +115,7 @@ export default async function HomePage() {
       </section>
 
       {/* Sponsors Carousel */}
-      <SponsorsCarousel className="mt-[3rem]" />
+      <SponsorsCarousel />
     </>
   )
 }

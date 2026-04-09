@@ -5,6 +5,16 @@ import { Button } from "@/components/ui/button"
 export function Footer() {
   return (
     <footer className="overflow-x-hidden">
+      {/* Sección decorativa */}
+      <div className="bg-primary py-10 text-center">
+        <h2 className="text-lg md:text-xl font-black text-white tracking-wide uppercase">
+          Club Atlético Independiente de San Cayetano
+        </h2>
+        <p className="mt-3 text-lg tracking-widest" style={{ color: "#d4af37" }}>
+          ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★
+        </p>
+      </div>
+
       {/* Main Footer */}
       <div className="border-t border-border bg-background">
         <div className="mx-auto max-w-7xl px-4 py-10 md:py-12">

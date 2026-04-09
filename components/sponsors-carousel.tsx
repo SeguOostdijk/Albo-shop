@@ -91,7 +91,7 @@ export function SponsorsCarousel({ className, ...props }: SponsorsCarouselProps)
 
   if (loading) {
     return (
-      <section className="py-12 bg-gradient-to-b from-muted/50 to-background">
+      <section className="py-12 bg-muted">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
@@ -103,15 +103,14 @@ export function SponsorsCarousel({ className, ...props }: SponsorsCarouselProps)
   }
 
   return (
-    <section className={cn("pt-12 md:pt-16 lg:pt-20 py-20 md:py-32 lg:py-40 bg-muted pb-32 md:pb-40", className)} {...props}>
+    <section className={cn("py-12 md:py-16 bg-muted", className)} {...props}>
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-accent mb-6">
-            Nuestros Sponsors
-          </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-            Apoya a los mejores sponsors del club
-          </p>
+        <div className="flex items-start gap-0 mb-8">
+          <div className="w-1 h-14 bg-primary mr-4" />
+          <div>
+            <p className="text-sm text-primary font-medium uppercase tracking-wider">Patrocinadores</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-accent uppercase">Nuestros Sponsors</h2>
+          </div>
         </div>
 
         <div className="relative">
