@@ -555,8 +555,8 @@ export default function CheckoutPage() {
                 </p>
                 <button
                   type="button"
-                  className="w-full mt-4 rounded-lg py-3 text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ background: "#009EE3" }}
+                  className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                  style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
                   disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
                   onClick={handleSubmit}
                 >
@@ -571,8 +571,8 @@ export default function CheckoutPage() {
                 </p>
                 <button
                   type="button"
-                  className="w-full mt-4 rounded-lg py-3 text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ background: "#009EE3" }}
+                  className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                  style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
                   disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
                   onClick={handleSubmit}
                 >
