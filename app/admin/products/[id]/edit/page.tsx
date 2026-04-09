@@ -452,15 +452,16 @@ export default function EditProductPage() {
 
   return (
     <>
-      <div className='fixed top-4 left-4 z-50 flex gap-2'>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/admin/products" className="flex items-center gap-1">
-            <ArrowLeft className="h-4 w-4" />
-            Volver a productos
-          </Link>
-        </Button>
+      <div className="container mx-auto max-w-2xl px-4 pt-8 pb-2">
+        <Link
+          href="/admin/products"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-700 text-sm font-semibold text-slate-600 transition-all duration-200"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver a productos
+        </Link>
       </div>
-      <div className='container mx-auto max-w-2xl px-4 pt-20 py-8'>
+      <div className='container mx-auto max-w-2xl px-4 py-8'>
         <h1 className='text-3xl font-bold mb-8'>Editar producto</h1>
 
         <form onSubmit={handleSubmit} className='space-y-5 rounded-lg border p-6'>

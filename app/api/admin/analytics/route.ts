@@ -21,6 +21,7 @@ export async function GET() {
     .select(`
       id,
       total,
+      shipping_cost,
       status,
       created_at,
       order_items (
@@ -44,7 +45,7 @@ export async function GET() {
 
   const all = orders ?? []
   const filter = (from: Date) => all.filter((o) => new Date(o.created_at) >= from)
-  const revenue = (list: typeof all) => list.reduce((s, o) => s + (o.total ?? 0), 0)
+  const revenue = (list: typeof all) => list.reduce((s, o) => s + (o.total ?? 0) - (o.shipping_cost ?? 0), 0)
   const totalUnits = (list: typeof all) =>
     list.reduce((s, o) => s + (o.order_items ?? []).reduce((si: number, i: any) => si + (i.quantity ?? 0), 0), 0)
   const avg = (list: typeof all) => (list.length ? revenue(list) / list.length : 0)
