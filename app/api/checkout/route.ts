@@ -26,9 +26,8 @@ type CheckoutItem = {
 
 function getShippingCost(subtotal: number, shippingMethod: string) {
   if (shippingMethod === "pickup") return 0
-  if (shippingMethod === "express") return 9999
   if (subtotal >= 75000) return 0
-  return 5999
+  return 1
 }
 
 export async function POST(request: Request) {

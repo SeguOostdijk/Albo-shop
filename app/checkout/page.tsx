@@ -99,7 +99,7 @@ export default function CheckoutPage() {
   const memberSavings = Math.max(0, subtotalWithoutMemberDiscount - subtotal)
 
   const shippingCost =
-    shippingMethod === "pickup" ? 0 : subtotal >= 75000 ? 0 : 5999
+    shippingMethod === "pickup" ? 0 : subtotal >= 75000 ? 0 : 1
 
   const total = subtotal + shippingCost
 
@@ -455,7 +455,7 @@ export default function CheckoutPage() {
                       <span className="text-sm text-muted-foreground block">5-7 días hábiles</span>
                     </Label>
                   </div>
-                  <span className="font-medium">{subtotal >= 75000 ? "Gratis" : formatCurrency(5999)}</span>
+                  <span className="font-medium">{subtotal >= 75000 ? "Gratis" : formatCurrency(1)}</span>
                 </div>
               </RadioGroup>
             </div>
