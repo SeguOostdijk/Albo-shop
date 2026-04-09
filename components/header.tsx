@@ -287,7 +287,7 @@ export function Header() {
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {isAdminUser && (
                 <Link href="/admin" className="hidden xl:block cursor-pointer">
-                  <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer">
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm rounded-xl font-semibold cursor-pointer transition-all duration-200">
                     <Pencil className="mr-2 h-4 w-4" />
                     Panel Admin
                   </Button>
@@ -324,25 +324,25 @@ export function Header() {
                       <span className="sr-only">Mi cuenta</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56" style={{ zIndex: 10030 }}>
-                    <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild className="cursor-pointer">
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border border-border overflow-hidden p-1" style={{ zIndex: 10030 }}>
+                    <DropdownMenuLabel className="truncate text-xs text-muted-foreground font-normal px-3 py-2">{user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="mx-1" />
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg font-medium hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors duration-150">
                       <Link href="/account/orders">Mis Pedidos</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg font-medium hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors duration-150">
                       <Link href="/wishlist">Mis Favoritos</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg font-medium hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors duration-150">
                       <Link href="/account">Mi Cuenta</Link>
                     </DropdownMenuItem>
                     {isAdminUser && (
-                    <DropdownMenuItem asChild className="xl:hidden cursor-pointer">
+                      <DropdownMenuItem asChild className="xl:hidden cursor-pointer rounded-lg font-medium hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors duration-150">
                         <Link href="/admin">Editar catálogo</Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500 cursor-pointer">
+                    <DropdownMenuSeparator className="mx-1" />
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer rounded-lg font-medium text-red-500 hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600 transition-colors duration-150">
                       <LogOut className="mr-2 h-4 w-4" />
                       Cerrar Sesión
                     </DropdownMenuItem>
@@ -424,13 +424,13 @@ export function Header() {
                   {cat.slug !== "accesorios" && <ChevronDown className="h-4 w-4" />}
                 </Link>
                 {cat.slug !== "accesorios" && (
-                  <div className="invisible absolute left-0 top-full opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100" style={{ zIndex: 9000 }}>
-                    <div className="min-w-[200px] border border-border bg-background py-2 text-foreground shadow-lg">
+                  <div className="invisible absolute left-0 top-full pt-1 opacity-0 -translate-y-1 transition-all duration-200 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0" style={{ zIndex: 9000 }}>
+                    <div className="min-w-[200px] rounded-xl border border-border bg-background shadow-xl overflow-hidden">
                       {(cat.slug === "extras" ? extrasSubcategories : subcategories).map((sub) => (
                         <Link
                           key={sub.slug}
                           href={`/category/${cat.slug}?tipo=${sub.slug}`}
-                          className="block px-4 py-2 text-sm transition-colors hover:bg-muted"
+                          className="flex items-center px-4 py-2.5 text-sm font-medium text-foreground hover:bg-primary hover:text-primary-foreground transition-colors duration-150"
                         >
                           {sub.name}
                         </Link>

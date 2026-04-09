@@ -126,8 +126,9 @@ export function Hero() {
       </section>
 
       {/* Desktop */}
-      <div className="relative hidden h-[80vh] min-h-[520px] max-h-[900px] w-full overflow-hidden md:flex">
+      <div className="relative hidden h-[62vh] min-h-[440px] max-h-[700px] w-full overflow-hidden md:flex">
         <div className="flex h-full w-full">
+          {/* Image side */}
           <div className="relative w-1/2 overflow-hidden bg-background">
             {heroSlides.map((s, index) => (
               <div
@@ -146,36 +147,45 @@ export function Hero() {
                 />
               </div>
             ))}
+            {/* Right edge fade into text panel */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent" />
 
-            {/* Dots navigation - matching mobile */}
-            <div className="absolute bottom-8 right-8 z-10 flex items-center gap-2">
+            {/* Dots navigation */}
+            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-2">
               {heroSlides.map((_, index) => (
                 <button
                   key={`desktop-dot-${index}`}
                   type="button"
                   aria-label={`Ir al slide ${index + 1}`}
                   onClick={() => setCurrentSlide(index)}
-                  className={`h-3 rounded-full transition-all cursor-pointer ${
-                    index === currentSlide ? "w-8 bg-white" : "w-3 bg-white/45"
-                  } hover:w-6`}
+                  className={`h-2 rounded-full transition-all cursor-pointer ${
+                    index === currentSlide ? "w-7 bg-white" : "w-2 bg-white/45"
+                  } hover:w-5`}
                 />
               ))}
             </div>
           </div>
 
-          <div className="flex w-1/2 items-center justify-center bg-background/80 p-12">
-            <div>
-              <h1 className="mb-6 text-5xl font-bold leading-tight text-primary lg:text-6xl">
-                {slide.title}
-              </h1>
-              <p className="mb-10 text-2xl text-foreground/80">{slide.subtitle}</p>
-              <Button
-                size="lg"
-                className="bg-primary px-10 py-6 text-lg font-semibold text-primary-foreground shadow-lg hover:bg-primary/90"
-                asChild
-              >
-                <Link href={slide.href}>{slide.cta}</Link>
-              </Button>
+          {/* Text side */}
+          <div className="flex w-1/2 items-center justify-start bg-background px-12 lg:px-16">
+            <div className="flex items-start gap-5">
+              <div className="mt-1 w-1 self-stretch bg-primary rounded-full shrink-0" />
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                  {slide.eyebrow}
+                </p>
+                <h1 className="mb-4 text-4xl font-extrabold leading-tight text-foreground lg:text-5xl">
+                  {slide.title}
+                </h1>
+                <p className="mb-8 text-base text-muted-foreground lg:text-lg">{slide.subtitle}</p>
+                <Button
+                  size="lg"
+                  className="bg-primary px-8 py-5 text-base font-semibold text-primary-foreground shadow-md hover:bg-primary/90 rounded-xl transition-all duration-200"
+                  asChild
+                >
+                  <Link href={slide.href}>{slide.cta}</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
