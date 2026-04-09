@@ -22,7 +22,7 @@ export default function AdminLayout({
       </header>
 
       {/* CONTENIDO */}
-      <main className="container mx-auto px-4 py-12 lg:py-16 no-newsletter">
+      <main className="container mx-auto px-4 py-12 lg:py-16">
         {children}
       </main>
 

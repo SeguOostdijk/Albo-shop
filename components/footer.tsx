@@ -1,98 +1,10 @@
-"use client"
-
 import Link from "next/link"
-import Image from "next/image"
 import { Facebook, Instagram, Twitter } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { toast } from "sonner"
 
 export function Footer() {
-  const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!email || !email.includes("@")) {
-      toast.error("Por favor ingresa un email válido")
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const response = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success(data.message || "Te suscribiste correctamente al newsletter")
-        setEmail("")
-      } else {
-        toast.error(data.error || "Error al procesar la suscripción")
-      }
-    } catch {
-      toast.error("Error al procesar la suscripción")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <footer className="overflow-x-hidden">
-      {/* Newsletter Section */}
-      <div className="relative overflow-hidden py-14 md:py-16">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1920&h=400&fit=crop"
-            alt="Estadio"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-primary/80" />
-        </div>
-
-        <div className="relative mx-auto max-w-7xl px-4 text-center">
-          <h2 className="mb-2 text-2xl font-bold uppercase tracking-wide text-primary-foreground md:text-3xl">
-            Suscribite al Newsletter
-          </h2>
-
-          <p className="mb-6 text-xs uppercase tracking-wider text-primary-foreground/80 sm:text-sm">
-            Para recibir ofertas y novedades en tu mail
-          </p>
-
-          <form
-            className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:gap-0"
-            onSubmit={handleNewsletterSubmit}
-          >
-            <Input
-              type="email"
-              placeholder="Ingresa tu email"
-              className="h-11 flex-1 rounded-xl border-0 bg-primary-foreground text-foreground placeholder:text-foreground/60 sm:rounded-r-none sm:rounded-l-xl"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
-
-            <Button
-              type="submit"
-              className="h-11 rounded-xl bg-accent px-6 font-bold text-accent-foreground hover:bg-accent/90 sm:rounded-l-none sm:rounded-r-xl"
-              disabled={isLoading}
-            >
-              {isLoading ? "..." : "OK"}
-            </Button>
-          </form>
-        </div>
-      </div>
-
       {/* Main Footer */}
       <div className="border-t border-border bg-background">
         <div className="mx-auto max-w-7xl px-4 py-10 md:py-12">

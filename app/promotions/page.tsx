@@ -87,26 +87,6 @@ export default function PromotionsPage() {
             </div>
           </div>
 
-          {/* Newsletter Promo */}
-          <div className="bg-muted p-8 rounded-2xl text-center mt-12">
-            <h2 className="text-2xl font-bold mb-4">¡No te pierdas ninguna oferta!</h2>
-            <p className="text-muted-foreground mb-6">
-              Suscribite a nuestro newsletter y recibí en tu email todas las promociones y novidades
-            </p>
-            <form className="flex max-w-md mx-auto gap-0" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Tu email"
-                className="flex-1 px-4 py-3 rounded-l-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-muted-foreground/60"
-              />
-              <button
-                type="submit"
-                className="bg-primary text-primary-foreground px-6 py-3 rounded-r-full font-semibold hover:bg-primary/90 transition-colors"
-              >
-                Suscribirme
-              </button>
-            </form>
-          </div>
         </div>
       </div>
     </div>
