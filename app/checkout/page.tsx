@@ -302,7 +302,7 @@ export default function CheckoutPage() {
           >
             Copiar CBU
           </button>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-base font-medium text-center">
             Una vez realizada la transferencia, enviá el comprobante a{" "}
             <strong>alboshopcai@gmail.com</strong> indicando tu número de pedido.
           </p>

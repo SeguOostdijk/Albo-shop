@@ -37,6 +37,44 @@ export async function PATCH(request: Request) {
       .eq("id", id)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Obtener datos de la orden para enviar el email de confirmación
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select("email, first_name")
+      .eq("id", id)
+      .single()
+
+    if (order?.email) {
+      try {
+        await resend.emails.send({
+          from: "noreply@alboshop.com.ar",
+          to: order.email,
+          subject: `✅ Pedido #${id} confirmado — CAI Tienda`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+              <div style="background: #0f2f98; padding: 32px 24px; text-align: center;">
+                <img src="https://alboshop.com.ar/escudo.jpeg" alt="CAI" width="80" height="80" style="border-radius: 8px; margin-bottom: 16px;" />
+                <p style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 0;">Club Atlético Independiente</p>
+                <p style="color: #a5b4fc; font-size: 14px; margin: 4px 0 0;">Tienda Oficial</p>
+              </div>
+              <div style="padding: 32px 24px;">
+                <p style="font-size: 18px; font-weight: bold; color: #1e293b;">Hola, ${order.first_name}!</p>
+                <p style="font-size: 15px; color: #64748b;">¡Tu pago fue confirmado! Tu pedido <strong>#${id}</strong> está siendo preparado. Te avisaremos cuando esté listo para enviar o retirar.</p>
+                <p style="font-size: 14px; color: #94a3b8; margin-top: 24px;">Pedido #${id}</p>
+              </div>
+              <div style="background: #f8fafc; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="font-size: 12px; color: #94a3b8; margin: 0;">Club Atlético Independiente de San Cayetano — Tienda Oficial</p>
+                <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0;">Consultas: alboshopcai@gmail.com</p>
+              </div>
+            </div>
+          `,
+        })
+      } catch (emailError) {
+        console.error("Error enviando email de confirmación de pago:", emailError)
+      }
+    }
+
     return NextResponse.json({ success: true })
   }
 

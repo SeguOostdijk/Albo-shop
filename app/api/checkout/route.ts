@@ -3,6 +3,9 @@ import { MercadoPagoConfig, Preference } from "mercadopago"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation"
+import { Resend } from "resend"
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
@@ -285,23 +288,56 @@ export async function POST(request: Request) {
 
     // Enviar email de confirmación
     try {
-      await sendOrderConfirmation({
-        to: email,
-        firstName,
-        orderId: order.id,
-        items: validatedOrderItems.map(item => ({
-          product_name: item.product_name,
-          quantity: item.quantity,
-          price: item.price,
-          color: item.color,
-          size: item.size,
-        })),
-        subtotal,
-        shippingCost,
-        total,
-        shippingMethod,
-        paymentMethod: paymentInfo.method,
-      })
+      if (paymentInfo.method === "transfer") {
+        await resend.emails.send({
+          from: "noreply@alboshop.com.ar",
+          to: email,
+          subject: `📋 Pedido #${order.id} recibido — CAI Tienda`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+              <div style="background: #0f2f98; padding: 32px 24px; text-align: center;">
+                <img src="https://alboshop.com.ar/escudo.jpeg" alt="CAI" width="80" height="80" style="border-radius: 8px; margin-bottom: 16px;" />
+                <p style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 0;">Club Atlético Independiente</p>
+                <p style="color: #a5b4fc; font-size: 14px; margin: 4px 0 0;">Tienda Oficial</p>
+              </div>
+              <div style="padding: 32px 24px;">
+                <p style="font-size: 18px; font-weight: bold; color: #1e293b;">Hola, ${firstName}!</p>
+                <p style="font-size: 15px; color: #64748b;">Recibimos tu pedido <strong>#${order.id}</strong>. Aguardamos tu transferencia para confirmarlo.</p>
+                <p style="font-size: 15px; color: #64748b; margin-top: 12px;">Una vez realizada la transferencia, enviá el comprobante a <strong>alboshopcai@gmail.com</strong> indicando tu número de pedido.</p>
+                <div style="margin-top: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                  <p style="font-size: 13px; color: #64748b; margin: 0 0 8px;"><strong>Datos bancarios:</strong></p>
+                  <p style="font-size: 13px; color: #64748b; margin: 4px 0;">Banco: Banco de la Nación Argentina</p>
+                  <p style="font-size: 13px; color: #64748b; margin: 4px 0;">CBU: 0110464040046411693330</p>
+                  <p style="font-size: 13px; color: #64748b; margin: 4px 0;">Alias: ALBO.SHOP</p>
+                  <p style="font-size: 13px; color: #64748b; margin: 4px 0;">Nombre: Club Atlético Independiente de San Cayetano</p>
+                </div>
+              </div>
+              <div style="background: #f8fafc; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="font-size: 12px; color: #94a3b8; margin: 0;">Club Atlético Independiente de San Cayetano — Tienda Oficial</p>
+                <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0;">Consultas: alboshopcai@gmail.com</p>
+              </div>
+            </div>
+          `,
+        })
+      } else {
+        await sendOrderConfirmation({
+          to: email,
+          firstName,
+          orderId: order.id,
+          items: validatedOrderItems.map(item => ({
+            product_name: item.product_name,
+            quantity: item.quantity,
+            price: item.price,
+            color: item.color,
+            size: item.size,
+          })),
+          subtotal,
+          shippingCost,
+          total,
+          shippingMethod,
+          paymentMethod: paymentInfo.method,
+        })
+      }
     } catch (emailError) {
       console.error("Error enviando email de confirmación:", emailError)
     }
