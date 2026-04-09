@@ -25,7 +25,7 @@ export default async function AdminPage() {
   if (profileError || !profile || profile.role !== "admin") redirect("/")
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-8 sm:py-12 lg:py-20 pb-12 sm:pb-16 lg:pb-20">
+    <div className="container mx-auto px-2 sm:px-4 pt-4 sm:pt-6 lg:pt-8 pb-12 sm:pb-16 lg:pb-20">
       <div className="text-center mb-10 sm:mb-16">
         <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           <Package className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />

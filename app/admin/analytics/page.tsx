@@ -84,7 +84,7 @@ export default function AdminAnalyticsPage() {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 bg-gradient-to-br from-violet-600 to-indigo-700 rounded-xl shadow-md flex items-center justify-center">
+          <div className="w-12 h-12 bg-primary rounded-xl shadow-md flex items-center justify-center">
             <BarChart3 className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -101,7 +101,7 @@ export default function AdminAnalyticsPage() {
               onClick={() => setPeriod(p)}
               className={`px-4 py-1.5 rounded-xl text-sm font-bold border transition-all duration-200 cursor-pointer ${
                 period === p
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
+                  ? "bg-primary text-white border-primary shadow-md"
                   : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
               }`}
             >

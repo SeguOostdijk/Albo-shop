@@ -104,7 +104,7 @@ import { createClient } from "@/lib/supabase/client"
             <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex items-center gap-3 flex-1">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shrink-0">
                     <Users className="h-6 w-6 text-white" />
                 </div>
                 <div>
