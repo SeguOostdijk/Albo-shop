@@ -286,6 +286,16 @@ export async function POST(request: Request) {
       )
     }
 
+    // Descontar stock
+    for (const item of validatedOrderItems) {
+      const currentStock = stockMap.get(`${item.product_id}__${item.size}`)!
+      await supabaseAdmin
+        .from("product_stock")
+        .update({ stock: currentStock - item.quantity })
+        .eq("product_id", item.product_id)
+        .eq("size", item.size)
+    }
+
     // Enviar email de confirmación
     try {
       if (paymentInfo.method === "transfer") {
@@ -341,8 +351,6 @@ export async function POST(request: Request) {
     } catch (emailError) {
       console.error("Error enviando email de confirmación:", emailError)
     }
-
-    console.log(`Stock skip for MP order ${order.id}`)
 
     let redirectTo = "/account/orders"
 

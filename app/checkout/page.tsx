@@ -555,7 +555,7 @@ export default function CheckoutPage() {
                 </p>
                 <button
                   type="button"
-                  className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                  className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
                   disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
                   onClick={handleSubmit}
@@ -571,7 +571,7 @@ export default function CheckoutPage() {
                 </p>
                 <button
                   type="button"
-                  className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                  className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
                   disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
                   onClick={handleSubmit}

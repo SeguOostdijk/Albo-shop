@@ -51,5 +51,50 @@ export async function POST(req: NextRequest) {
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
+  // Fetch product info for analytics record
+  const { data: product } = await supabaseAdmin
+    .from("products")
+    .select("id, name, price, images")
+    .eq("id", productId)
+    .single()
+
+  if (product) {
+    const total = product.price * quantity
+
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .insert({
+        email: "venta-manual@alboshop.com.ar",
+        first_name: "Venta",
+        last_name: "Manual",
+        address: "-",
+        city: "-",
+        province: "-",
+        postal_code: "-",
+        phone: "-",
+        shipping_method: "pickup",
+        shipping_cost: 0,
+        total,
+        payment_method: "manual",
+        status: "paid",
+        shipping_status: "delivered",
+      })
+      .select("id")
+      .single()
+
+    if (order) {
+      await supabaseAdmin.from("order_items").insert({
+        order_id: order.id,
+        product_id: product.id,
+        product_name: product.name,
+        product_image: product.images?.[0] ?? null,
+        quantity,
+        price: product.price,
+        color: "-",
+        size,
+      })
+    }
+  }
+
   return NextResponse.json({ ok: true, newStock: stockRow.stock - quantity })
 }

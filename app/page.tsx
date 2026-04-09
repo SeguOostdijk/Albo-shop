@@ -98,7 +98,7 @@ export default async function HomePage() {
               className="w-full sm:w-auto bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:to-emerald-700
                          text-white font-black text-sm sm:text-base md:text-2xl
                          px-4 sm:px-8 md:px-16
-                         py-4 sm:py-5 md:py-10
+                         py-6 sm:py-5 md:py-10
                          shadow-lg md:shadow-2xl hover:shadow-xl md:hover:shadow-3xl
                          rounded-xl sm:rounded-2xl md:rounded-3xl
                          border-2 md:border-4 border-white/30 hover:border-white/50 backdrop-blur-sm

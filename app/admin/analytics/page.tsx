@@ -89,7 +89,7 @@ export default function AdminAnalyticsPage() {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-800">Analytics</h1>
-            <p className="text-sm text-slate-500">Métricas de ventas y pedidos</p>
+            <p className="text-sm text-slate-500">Métricas de ventas</p>
           </div>
         </div>
 
@@ -139,7 +139,7 @@ export default function AdminAnalyticsPage() {
                     <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                       <ShoppingBag className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-slate-500">Pedidos</span>
+                    <span className="text-sm font-semibold text-slate-500">Ventas</span>
                   </div>
                   <p className="text-2xl font-black text-slate-800">{data.orders[period]}</p>
                   <p className="text-xs text-slate-400 mt-1">{PERIOD_LABELS[period]}</p>
@@ -179,7 +179,7 @@ export default function AdminAnalyticsPage() {
                 <CardContent className="p-5">
                   <p className="text-sm font-semibold text-slate-500 mb-1">Ganancias totales acumuladas</p>
                   <p className="text-3xl font-black text-slate-800">{formatPrice(data.revenue.total)}</p>
-                  <p className="text-xs text-slate-400 mt-1">{data.orders.total} pedidos históricos</p>
+                  <p className="text-xs text-slate-400 mt-1">{data.orders.total} ventas históricas</p>
                 </CardContent>
               </Card>
               <Card className="border border-slate-200/60 bg-white shadow-md">

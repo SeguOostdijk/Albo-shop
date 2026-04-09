@@ -45,6 +45,8 @@ export async function GET() {
   const all = orders ?? []
   const filter = (from: Date) => all.filter((o) => new Date(o.created_at) >= from)
   const revenue = (list: typeof all) => list.reduce((s, o) => s + (o.total ?? 0), 0)
+  const totalUnits = (list: typeof all) =>
+    list.reduce((s, o) => s + (o.order_items ?? []).reduce((si: number, i: any) => si + (i.quantity ?? 0), 0), 0)
   const avg = (list: typeof all) => (list.length ? revenue(list) / list.length : 0)
 
   const todayList = filter(startOfDay)
@@ -77,11 +79,11 @@ export async function GET() {
       total: revenue(all),
     },
     orders: {
-      today: todayList.length,
-      week: weekList.length,
-      month: monthList.length,
-      year: yearList.length,
-      total: all.length,
+      today: totalUnits(todayList),
+      week: totalUnits(weekList),
+      month: totalUnits(monthList),
+      year: totalUnits(yearList),
+      total: totalUnits(all),
       pending: pendingOrders,
     },
     avgOrderValue: {
