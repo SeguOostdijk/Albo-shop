@@ -306,6 +306,14 @@ export default function CheckoutPage() {
             Una vez realizada la transferencia, enviá el comprobante a{" "}
             <strong>alboshopcai@gmail.com</strong> indicando tu número de pedido.
           </p>
+          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-4 py-3 text-center mt-4">
+            Si no se envía el comprobante de pago dentro de las 48 horas, el pedido será cancelado automáticamente.
+          </p>
+          <div className="mt-3 text-center">
+            <Link href="/contact" className="text-sm underline text-muted-foreground">
+              Ante algún inconveniente, contactanos
+            </Link>
+          </div>
           <div className="mt-6 text-center">
             <Link href="/account/orders" className="underline">Ver mis pedidos</Link>
           </div>

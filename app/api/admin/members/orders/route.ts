@@ -60,7 +60,7 @@ export async function PATCH(request: Request) {
               </div>
               <div style="padding: 32px 24px;">
                 <p style="font-size: 18px; font-weight: bold; color: #1e293b;">Hola, ${order.first_name}!</p>
-                <p style="font-size: 15px; color: #64748b;">¡Tu pago fue confirmado! Tu pedido <strong>#${id}</strong> está siendo preparado. Te avisaremos cuando esté listo para enviar o retirar.</p>
+                <p style="font-size: 15px; color: #64748b;">¡Tu pago fue confirmado! Tu pedido <strong>#${id}</strong> está listo para ser retirado en Rivadavia 150, San Cayetano.</p>
                 <p style="font-size: 14px; color: #94a3b8; margin-top: 24px;">Pedido #${id}</p>
               </div>
               <div style="background: #f8fafc; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0;">
