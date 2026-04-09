@@ -42,11 +42,11 @@ function StatusBadge({ status }: { status: string }) {
   }
   const labels: Record<string, string> = {
     pending: "Pendiente",
-    paid: "Pagado",
+    paid: "Confirmado",
     in_process: "En proceso",
     payment_failed: "Pago fallido",
     dispatched: "Despachado",
-    delivered: "Entregado",
+    delivered: "Confirmado",
   }
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${styles[status] ?? "bg-slate-100 text-slate-700"}`}>
@@ -129,6 +129,22 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     fetchOrders()
   }, [])
+
+  const handleMarkAsPaid = async (order: Order) => {
+    setUpdatingId(order.id)
+    const res = await fetch("/api/admin/members/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: order.id, paymentStatus: "paid" }),
+    })
+    if (!res.ok) {
+      toast.error("Error al confirmar el pago")
+    } else {
+      toast.success("Pago confirmado")
+      fetchOrders()
+    }
+    setUpdatingId(null)
+  }
 
   const handleUpdateStatus = async (order: Order, newStatus: string) => {
     setUpdatingId(order.id)
@@ -284,6 +300,20 @@ export default function AdminOrdersPage() {
                         >
                           <PackageCheck className="h-4 w-4 mr-2" />
                           {updatingId === order.id ? "Actualizando..." : "Marcar como entregado"}
+                        </Button>
+                      </div>
+                    )}
+
+                    {order.payment_method === "transfer" && order.status !== "paid" && (
+                      <div className="flex justify-end">
+                        <Button
+                          size="sm"
+                          disabled={updatingId === order.id}
+                          onClick={() => handleMarkAsPaid(order)}
+                          className="bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-bold rounded-xl cursor-pointer"
+                        >
+                          <PackageCheck className="h-4 w-4 mr-2" />
+                          {updatingId === order.id ? "Actualizando..." : "Marcar como pagado"}
                         </Button>
                       </div>
                     )}

@@ -27,7 +27,18 @@ export async function PATCH(request: Request) {
   const body = await request.json()
   console.log("PATCH ORDERS BODY:", body)
 
-  const { id, status, email, firstName, shippingMethod } = body
+  const { id, status, paymentStatus, email, firstName, shippingMethod } = body
+
+  // Actualización de estado de pago (transferencia confirmada)
+  if (paymentStatus) {
+    const { error } = await supabaseAdmin
+      .from("orders")
+      .update({ status: paymentStatus })
+      .eq("id", id)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
 
   const { error } = await supabaseAdmin
     .from("orders")
