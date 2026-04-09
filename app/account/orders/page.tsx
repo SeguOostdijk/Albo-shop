@@ -182,13 +182,13 @@ export default function OrdersPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                      {order.paymentMethod === "transfer" ? (
-                        <span className="px-3 py-1 rounded-full text-xs text-white bg-yellow-500">
-                          Pendiente de pago
-                        </span>
-                      ) : order.status === "paid" ? (
+                      {order.status === "paid" ? (
                         <span className="px-3 py-1 rounded-full text-xs text-white bg-green-500">
                           Pagado
+                        </span>
+                      ) : order.paymentMethod === "transfer" ? (
+                        <span className="px-3 py-1 rounded-full text-xs text-white bg-yellow-500">
+                          Pendiente de pago
                         </span>
                       ) : null}
                       <span className="font-semibold">
