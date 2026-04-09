@@ -189,7 +189,7 @@ export default function AdminOrdersPage() {
       <Card className="max-w-full sm:max-w-3xl lg:max-w-6xl mx-auto border border-slate-200/60 shadow-xl">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-700 to-blue-900 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
               <ShoppingBag className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -264,57 +264,54 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
 
-                    {/* Botón de acción según estado de envío y método de envío */}
-                    {order.shipping_status === "pending" && (
-                      <div className="flex justify-end">
-                        {order.shipping_method === "pickup" ? (
+                    {/* Botones de acción */}
+                    {(order.shipping_status === "pending" || order.shipping_status === "dispatched" || (order.payment_method === "transfer" && order.status !== "paid")) && (
+                      <div className="flex flex-wrap gap-2 justify-end">
+                        {order.payment_method === "transfer" && order.status !== "paid" && (
+                          <Button
+                            size="sm"
+                            disabled={updatingId === order.id}
+                            onClick={() => handleMarkAsPaid(order)}
+                            className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl cursor-pointer"
+                          >
+                            <PackageCheck className="h-4 w-4 mr-2" />
+                            {updatingId === order.id ? "Actualizando..." : "Marcar como pagado"}
+                          </Button>
+                        )}
+                        {order.shipping_status === "pending" && (
+                          order.shipping_method === "pickup" ? (
+                            <Button
+                              size="sm"
+                              disabled={updatingId === order.id}
+                              onClick={() => handleUpdateStatus(order, "delivered")}
+                              className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl cursor-pointer"
+                            >
+                              <PackageCheck className="h-4 w-4 mr-2" />
+                              {updatingId === order.id ? "Actualizando..." : "Marcar como entregado"}
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              disabled={updatingId === order.id}
+                              onClick={() => handleUpdateStatus(order, "dispatched")}
+                              className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl cursor-pointer"
+                            >
+                              <Truck className="h-4 w-4 mr-2" />
+                              {updatingId === order.id ? "Actualizando..." : "Marcar como despachado"}
+                            </Button>
+                          )
+                        )}
+                        {order.shipping_status === "dispatched" && (
                           <Button
                             size="sm"
                             disabled={updatingId === order.id}
                             onClick={() => handleUpdateStatus(order, "delivered")}
-                            className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold rounded-xl cursor-pointer"
+                            className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl cursor-pointer"
                           >
                             <PackageCheck className="h-4 w-4 mr-2" />
                             {updatingId === order.id ? "Actualizando..." : "Marcar como entregado"}
                           </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            disabled={updatingId === order.id}
-                            onClick={() => handleUpdateStatus(order, "dispatched")}
-                            className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold rounded-xl cursor-pointer"
-                          >
-                            <Truck className="h-4 w-4 mr-2" />
-                            {updatingId === order.id ? "Actualizando..." : "Marcar como despachado"}
-                          </Button>
                         )}
-                      </div>
-                    )}
-                    {order.shipping_status === "dispatched" && (
-                      <div className="flex justify-end">
-                        <Button
-                          size="sm"
-                          disabled={updatingId === order.id}
-                          onClick={() => handleUpdateStatus(order, "delivered")}
-                          className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold rounded-xl cursor-pointer"
-                        >
-                          <PackageCheck className="h-4 w-4 mr-2" />
-                          {updatingId === order.id ? "Actualizando..." : "Marcar como entregado"}
-                        </Button>
-                      </div>
-                    )}
-
-                    {order.payment_method === "transfer" && order.status !== "paid" && (
-                      <div className="flex justify-end">
-                        <Button
-                          size="sm"
-                          disabled={updatingId === order.id}
-                          onClick={() => handleMarkAsPaid(order)}
-                          className="bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-bold rounded-xl cursor-pointer"
-                        >
-                          <PackageCheck className="h-4 w-4 mr-2" />
-                          {updatingId === order.id ? "Actualizando..." : "Marcar como pagado"}
-                        </Button>
                       </div>
                     )}
 

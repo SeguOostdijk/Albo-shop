@@ -244,7 +244,7 @@ export async function POST(request: Request) {
       },
       member_number: validMember ? memberName?.trim() : null,
       member_validated: validMember,
-      status: "pending",
+      status: (paymentInfo.method === "credit-card" || paymentInfo.method === "debit-card") ? "paid" : "pending",
       phone,
     }
 

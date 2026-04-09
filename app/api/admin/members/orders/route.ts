@@ -113,7 +113,7 @@ export async function PATCH(request: Request) {
       from: "noreply@alboshop.com.ar",
       to: email,
       subject: `🚚 Tu pedido #${id} fue despachado — CAI Tienda`,
-      html: emailHtml("Tu pedido fue despachado desde nuestra sucursal de envío. En los próximos días lo recibirás en tu domicilio."),
+      html: emailHtml("Tu pedido fue despachado en nuestra sucursal de envío. En los próximos días lo recibirás en tu domicilio."),
     })
     console.log("MAIL ENVIADO: despachado")
   }
