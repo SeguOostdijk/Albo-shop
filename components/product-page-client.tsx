@@ -42,6 +42,9 @@ export function ProductPageClient({
       item.selectedSize === selectedSize
   )
 
+  const totalStock = product.stockBySize.reduce((sum, s) => sum + s.stock, 0)
+  const outOfStock = totalStock === 0
+
   const handleCartAction = () => {
     if (!selectedSize && !inCart) {
       toast.error("Por favor selecciona un talle")
@@ -124,9 +127,11 @@ export function ProductPageClient({
               size="lg"
               className={cn(
                 "flex-1 cursor-pointer gap-2",
-                inCart ? "bg-green-500 text-white hover:bg-green-600" : ""
+                inCart ? "bg-green-500 text-white hover:bg-green-600" : "",
+                outOfStock ? "opacity-50 cursor-not-allowed" : ""
               )}
               onClick={handleCartAction}
+              disabled={outOfStock}
             >
               <div className="relative">
                 <ShoppingBag className="h-5 w-5" />
@@ -134,7 +139,7 @@ export function ProductPageClient({
                   <Check className="h-2.5 w-2.5 absolute -top-1 -right-1 text-green-500 bg-white rounded-full" />
                 )}
               </div>
-              {inCart ? "EN EL CARRITO" : "Agregar al Carrito"}
+              {outOfStock ? "Sin stock" : inCart ? "EN EL CARRITO" : "Agregar al Carrito"}
             </Button>
 
             <Button
@@ -172,6 +177,7 @@ export function ProductPageClient({
               <span className="sr-only">Compartir</span>
             </Button>
           </div>
+
         </div>
       </div>
 

@@ -46,6 +46,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
     })
   }, [product.stockBySize])
 
+  const totalStock = sizes.reduce((sum, s) => sum + s.stock, 0)
+
   const defaultColor = product.variants?.[0]?.color || "Unico"
 
   const handleAddSize = (
@@ -89,11 +91,19 @@ className="object-contain object-center p-3 transition-transform duration-500 gr
             </span>
           )}
 
-          {product.isNew && (
-            <span className="inline-flex items-center rounded-full bg-success px-2.5 py-1 text-[10px] font-bold tracking-wide text-success-foreground shadow-lg sm:px-3 sm:py-1.5 sm:text-xs">
-              NUEVO
-            </span>
-          )}
+          <div className="flex flex-wrap gap-1.5">
+            {product.isNew && (
+              <span className="inline-flex items-center rounded-full bg-success px-2.5 py-1 text-[10px] font-bold tracking-wide text-success-foreground shadow-lg sm:px-3 sm:py-1.5 sm:text-xs">
+                NUEVO
+              </span>
+            )}
+
+            {totalStock === 0 && (
+              <span className="inline-flex items-center rounded-full bg-slate-700 px-2.5 py-1 text-[10px] font-bold tracking-wide text-white shadow-lg sm:px-3 sm:py-1.5 sm:text-xs">
+                SIN STOCK
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="absolute right-3 top-3 z-10 flex flex-col gap-2 opacity-100 transition-all duration-300 sm:right-4 sm:top-4 md:translate-x-4 md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
