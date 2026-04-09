@@ -22,7 +22,6 @@ export async function GET() {
       .select(`
         id,
         status,
-        shipping_status,
         payment_method,
         total,
         shipping_cost,
@@ -40,7 +39,6 @@ export async function GET() {
         )
       `)
       .eq("user_id", userId)
-      .or("status.eq.paid,payment_method.eq.transfer")
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -54,7 +52,7 @@ export async function GET() {
     const orders = (data ?? []).map((order) => ({
       id: order.id,
       status: order.status,
-      shippingStatus: order.shipping_status,
+      shippingStatus: "pending",
       paymentMethod: order.payment_method,
       total: order.total,
       shippingCost: order.shipping_cost,
