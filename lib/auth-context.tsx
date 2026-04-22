@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
+        emailRedirectTo: "https://alboshop.com.ar",
         data: {
           first_name: firstName,
           last_name: lastName,

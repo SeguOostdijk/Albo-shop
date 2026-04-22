@@ -42,7 +42,7 @@ export const metadata: Metadata = {
       "Camisetas, indumentaria y accesorios oficiales del Club Atlético Independiente de San Cayetano.",
     images: [
       {
-        url: "/Club.jpg",
+        url: "https://alboshop.com.ar/escudo.jpeg",
         width: 1200,
         height: 630,
         alt: "Albo Shop — Tienda Oficial Club Atlético Independiente San Cayetano",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: "Albo Shop | Tienda Oficial Club Atlético Independiente San Cayetano",
     description:
       "Camisetas, indumentaria y accesorios oficiales del Club Atlético Independiente de San Cayetano.",
-    images: ["/Club.jpg"],
+    images: ["https://alboshop.com.ar/escudo.jpeg"],
   },
 }
 
