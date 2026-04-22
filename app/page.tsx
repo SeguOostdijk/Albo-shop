@@ -1,6 +1,27 @@
 export const revalidate = 60
 
+import type { Metadata } from "next"
 import { Hero } from "@/components/hero"
+
+export const metadata: Metadata = {
+  title: "Indumentaria y Accesorios Oficiales | Albo Shop San Cayetano",
+  description:
+    "Comprá camisetas, buzos, camperas y accesorios oficiales del Club Atlético Independiente de San Cayetano. Precios exclusivos para socios. Envíos a todo el país.",
+  openGraph: {
+    title: "Albo Shop | Tienda Oficial Club Atlético Independiente San Cayetano",
+    description:
+      "Camisetas, indumentaria y accesorios oficiales del club. Precios de socio disponibles. Envíos a todo Argentina.",
+    url: "https://alboshop.com.ar",
+    images: [
+      {
+        url: "/Club.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Albo Shop — Tienda Oficial Club Atlético Independiente San Cayetano",
+      },
+    ],
+  },
+}
 import { ProductCarousel } from "@/components/product-carousel"
 import { CategoryBanner } from "@/components/category-banner"
 import {

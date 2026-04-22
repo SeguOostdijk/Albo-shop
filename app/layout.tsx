@@ -13,13 +13,49 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://alboshop.com.ar"),
+  verification: {
+    google: "PHjEMbhguo466EYI-CfTaqTS4jPMWxYeRiGo4ZiR6i4",
+  },
   title: {
-    default: "Club Shop | Tienda Oficial",
-    template: "%s | Club Shop",
+    default: "Albo Shop | Tienda Oficial Club Atlético Independiente San Cayetano",
+    template: "%s | Albo Shop",
   },
   description:
-    "Tienda oficial del club. Encontra camisetas, indumentaria deportiva, accesorios y mas productos exclusivos.",
-  keywords: ["futbol", "camisetas", "club", "tienda oficial", "indumentaria deportiva"],
+    "Tienda oficial del Club Atlético Independiente de San Cayetano. Camisetas, indumentaria deportiva, accesorios y productos exclusivos del club. Enviamos a todo el país.",
+  keywords: [
+    "Club Atlético Independiente",
+    "San Cayetano",
+    "Albo Shop",
+    "tienda oficial",
+    "camisetas futbol",
+    "indumentaria deportiva",
+    "accesorios club",
+    "Buenos Aires",
+  ],
+  openGraph: {
+    siteName: "Albo Shop",
+    locale: "es_AR",
+    type: "website",
+    title: "Albo Shop | Tienda Oficial Club Atlético Independiente San Cayetano",
+    description:
+      "Camisetas, indumentaria y accesorios oficiales del Club Atlético Independiente de San Cayetano.",
+    images: [
+      {
+        url: "/Club.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Albo Shop — Tienda Oficial Club Atlético Independiente San Cayetano",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Albo Shop | Tienda Oficial Club Atlético Independiente San Cayetano",
+    description:
+      "Camisetas, indumentaria y accesorios oficiales del Club Atlético Independiente de San Cayetano.",
+    images: ["/Club.jpg"],
+  },
 }
 
 export const viewport: Viewport = {
