@@ -152,10 +152,12 @@ export async function getSaleProductsFromDb(): Promise<Product[]> {
 export async function getProductBySlugFromDb(slug: string): Promise<Product | null> {
   const supabase = await createSupabaseServerClient()
 
+  const decodedSlug = decodeURIComponent(slug)
+
   const { data, error } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("slug", slug)
+    .eq("slug", decodedSlug)
     .maybeSingle()
 
   if (error) throw new Error(error.message)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Heart, ShoppingBag, Share2, Check } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -20,11 +20,25 @@ interface ProductPageClientProps {
   relatedProducts: Product[]
 }
 
+const NON_SIZE_VALUES = new Set([
+  "",
+  "-",
+  "sin talle",
+  "sintalle",
+  "sin_talle",
+  "sin-talle",
+  "único",
+  "unico",
+  "u",
+  "one size",
+  "onesize",
+])
+
 export function ProductPageClient({
   product,
   relatedProducts,
 }: ProductPageClientProps) {
-  const [selectedColor, setSelectedColor ] = useState(product.variants[0]?.color || "")
+  const [selectedColor, setSelectedColor] = useState(product.variants[0]?.color || "")
   const [selectedSize, setSelectedSize] = useState("")
 
   const addToCart = useCartStore((state) => state.addItem)
@@ -35,33 +49,65 @@ export function ProductPageClient({
 
   const inWishlist = isInWishlist(product.id)
 
+  const isAccessoryCategory = useMemo(() => {
+    const category = (product.category || "").toLowerCase().trim()
+    const categorySlug = (product.categorySlug || "").toLowerCase().trim()
+
+    return (
+      category.includes("accesorio") ||
+      category.includes("extra") ||
+      categorySlug.includes("accesorio") ||
+      categorySlug.includes("extra")
+    )
+  }, [product.category, product.categorySlug])
+
+  const realSizes = useMemo(() => {
+    const sizesFromStock =
+      product.stockBySize
+        ?.map((item) => String(item.size || "").trim().toLowerCase())
+        .filter((size) => size && !NON_SIZE_VALUES.has(size)) || []
+
+    return [...new Set(sizesFromStock)]
+  }, [product.stockBySize])
+
+  const hasSizes = !isAccessoryCategory && realSizes.length > 0
+
+  const normalizedSelectedSize = hasSizes ? selectedSize : ""
+
   const inCart = items.some(
     (item) =>
       item.product.id === product.id &&
       item.selectedColor === selectedColor &&
-      item.selectedSize === selectedSize
+      item.selectedSize === normalizedSelectedSize
   )
 
-  const totalStock = product.stockBySize.reduce((sum, s) => sum + s.stock, 0)
+  const totalStock =
+    product.stockBySize?.reduce((sum, s) => sum + Number(s.stock || 0), 0) || 0
+
   const outOfStock = totalStock === 0
 
   const handleCartAction = () => {
-    if (!selectedSize && !inCart) {
+    if (hasSizes && !selectedSize && !inCart) {
       toast.error("Por favor selecciona un talle")
       return
     }
 
     if (inCart) {
-      removeItem(product.id, selectedColor, selectedSize)
+      removeItem(product.id, selectedColor, normalizedSelectedSize)
       toast.success(`${product.name} eliminado del carrito`)
     } else {
-      addToCart(product, selectedColor, selectedSize)
+      addToCart(product, selectedColor, normalizedSelectedSize)
       openCart()
     }
   }
 
   console.log("PRODUCT", product)
+  console.log("CATEGORY", product.category)
+  console.log("CATEGORY SLUG", product.categorySlug)
   console.log("STOCK BY SIZE", product.stockBySize)
+  console.log("REAL SIZES", realSizes)
+  console.log("IS ACCESSORY CATEGORY", isAccessoryCategory)
+  console.log("HAS SIZES", hasSizes)
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -106,21 +152,51 @@ export function ProductPageClient({
             <p className="text-sm text-secondary">
               {calculateInstallments(product.price)}
             </p>
-{product.memberPrice && (
+
+            {product.memberPrice && (
               <p className="text-lg text-primary font-bold mt-2 mb-0">
                 Precio socio: {formatCurrency(product.memberPrice)}
               </p>
             )}
           </div>
 
-          <VariantSelector
-            variants={product.variants}
-            stockBySize={product.stockBySize}
-            selectedColor={selectedColor}
-            selectedSize={selectedSize}
-            onColorChange={setSelectedColor}
-            onSizeChange={setSelectedSize}
-          />
+          {hasSizes ? (
+            <VariantSelector
+              variants={product.variants}
+              stockBySize={product.stockBySize}
+              selectedColor={selectedColor}
+              selectedSize={selectedSize}
+              onColorChange={setSelectedColor}
+              onSizeChange={setSelectedSize}
+            />
+          ) : (
+            product.variants?.length > 1 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Color</p>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants.map((variant, index) => {
+                    const isSelected = selectedColor === variant.color
+
+                    return (
+                      <button
+                        key={`${variant.color}-${index}`}
+                        type="button"
+                        onClick={() => setSelectedColor(variant.color)}
+                        className={cn(
+                          "rounded-md border px-3 py-2 text-sm transition",
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        {variant.color}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          )}
 
           <div className="flex gap-3">
             <Button
@@ -132,6 +208,7 @@ export function ProductPageClient({
               )}
               onClick={handleCartAction}
               disabled={outOfStock}
+              type="button"
             >
               <div className="relative">
                 <ShoppingBag className="h-5 w-5" />
@@ -150,6 +227,7 @@ export function ProductPageClient({
                 "cursor-pointer"
               )}
               onClick={() => toggleItem(product)}
+              type="button"
             >
               <Heart
                 className={cn(
@@ -162,22 +240,29 @@ export function ProductPageClient({
               </span>
             </Button>
 
-            <Button size="lg" variant="outline" className="cursor-pointer" onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: document.title,
-                  url: window.location.href
-                }).catch(console.error)
-              } else {
-                navigator.clipboard.writeText(window.location.href)
-                toast.success('Link copiado al portapapeles')
-              }
-            }}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="cursor-pointer"
+              type="button"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator
+                    .share({
+                      title: document.title,
+                      url: window.location.href,
+                    })
+                    .catch(console.error)
+                } else {
+                  navigator.clipboard.writeText(window.location.href)
+                  toast.success("Link copiado al portapapeles")
+                }
+              }}
+            >
               <Share2 className="h-5 w-5" />
               <span className="sr-only">Compartir</span>
             </Button>
           </div>
-
         </div>
       </div>
 
