@@ -2,8 +2,14 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Users, Percent, Star, Award, MessageCircle } from "lucide-react"
+import { MessageCircle, Users, ArrowRight } from "lucide-react"
 import { Breadcrumbs } from "@/components/breadcrumbs"
+
+const STEPS = [
+  { number: "01", text: "Contactanos por WhatsApp" },
+  { number: "02", text: "Abonás la cuota mensual" },
+  { number: "03", text: "¡Ya sos parte del club!" },
+]
 
 export default function AssociatePage() {
   const whatsappNumber = "5492983348357"
@@ -12,45 +18,63 @@ export default function AssociatePage() {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-muted/30 to-accent/20 py-8 md:py-20">
-      <Breadcrumbs
-        items={[
-          { label: "Inicio", href: "/" },
-          { label: "Sponsors", href: "/sponsors" },
-          { label: "Asociate" },
-        ]}
-      />
+    <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
+      <div className="container mx-auto px-4 sm:px-6 max-w-5xl py-8 md:py-16">
+        <Breadcrumbs
+          items={[
+            { label: "Inicio", href: "/" },
+            { label: "Sponsors", href: "/sponsors" },
+            { label: "Asociate" },
+          ]}
+        />
 
-      <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
-        {/* Hero Section */}
-        <div className="text-center mb-14 md:mb-28 pt-2 sm:pt-4">
-          <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent mb-6 sm:mb-8 tracking-tight leading-[1.05] md:leading-tight">
-            ¡ASOCIATE YA!
+        {/* Hero */}
+        <div className="text-center pt-8 mb-10 md:mb-14">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
+            <Users className="w-3.5 h-3.5" />
+            Club Atlético Independiente
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-6 tracking-tight leading-[1.05]">
+            ASOCIATE
           </h1>
 
-          <p className="text-base sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed font-light px-1 sm:px-0">
-            ¿No sos socio?{" "}
-            <span className="font-bold text-foreground">Unite a la familia</span> y accede a
-            descuentos de hasta el 30% en indumentaria oficial, accesorios y mucho más.
-            <br className="md:hidden" />
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+            Formá parte de la familia del club y accedé a{" "}
+            <span className="font-bold text-foreground">descuentos de hasta el 30%</span>{" "}
+            en indumentaria oficial, accesorios y beneficios exclusivos.
           </p>
 
           <Button
             asChild
             size="lg"
-            className="w-full sm:w-auto max-w-full sm:max-w-none bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold px-6 sm:px-10 md:px-16 py-6 sm:py-7 md:py-8 text-base sm:text-lg md:text-2xl shadow-2xl hover:shadow-3xl rounded-2xl md:rounded-3xl border-4 border-white/20 hover:border-white/40 transform hover:scale-[1.02] md:hover:scale-[1.05] transition-all duration-300 mx-auto"
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold px-10 py-7 text-lg shadow-2xl rounded-2xl border-2 border-white/20 hover:scale-[1.03] transition-all duration-300"
           >
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 sm:gap-3 text-center whitespace-normal sm:whitespace-nowrap"
-            >
-              <MessageCircle className="h-5 w-5 md:h-7 md:w-7 shrink-0" />
-              <span>Contactar por WhatsApp</span>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
+              <MessageCircle className="h-5 w-5 shrink-0" />
+              Contactar por WhatsApp
             </a>
           </Button>
         </div>
+
+        {/* Steps */}
+        <div className="py-8 md:py-12">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-10 text-foreground uppercase tracking-wide">
+            ¿Cómo asociarse?
+          </h2>
+
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10">
+            {STEPS.map((step) => (
+              <div key={step.number} className="flex flex-col items-center text-center gap-3 w-32">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <span className="text-xl font-black text-primary">{step.number}</span>
+                </div>
+                <p className="text-sm font-medium text-foreground leading-snug">{step.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   )
