@@ -3,6 +3,7 @@ import { MercadoPagoConfig, Payment } from "mercadopago"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation"
 import { Resend } from "resend"
+import { createHmac } from "crypto"
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
@@ -16,6 +17,41 @@ const shippingLabels: Record<string, string> = {
   express: "Envío express",
 }
 
+function verifyMPSignature(headers: Headers, paymentId: string): boolean {
+  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET
+  if (!secret) {
+    console.warn("Webhook MP: MERCADOPAGO_WEBHOOK_SECRET no configurado, saltando verificación")
+    return true
+  }
+
+  const xSignature = headers.get("x-signature")
+  const xRequestId = headers.get("x-request-id")
+
+  if (!xSignature || !xRequestId) {
+    console.error("Webhook MP: headers de firma ausentes")
+    return false
+  }
+
+  let ts: string | undefined
+  let v1: string | undefined
+
+  for (const part of xSignature.split(",")) {
+    const [key, value] = part.trim().split("=")
+    if (key === "ts") ts = value
+    if (key === "v1") v1 = value
+  }
+
+  if (!ts || !v1) {
+    console.error("Webhook MP: x-signature mal formado:", xSignature)
+    return false
+  }
+
+  const manifest = `id:${paymentId};request-id:${xRequestId};ts:${ts};`
+  const hash = createHmac("sha256", secret).update(manifest).digest("hex")
+
+  return hash === v1
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -26,6 +62,11 @@ export async function POST(request: Request) {
 
     const paymentId = body?.data?.id
     if (!paymentId) {
+      return NextResponse.json({ received: true })
+    }
+
+    if (!verifyMPSignature(request.headers, String(paymentId))) {
+      console.error("Webhook MP: firma inválida para payment", paymentId)
       return NextResponse.json({ received: true })
     }
 

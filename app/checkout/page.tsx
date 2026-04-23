@@ -440,7 +440,7 @@ export default function CheckoutPage() {
                 <Label>Provincia</Label>
                 <Select value={province} onValueChange={setProvince}>
                   <SelectTrigger className="cursor-pointer"><SelectValue /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     {Object.entries(PROVINCES).map(([v, l]) => (
                       <SelectItem key={v} value={v}>{l}</SelectItem>
                     ))}
