@@ -49,7 +49,7 @@ toast.error("La contraseña debe tener al menos 6 caracteres")
       if (error) {
         toast.error(error.message || "Error al registrarse")
       } else {
-        toast.success("¡Cuenta creada correctamente!")
+        toast.success("Cuenta creada correctamente. Por favor verifica tu email.")
         router.push("/account/login")
         router.refresh()
       }
