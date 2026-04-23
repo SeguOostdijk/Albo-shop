@@ -62,7 +62,11 @@ export default function ResetPasswordPage() {
       })
 
       if (error) {
-        toast.error(error.message || "Error al actualizar la contraseña")
+        const msg = error.message?.toLowerCase() ?? ""
+        const translated = msg.includes("different") || msg.includes("same password")
+          ? "La nueva contraseña debe ser diferente a la anterior"
+          : "Error al actualizar la contraseña"
+        toast.error(translated)
       } else {
         toast.success("Contraseña actualizada correctamente")
         // Sign out and redirect to login

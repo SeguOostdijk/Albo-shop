@@ -224,6 +224,99 @@ export async function POST(request: Request) {
     const shippingCost = getShippingCost(subtotal, shippingMethod)
     const total = subtotal + shippingCost
 
+    // === MERCADOPAGO: guardar sesión y crear preference — sin crear orden ===
+    if (paymentInfo.method === "mercadopago") {
+      const { data: session, error: sessionError } = await supabaseAdmin
+        .from("checkout_sessions")
+        .insert({
+          user_id: userId,
+          session_data: {
+            email,
+            phone,
+            firstName,
+            lastName,
+            address,
+            city,
+            province,
+            postalCode,
+            shippingMethod,
+            shippingCost,
+            subtotal,
+            total,
+            validMember,
+            memberName: validMember ? memberName?.trim() : null,
+            validatedOrderItems,
+            paymentInfo,
+          },
+        })
+        .select("id")
+        .single()
+
+      if (sessionError) {
+        console.error("Error creando checkout_session:", sessionError)
+        return NextResponse.json(
+          { success: false, error: "Error al iniciar el pago" },
+          { status: 500 }
+        )
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_URL || ""
+      const isLocalhost = !baseUrl || baseUrl.includes("localhost")
+
+      const preference = {
+        items: validatedOrderItems.map((item) => ({
+          id: item.product_id,
+          title: item.product_name,
+          currency_id: "ARS",
+          picture_url: item.product_image || "https://via.placeholder.com/300",
+          description: `${item.color} / ${item.size}`,
+          category_id: "products",
+          quantity: item.quantity,
+          unit_price: item.price,
+        })),
+        payer: {
+          name: firstName,
+          surname: lastName,
+          email,
+          phone: { area_code: phone.slice(1, 4), number: phone.slice(4) },
+          identification: { type: "DNI", number: "" },
+          address: { street_name: address, zip_code: postalCode },
+        },
+        back_urls: {
+          success: `${baseUrl}/account/orders`,
+          failure: `${baseUrl}/checkout?error=pago-fallo`,
+          pending: `${baseUrl}/checkout?info=pago-pendiente`,
+        },
+        ...(!isLocalhost && { auto_return: "approved" as "approved" }),
+        ...(!isLocalhost && {
+          notification_url: `${baseUrl}/api/webhooks/mercadopago`,
+        }),
+        external_reference: session.id,
+        payment_methods: {
+          excluded_payment_methods: [],
+          installments: 12,
+        },
+        shipments: {
+          cost: shippingCost,
+          mode: "not_specified",
+        },
+      }
+
+      const mpPreference = new Preference(client)
+      const response = await mpPreference.create({ body: preference })
+
+      await supabaseAdmin
+        .from("checkout_sessions")
+        .update({ mp_preference_id: response.id })
+        .eq("id", session.id)
+
+      return NextResponse.json({
+        success: true,
+        mpUrl: response.init_point,
+        message: "Redirigiendo a MercadoPago...",
+      })
+    }
+
     const insertPayload = {
       user_id: userId,
       email,
@@ -454,69 +547,6 @@ export async function POST(request: Request) {
       paymentInfo.method === "debit-card"
     ) {
       redirectTo = `/checkout/payment/card?orderId=${order.id}&type=${paymentInfo.method}`
-    } else if (paymentInfo.method === "mercadopago") {
-      const baseUrl = process.env.NEXT_PUBLIC_URL || ""
-      const isLocalhost = !baseUrl || baseUrl.includes("localhost")
-
-      console.log("BASE URL:", baseUrl)
-      console.log("IS LOCALHOST:", isLocalhost)
-
-      const preference = {
-        items: validatedOrderItems.map(item => ({
-          id: item.product_id,
-          title: item.product_name,
-          currency_id: "ARS",
-          picture_url: item.product_image || "https://via.placeholder.com/300",
-          description: `${item.color} / ${item.size}`,
-          category_id: "products",
-          quantity: item.quantity,
-          unit_price: item.price,
-        })),
-        payer: {
-          name: firstName,
-          surname: lastName,
-          email,
-          phone: { area_code: phone.slice(1, 4), number: phone.slice(4) },
-          identification: { type: "DNI", number: "" },
-          address: { street_name: address, zip_code: postalCode }
-        },
-        back_urls: {
-          success: `${baseUrl}/account/orders`,
-          failure: `${baseUrl}/checkout?error=pago-fallo`,
-          pending: `${baseUrl}/checkout/payment/pending?orderId=${order.id}`
-        },
-        ...(!isLocalhost && { auto_return: "approved" as "approved" }),
-        ...(!isLocalhost && {
-          notification_url: `${baseUrl}/api/webhooks/mercadopago`
-        }),
-        external_reference: order.id.toString(),
-        payment_methods: {
-          excluded_payment_methods: [],
-          installments: 12
-        },
-        shipments: {
-          cost: shippingCost,
-          mode: "not_specified"
-        }
-      }
-
-      console.log("PREFERENCE BODY:", JSON.stringify(preference, null, 2))
-
-      const mpPreference = new Preference(client)
-      const response = await mpPreference.create({ body: preference })
-      const mpUrl = response.init_point
-
-      await supabaseAdmin
-        .from("orders")
-        .update({ external_payment_id: response.id })
-        .eq("id", order.id)
-
-      return NextResponse.json({
-        success: true,
-        orderId: order.id,
-        mpUrl,
-        message: "Redirigiendo a MercadoPago..."
-      })
     }
 
     return NextResponse.json({

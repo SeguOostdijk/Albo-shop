@@ -23,11 +23,30 @@ import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/currency"
 
 const PROVINCES: Record<string, string> = {
-  caba: "CABA",
+  caba: "Ciudad Autónoma de Buenos Aires",
   buenosaires: "Buenos Aires",
+  catamarca: "Catamarca",
+  chaco: "Chaco",
+  chubut: "Chubut",
   cordoba: "Córdoba",
-  santafe: "Santa Fe",
+  corrientes: "Corrientes",
+  entrerios: "Entre Ríos",
+  formosa: "Formosa",
+  jujuy: "Jujuy",
+  lapampa: "La Pampa",
+  larioja: "La Rioja",
   mendoza: "Mendoza",
+  misiones: "Misiones",
+  neuquen: "Neuquén",
+  rionegro: "Río Negro",
+  salta: "Salta",
+  sanjuan: "San Juan",
+  sanluis: "San Luis",
+  santacruz: "Santa Cruz",
+  santafe: "Santa Fe",
+  santiagodelestero: "Santiago del Estero",
+  tierradelfuego: "Tierra del Fuego",
+  tucuman: "Tucumán",
 }
 
 const PAYMENT_LABELS: Record<string, string> = {
