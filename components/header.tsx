@@ -338,7 +338,7 @@ export function Header() {
                     </DropdownMenuItem>
                     {isAdminUser && (
                       <DropdownMenuItem asChild className="xl:hidden cursor-pointer rounded-lg font-medium hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors duration-150">
-                        <Link href="/admin">Editar catálogo</Link>
+                        <Link href="/admin">Panel de administración</Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator className="mx-1" />

@@ -252,11 +252,11 @@ export default function AdminOrdersPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                       <div className="rounded-xl border bg-white p-4">
                         <p className="text-muted-foreground mb-1">Método de pago</p>
-                        <p className="font-medium">{order.payment_method ?? "-"}</p>
+                        <p className="font-medium">{order.payment_method === "transfer" ? "Transferencia" : order.payment_method ?? "-"}</p>
                       </div>
                       <div className="rounded-xl border bg-white p-4">
                         <p className="text-muted-foreground mb-1">Envío</p>
-                        <p className="font-medium">{order.shipping_method ?? "-"}</p>
+                        <p className="font-medium">{order.shipping_method === "pickup" ? "Retiro en local" : order.shipping_method ?? "-"}</p>
                       </div>
                       <div className="rounded-xl border bg-white p-4">
                         <p className="text-muted-foreground mb-1">Costo de envío</p>
