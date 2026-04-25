@@ -127,8 +127,8 @@ export async function POST(request: Request) {
     if (memberValidated && memberName?.trim()) {
       const { data: memberData, error: memberError } = await supabaseAdmin
         .from("members")
-        .select("id, member_number")
-        .eq("member_number", memberName.trim())
+        .select("id, member_name")
+        .eq("member_name", memberName.trim())
         .eq("is_active", true)
         .maybeSingle()
 
@@ -378,14 +378,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Descontar stock
+    // Descontar stock de forma atómica para evitar race conditions
     for (const item of validatedOrderItems) {
-      const currentStock = stockMap.get(`${item.product_id}__${item.size}`)!
-      await supabaseAdmin
-        .from("product_stock")
-        .update({ stock: currentStock - item.quantity })
-        .eq("product_id", item.product_id)
-        .eq("size", item.size)
+      await supabaseAdmin.rpc("decrement_stock", {
+        p_product_id: item.product_id,
+        p_size: item.size,
+        p_quantity: item.quantity,
+      })
     }
 
     // Enviar email de confirmación
