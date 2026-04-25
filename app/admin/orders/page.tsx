@@ -82,11 +82,21 @@ type Order = {
   order_items: OrderItem[]
 }
 
+type ShippingFilter = "all" | "pending" | "dispatched" | "delivered"
+
+const FILTER_LABELS: Record<ShippingFilter, string> = {
+  all: "Todos",
+  pending: "Sin gestionar",
+  dispatched: "Despachados",
+  delivered: "Entregados",
+}
+
 export default function AdminOrdersPage() {
   const supabase = createClient()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
+  const [filter, setFilter] = useState<ShippingFilter>("pending")
 
   const fetchOrders = async () => {
     setLoading(true)
@@ -204,6 +214,21 @@ export default function AdminOrdersPage() {
         </CardHeader>
 
         <CardContent>
+          <div className="flex flex-wrap gap-2 mb-5">
+            {(Object.keys(FILTER_LABELS) as ShippingFilter[]).map((key) => (
+              <button
+                key={key}
+                onClick={() => setFilter(key)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
+                  filter === key
+                    ? "bg-primary text-white border-primary shadow"
+                    : "bg-white text-slate-600 border-slate-200 hover:border-primary hover:text-primary"
+                }`}
+              >
+                {FILTER_LABELS[key]}
+              </button>
+            ))}
+          </div>
           {loading ? (
             <div className="flex justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -212,7 +237,9 @@ export default function AdminOrdersPage() {
             <p className="text-sm text-muted-foreground">No hay pedidos registrados.</p>
           ) : (
             <div className="space-y-4">
-              {orders.map((order) => (
+              {orders
+                .filter((o) => filter === "all" || o.shipping_status === filter)
+                .map((order) => (
                 <details
                   key={order.id}
                   className="rounded-2xl border bg-white shadow-sm overflow-hidden"
@@ -265,7 +292,7 @@ export default function AdminOrdersPage() {
                     </div>
 
                     {/* Botones de acción */}
-                    {(order.shipping_status === "pending" || order.shipping_status === "dispatched" || (order.payment_method === "transfer" && order.status !== "paid")) && (
+                    {(order.shipping_status === "pending" || (order.payment_method === "transfer" && order.status !== "paid")) && (
                       <div className="flex flex-wrap gap-2 justify-end">
                         {order.payment_method === "transfer" && order.status !== "paid" && (
                           <Button
@@ -300,17 +327,6 @@ export default function AdminOrdersPage() {
                               {updatingId === order.id ? "Actualizando..." : "Marcar como despachado"}
                             </Button>
                           )
-                        )}
-                        {order.shipping_status === "dispatched" && (
-                          <Button
-                            size="sm"
-                            disabled={updatingId === order.id}
-                            onClick={() => handleUpdateStatus(order, "delivered")}
-                            className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl cursor-pointer"
-                          >
-                            <PackageCheck className="h-4 w-4 mr-2" />
-                            {updatingId === order.id ? "Actualizando..." : "Marcar como entregado"}
-                          </Button>
                         )}
                       </div>
                     )}

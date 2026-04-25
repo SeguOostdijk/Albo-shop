@@ -128,15 +128,5 @@ export async function PATCH(request: Request) {
     console.log("MAIL ENVIADO: entregado pickup")
   }
 
-  if (status === "delivered" && shippingMethod !== "pickup") {
-    await resend.emails.send({
-      from: "noreply@alboshop.com.ar",
-      to: email,
-      subject: `✅ Tu pedido #${id} fue entregado — CAI Tienda`,
-      html: emailHtml("Tu pedido fue entregado correctamente. ¡Gracias por tu compra, esperamos verte pronto!"),
-    })
-    console.log("MAIL ENVIADO: entregado envío")
-  }
-
   return NextResponse.json({ success: true })
 }
