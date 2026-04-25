@@ -91,7 +91,8 @@ export function InlineCardBrick({
           },
           onError: (error: unknown) => {
             const e = error as { type?: string }
-            if (e?.type === "non_critical") return
+            const silentTypes = ["non_critical", "validation_error", "card_error", "validation"]
+            if (e?.type && silentTypes.includes(e.type)) return
             console.error("Brick error:", error)
             onBrickError("Ocurrió un error con el formulario de pago")
           },
