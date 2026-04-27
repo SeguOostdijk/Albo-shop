@@ -143,10 +143,6 @@ export function Footer() {
         <div className="border-t border-border py-6">
           <div className="mx-auto max-w-7xl px-4">
             <div className="flex flex-col items-center gap-3 text-center">
-              <p className="text-xs uppercase text-muted-foreground">
-                Un emprendimiento de:
-              </p>
-
               <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent bg-primary">
                 <span className="text-xs font-bold text-accent">CABJ</span>
               </div>
