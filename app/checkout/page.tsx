@@ -8,6 +8,7 @@ import { InlineCardBrick } from "./InlineCardBrick"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
@@ -93,6 +94,11 @@ export default function CheckoutPage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [transferInfo, setTransferInfo] = useState<{ orderId: number } | null>(null)
+
+  // OTP (solo para guest + transferencia)
+  type OtpStep = "idle" | "sending" | "awaiting_code" | "verifying" | "verified"
+  const [otpStep, setOtpStep] = useState<OtpStep>("idle")
+  const [otpCode, setOtpCode] = useState("")
 
   const isCard = paymentMethod === "credit-card" || paymentMethod === "debit-card"
   const mpPublicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY ?? ""
@@ -248,6 +254,52 @@ export default function CheckoutPage() {
 
     if (isCard) return
 
+    // Guest + transferencia: verificar email con OTP antes de crear la orden
+    if (paymentMethod === "transfer" && !user && otpStep !== "verified") {
+      setOtpStep("sending")
+      try {
+        const res = await fetch("/api/checkout/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        })
+        if (!res.ok) throw new Error()
+        setOtpStep("awaiting_code")
+        toast.success(`Código enviado a ${email}`)
+      } catch {
+        toast.error("Error al enviar el código. Verificá tu email e intentá de nuevo.")
+        setOtpStep("idle")
+      }
+      return
+    }
+
+    await createOrder()
+  }
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) return
+    setOtpStep("verifying")
+    try {
+      const res = await fetch("/api/checkout/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otpCode }),
+      })
+      const data = await res.json()
+      if (!data.ok) {
+        toast.error("Código incorrecto. Verificá e intentá de nuevo.")
+        setOtpStep("awaiting_code")
+        return
+      }
+      setOtpStep("verified")
+      await createOrder()
+    } catch {
+      toast.error("Error al verificar el código.")
+      setOtpStep("awaiting_code")
+    }
+  }
+
+  const createOrder = async () => {
     setIsLoading(true)
 
     try {
@@ -588,15 +640,76 @@ export default function CheckoutPage() {
                 <p className="mt-4 text-sm text-muted-foreground">
                   Al presionar Pagar se mostrarán los datos de la cuenta bancaria y las instrucciones para completar la transferencia.
                 </p>
-                <button
-                  type="button"
-                  className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
-                  disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
-                  onClick={handleSubmit}
-                >
-                  {isLoading ? "Procesando..." : `Pagar ${formatCurrency(total)}`}
-                </button>
+
+                {/* OTP: solo para guest */}
+                {!user && otpStep === "awaiting_code" && (
+                  <div className="mt-4 rounded-lg border border-border p-4 space-y-3">
+                    <p className="text-sm font-medium">Ingresá el código que enviamos a <strong>{email}</strong></p>
+                    <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={handleVerifyOtp}
+                        disabled={otpCode.length !== 6}
+                        className="cursor-pointer"
+                      >
+                        Confirmar código
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="cursor-pointer text-sm"
+                        onClick={() => { setOtpStep("idle"); setOtpCode("") }}
+                      >
+                        Cambiar email
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {(!user && (otpStep === "idle" || otpStep === "sending")) && (
+                  <button
+                    type="button"
+                    className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
+                    disabled={otpStep === "sending" || !doneSteps.has(1) || !doneSteps.has(2)}
+                    onClick={handleSubmit}
+                  >
+                    {otpStep === "sending" ? "Enviando código..." : `Pagar ${formatCurrency(total)}`}
+                  </button>
+                )}
+
+                {(!user && (otpStep === "verifying" || otpStep === "verified")) && (
+                  <button
+                    type="button"
+                    className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
+                    disabled
+                  >
+                    {otpStep === "verifying" ? "Verificando..." : "Procesando..."}
+                  </button>
+                )}
+
+                {user && (
+                  <button
+                    type="button"
+                    className="block mt-4 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: "#3483FA", padding: "12px 48px", height: "48px" }}
+                    disabled={isLoading || !doneSteps.has(1) || !doneSteps.has(2)}
+                    onClick={handleSubmit}
+                  >
+                    {isLoading ? "Procesando..." : `Pagar ${formatCurrency(total)}`}
+                  </button>
+                )}
               </>
             )}
 
