@@ -57,9 +57,9 @@ export const metadata: Metadata = {
     images: ["https://alboshop.com.ar/escudo.jpeg"],
   },
   icons: {
-    icon: "/escudo.jpeg",
-    shortcut: "/escudo.jpeg",
-    apple: "/escudo.jpeg",
+    icon: "/escudoTransparente.png",
+    shortcut: "/escudoTransparente.png",
+    apple: "/escudoTransparente.png",
   },
 }
 
