@@ -71,7 +71,8 @@ function mapDbToProduct(p: DbProduct): Product {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const q = (searchParams.get("q") ?? "").trim()
+  const raw = (searchParams.get("q") ?? "").trim()
+  const q = raw.replace(/[^a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ\s\-]/g, "").trim()
 
   if (q.length < 2) {
     return NextResponse.json({ ok: true, data: [] })
