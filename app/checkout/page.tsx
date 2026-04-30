@@ -606,15 +606,7 @@ export default function CheckoutPage() {
                   { value: "credit-card", label: "Tarjeta de Crédito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
                   { value: "debit-card", label: "Tarjeta de Débito", icon: <CreditCard className="h-4 w-4 text-muted-foreground" /> },
                   { value: "mercadopago", label: "MercadoPago", icon: (
-                    <svg viewBox="0 0 100 100" className="h-5 w-5" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="50" cy="50" r="50" fill="#009EE3"/>
-                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(0 50 50)"/>
-                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(60 50 50)"/>
-                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(120 50 50)"/>
-                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(180 50 50)"/>
-                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(240 50 50)"/>
-                      <rect x="46" y="14" width="8" height="30" rx="4" fill="white" transform="rotate(300 50 50)"/>
-                    </svg>
+                    <Image src="/logoMercadoPago.png" alt="MercadoPago" width={20} height={20} className="object-contain" />
                   ) },
                   { value: "transfer", label: "Transferencia", icon: (
                     <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
