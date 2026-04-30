@@ -462,7 +462,7 @@ export default function CheckoutPage() {
                   type="tel"
                   placeholder="+54 11 1234-5678"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s()\-]/g, ""))}
                   required
                 />
               </div>
@@ -496,11 +496,11 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Nombre</Label>
-                <Input placeholder="Juan" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                <Input placeholder="Juan" value={firstName} onChange={(e) => setFirstName(e.target.value.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, ""))} required />
               </div>
               <div className="space-y-2">
                 <Label>Apellido</Label>
-                <Input placeholder="Perez" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                <Input placeholder="Perez" value={lastName} onChange={(e) => setLastName(e.target.value.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, ""))} required />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Dirección</Label>
