@@ -62,6 +62,12 @@ const SHIPPING_LABELS: Record<string, string> = {
   standard: "Envío estándar (5-7 días hábiles)",
 }
 
+const sanitize = (v: string) => v.replace(/[<>"'`\\]/g, "").trim()
+const isValidName   = (v: string) => /^[a-zA-ZÀ-ÿñÑ\s]+$/.test(v.trim())
+const isValidEmail  = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+const isValidPhone  = (v: string) => (v.match(/\d/g) ?? []).length >= 8
+const isValidPostal = (v: string) => /^([A-Za-z]\d{4}([A-Za-z]{3})?|\d{4})$/i.test(v.trim())
+
 type Step = 1 | 2 | 3
 
 export default function CheckoutPage() {
@@ -152,12 +158,28 @@ export default function CheckoutPage() {
       toast.error("Completá todos los campos de contacto")
       return
     }
+    if (!isValidEmail(email)) {
+      toast.error("Ingresá un email válido")
+      return
+    }
+    if (!isValidPhone(phone)) {
+      toast.error("El teléfono debe tener al menos 8 dígitos")
+      return
+    }
     markDone(1, 2)
   }
 
   const handleContinueShipping = () => {
     if (!firstName.trim() || !lastName.trim() || !address.trim() || !city.trim() || !postalCode.trim()) {
       toast.error("Completá todos los campos de envío")
+      return
+    }
+    if (!isValidName(firstName) || !isValidName(lastName)) {
+      toast.error("El nombre solo puede contener letras y espacios")
+      return
+    }
+    if (!isValidPostal(postalCode)) {
+      toast.error("El código postal debe tener formato válido (ej: 1000 o B7600)")
       return
     }
     markDone(2, 3)
@@ -193,14 +215,14 @@ export default function CheckoutPage() {
 
   const buildOrderBody = () => ({
     items,
-    email,
-    phone,
-    firstName,
-    lastName,
-    address,
-    city,
+    email: sanitize(email),
+    phone: sanitize(phone),
+    firstName: sanitize(firstName),
+    lastName: sanitize(lastName),
+    address: sanitize(address),
+    city: sanitize(city),
     province,
-    postalCode,
+    postalCode: sanitize(postalCode),
     shippingMethod,
     shippingCost,
     total,
