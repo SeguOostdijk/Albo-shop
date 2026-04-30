@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -48,6 +49,7 @@ export function Header() {
   const [searchLoading, setSearchLoading] = useState(false)
   const [isAdminUser, setIsAdminUser] = useState(false)
 
+  const router = useRouter()
   const { user, signOut } = useAuth()
   const cartItems = useCartStore((state) => state.getTotalItems())
   const wishlistItems = useWishlistStore((state) => state.items.length)
@@ -89,6 +91,15 @@ export function Header() {
     }
     checkAdmin()
   }, [user])
+
+  const handleSearchSubmit = () => {
+    const q = searchQuery.trim()
+    if (q.length < 2) return
+    router.push(`/search?q=${encodeURIComponent(q)}`)
+    setSearchQuery("")
+    setSearchOpenDesktop(false)
+    setSearchOpenMobile(false)
+  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -256,6 +267,7 @@ export function Header() {
                     className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none border-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
                     onFocus={() => setSearchOpenDesktop(true)}
                     onBlur={() => setTimeout(() => setSearchOpenDesktop(false), 200)}
                   />
@@ -383,11 +395,13 @@ export function Header() {
                   className="w-full rounded-l-sm rounded-r-none border-2 border-border text-foreground"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
                   autoFocus
                 />
                 <Button
                   type="button"
                   className="rounded-l-none rounded-r-sm border-2 border-l-0 border-border bg-background hover:bg-muted"
+                  onClick={handleSearchSubmit}
                 >
                   <Search className="h-5 w-5 text-foreground" />
                 </Button>

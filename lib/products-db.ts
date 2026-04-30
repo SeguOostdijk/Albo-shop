@@ -178,3 +178,27 @@ export async function getProductsByCategoryFromDb(categorySlug: string): Promise
 
   return ((data ?? []) as DbProduct[]).map(mapDbToProduct)
 }
+
+export async function searchProductsFromDb(query: string): Promise<Product[]> {
+  const q = query.replace(/[^a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ\s\-]/g, "").trim()
+  if (q.length < 2) return []
+
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .or(`name.ilike.%${q}%,category_slug.ilike.%${q}%`)
+
+  if (error) throw new Error(error.message)
+
+  const lower = q.toLowerCase()
+  return ((data ?? []) as DbProduct[])
+    .map(mapDbToProduct)
+    .filter(
+      (p) =>
+        p.name.toLowerCase().includes(lower) ||
+        p.category.toLowerCase().includes(lower) ||
+        p.tags.some((t) => t.toLowerCase().includes(lower))
+    )
+}
