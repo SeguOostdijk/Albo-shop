@@ -56,6 +56,11 @@ export const metadata: Metadata = {
       "Camisetas, indumentaria y accesorios oficiales del Club Atlético Independiente de San Cayetano.",
     images: ["https://alboshop.com.ar/escudo.jpeg"],
   },
+  icons: {
+    icon: "/escudoTransparente.png",
+    shortcut: "/escudoTransparente.png",
+    apple: "/escudoTransparente.png",
+  },
 }
 
 export const viewport: Viewport = {

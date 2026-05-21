@@ -25,7 +25,7 @@ export default function CartPage() {
             Explora nuestra tienda y encontra los productos que te gustan
           </p>
           <Button asChild>
-            <Link href="/category/hombre">Explorar Productos</Link>
+            <Link href="/category/all">Explorar Productos</Link>
           </Button>
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function CartPage() {
 
           {/* Continue Shopping */}
           <Link
-            href="/category/hombre"
+            href="/category/all"
             className="inline-flex items-center text-sm text-secondary hover:underline mt-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

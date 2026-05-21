@@ -24,7 +24,7 @@ export function CartDrawer() {
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <p className="text-muted-foreground">Tu carrito esta vacio</p>
             <Button onClick={closeCart} asChild className="cursor-pointer">
-              <Link href="/category/hombre">Explorar productos</Link>
+              <Link href="/category/all">Explorar productos</Link>
             </Button>
           </div>
         ) : (

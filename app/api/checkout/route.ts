@@ -30,12 +30,29 @@ function getShippingCost(subtotal: number, shippingMethod: string) {
   return 1
 }
 
+function sanitizeString(v: string) {
+  return v.replace(/[<>"'`\\]/g, "").trim()
+}
+
+const VALID_PROVINCES = new Set([
+  "caba", "buenosaires", "catamarca", "chaco", "chubut", "cordoba", "corrientes",
+  "entrerios", "formosa", "jujuy", "lapampa", "larioja", "mendoza", "misiones",
+  "neuquen", "rionegro", "salta", "sanjuan", "sanluis", "santacruz", "santafe",
+  "santiagodelestero", "tierradelfuego", "tucuman",
+])
+const VALID_SHIPPING_METHODS = new Set(["pickup", "standard"])
+const VALID_PAYMENT_METHODS  = new Set(["credit-card", "debit-card", "mercadopago", "transfer"])
+
+function isValidEmail(v: string)  { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) }
+function isValidName(v: string)   { return /^[a-zA-ZÀ-ÿñÑ\s]+$/.test(v) }
+function isValidPhone(v: string)  { return (v.match(/\d/g) ?? []).length >= 8 }
+function isValidPostal(v: string) { return /^([A-Za-z]\d{4}([A-Za-z]{3})?|\d{4})$/i.test(v) }
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    console.log("FULL BODY:", JSON.stringify(body, null, 2))
 
-    const {
+    let {
       items,
       email,
       phone,
@@ -73,22 +90,6 @@ export async function POST(request: Request) {
       memberValidated?: boolean
     }
 
-    console.log("CHECKOUT BODY:", {
-      email,
-      phone,
-      firstName,
-      lastName,
-      address,
-      city,
-      province,
-      postalCode,
-      shippingMethod,
-      memberName,
-      memberValidated,
-      itemsCount: items?.length,
-    })
-    console.log("Payment method:", paymentInfo.method)
-
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, error: "El carrito está vacío" },
@@ -112,15 +113,40 @@ export async function POST(request: Request) {
       )
     }
 
+    email      = sanitizeString(email)
+    phone      = sanitizeString(phone)
+    firstName  = sanitizeString(firstName)
+    lastName   = sanitizeString(lastName)
+    address    = sanitizeString(address)
+    city       = sanitizeString(city)
+    postalCode = sanitizeString(postalCode)
+
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ success: false, error: "Email inválido" }, { status: 400 })
+    }
+    if (!isValidName(firstName) || !isValidName(lastName)) {
+      return NextResponse.json({ success: false, error: "El nombre solo puede contener letras y espacios" }, { status: 400 })
+    }
+    if (!isValidPhone(phone)) {
+      return NextResponse.json({ success: false, error: "El teléfono debe tener al menos 8 dígitos" }, { status: 400 })
+    }
+    if (!isValidPostal(postalCode)) {
+      return NextResponse.json({ success: false, error: "Código postal inválido" }, { status: 400 })
+    }
+    if (!VALID_PROVINCES.has(province)) {
+      return NextResponse.json({ success: false, error: "Provincia inválida" }, { status: 400 })
+    }
+    if (!VALID_SHIPPING_METHODS.has(shippingMethod)) {
+      return NextResponse.json({ success: false, error: "Método de envío inválido" }, { status: 400 })
+    }
+    if (!VALID_PAYMENT_METHODS.has(paymentInfo.method)) {
+      return NextResponse.json({ success: false, error: "Método de pago inválido" }, { status: 400 })
+    }
+
     const supabaseServer = await createSupabaseServerClient()
     const userResult = await supabaseServer.auth.getUser()
 
-    console.log("CHECKOUT AUTH USER:", userResult.data.user)
-    console.log("CHECKOUT AUTH ERROR:", userResult.error)
-
     const userId = userResult.data.user?.id ?? null
-
-    console.log("USER ID TO INSERT:", userId)
 
     let validMember = false
 
@@ -341,16 +367,11 @@ export async function POST(request: Request) {
       phone,
     }
 
-    console.log("INSERT PAYLOAD:", insertPayload)
-
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert(insertPayload)
       .select("id, user_id, email, created_at")
       .single()
-
-    console.log("ORDER CREATED:", order)
-    console.log("ORDER ERROR:", orderError)
 
     if (orderError) {
       console.error("Error creating order:", orderError)
