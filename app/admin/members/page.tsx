@@ -20,7 +20,7 @@ import { createClient } from "@/lib/supabase/client"
     type Member = {
     id: number
     member_name: string
-    created_at: string
+    last_payment_at: string | null
     is_active: boolean
     }
 
@@ -35,7 +35,7 @@ import { createClient } from "@/lib/supabase/client"
         setLoading(true)
         const { data, error } = await supabase
         .from("members")
-        .select("id, member_name, created_at, is_active")
+        .select("id, member_name, last_payment_at, is_active")
         .order("member_name", { ascending: true })
 
         if (error) {
@@ -160,7 +160,7 @@ import { createClient } from "@/lib/supabase/client"
                         </td>
 
                         <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
-                            {formatDate(member.created_at)}
+                            {formatDate(member.last_payment_at)}
                         </td>
 
                         <td className="px-4 py-3">

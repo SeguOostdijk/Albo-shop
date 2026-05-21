@@ -40,7 +40,7 @@ async function checkAdmin() {
     const { error } = await supabaseAdmin.from("members").insert({
         member_name: member_name.trim(),
         is_active: true,
-        created_at: new Date().toISOString(),
+        last_payment_at: new Date().toISOString(),
     })
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -54,9 +54,9 @@ async function checkAdmin() {
 
     const { id, is_active } = await request.json()
 
-    const updatePayload: { is_active: boolean; created_at?: string } = { is_active }
+    const updatePayload: { is_active: boolean; last_payment_at?: string } = { is_active }
     if (is_active) {
-        updatePayload.created_at = new Date().toISOString()
+        updatePayload.last_payment_at = new Date().toISOString()
     }
 
     const { error } = await supabaseAdmin
