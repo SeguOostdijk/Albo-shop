@@ -14,7 +14,7 @@ const STEPS = [
 export default function AssociatePage() {
   const whatsappNumber = "5492983348357"
   const whatsappMessage =
-    "Hola%2C%20quiero%20asociarme%20al%20Club%20Independiente%20de%20San%20Cayetano.%20%C2%A1Cu%C3%A9ntame%20c%C3%B3mo%20hacerlo!%20https%3A//clubshop.com.ar"
+    "Hola%2C%20quiero%20asociarme%20al%20Club%20Independiente%20de%20San%20Cayetano.%20%C2%A1Contame%20c%C3%B3mo%20hacerlo!%20https%3A//alboshop.com.ar"
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
   return (
