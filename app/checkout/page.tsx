@@ -365,7 +365,7 @@ export default function CheckoutPage() {
             Agrega productos a tu carrito para continuar con el checkout
           </p>
           <Button asChild>
-            <Link href="/category/hombre">Explorar Productos</Link>
+            <Link href="/category/all">Explorar Productos</Link>
           </Button>
         </div>
       </div>
