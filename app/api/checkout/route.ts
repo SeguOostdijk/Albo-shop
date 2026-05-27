@@ -1,421 +1,501 @@
-import { NextResponse } from "next/server"
-import { MercadoPagoConfig, Preference } from "mercadopago"
-import { supabaseAdmin } from "@/lib/supabase/admin"
-import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation"
-import { Resend } from "resend"
+import { NextResponse } from "next/server";
+import { MercadoPagoConfig, Preference } from "mercadopago";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isMembershipCurrent } from "@/lib/member-validity";
+import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation";
+import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
-})
+	accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
+});
 
 type CheckoutItem = {
-  quantity: number
-  selectedColor: string
-  selectedSize: string
-  product: {
-    id: string
-    name: string
-    price: number
-    memberPrice?: number
-    images?: string[]
-  }
-}
+	quantity: number;
+	selectedColor: string;
+	selectedSize: string;
+	product: {
+		id: string;
+		name: string;
+		price: number;
+		memberPrice?: number;
+		images?: string[];
+	};
+};
 
 function getShippingCost(subtotal: number, shippingMethod: string) {
-  if (shippingMethod === "pickup") return 0
-  if (subtotal >= 75000) return 0
-  return 1
+	if (shippingMethod === "pickup") return 0;
+	if (subtotal >= 75000) return 0;
+	return 1;
 }
 
 function sanitizeString(v: string) {
-  return v.replace(/[<>"'`\\]/g, "").trim()
+	return v.replace(/[<>"'`\\]/g, "").trim();
 }
 
 const VALID_PROVINCES = new Set([
-  "caba", "buenosaires", "catamarca", "chaco", "chubut", "cordoba", "corrientes",
-  "entrerios", "formosa", "jujuy", "lapampa", "larioja", "mendoza", "misiones",
-  "neuquen", "rionegro", "salta", "sanjuan", "sanluis", "santacruz", "santafe",
-  "santiagodelestero", "tierradelfuego", "tucuman",
-])
-const VALID_SHIPPING_METHODS = new Set(["pickup", "standard"])
-const VALID_PAYMENT_METHODS  = new Set(["credit-card", "debit-card", "mercadopago", "transfer"])
+	"caba",
+	"buenosaires",
+	"catamarca",
+	"chaco",
+	"chubut",
+	"cordoba",
+	"corrientes",
+	"entrerios",
+	"formosa",
+	"jujuy",
+	"lapampa",
+	"larioja",
+	"mendoza",
+	"misiones",
+	"neuquen",
+	"rionegro",
+	"salta",
+	"sanjuan",
+	"sanluis",
+	"santacruz",
+	"santafe",
+	"santiagodelestero",
+	"tierradelfuego",
+	"tucuman",
+]);
+const VALID_SHIPPING_METHODS = new Set(["pickup", "standard"]);
+const VALID_PAYMENT_METHODS = new Set([
+	"credit-card",
+	"debit-card",
+	"mercadopago",
+	"transfer",
+]);
 
-function isValidEmail(v: string)  { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) }
-function isValidName(v: string)   { return /^[a-zA-ZÀ-ÿñÑ\s]+$/.test(v) }
-function isValidPhone(v: string)  { return (v.match(/\d/g) ?? []).length >= 8 }
-function isValidPostal(v: string) { return /^([A-Za-z]\d{4}([A-Za-z]{3})?|\d{4})$/i.test(v) }
+function isValidEmail(v: string) {
+	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+function isValidName(v: string) {
+	return /^[a-zA-ZÀ-ÿñÑ\s]+$/.test(v);
+}
+function isValidPhone(v: string) {
+	return (v.match(/\d/g) ?? []).length >= 8;
+}
+function isValidPostal(v: string) {
+	return /^([A-Za-z]\d{4}([A-Za-z]{3})?|\d{4})$/i.test(v);
+}
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json()
+	try {
+		const body = await request.json();
 
-    let {
-      items,
-      email,
-      phone,
-      firstName,
-      lastName,
-      address,
-      city,
-      province,
-      postalCode,
-      shippingMethod,
-      paymentInfo,
-      memberName,
-      memberValidated,
-    } = body as {
-      items: CheckoutItem[]
-      email: string
-      phone: string
-      firstName: string
-      lastName: string
-      address: string
-      city: string
-      province: string
-      postalCode: string
-      shippingMethod: "pickup" | "standard" | "express"
-      shippingCost: number
-      total: number
-      paymentInfo: {
-        method: string
-        last4?: string
-        brand?: string
-        cardName?: string
-        dni?: string
-      }
-      memberName?: string | null
-      memberValidated?: boolean
-    }
+		let {
+			items,
+			email,
+			phone,
+			firstName,
+			lastName,
+			address,
+			city,
+			province,
+			postalCode,
+			shippingMethod,
+			paymentInfo,
+			memberName,
+			memberValidated,
+		} = body as {
+			items: CheckoutItem[];
+			email: string;
+			phone: string;
+			firstName: string;
+			lastName: string;
+			address: string;
+			city: string;
+			province: string;
+			postalCode: string;
+			shippingMethod: "pickup" | "standard" | "express";
+			shippingCost: number;
+			total: number;
+			paymentInfo: {
+				method: string;
+				last4?: string;
+				brand?: string;
+				cardName?: string;
+				dni?: string;
+			};
+			memberName?: string | null;
+			memberValidated?: boolean;
+		};
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { success: false, error: "El carrito está vacío" },
-        { status: 400 }
-      )
-    }
+		if (!items || !Array.isArray(items) || items.length === 0) {
+			return NextResponse.json(
+				{ success: false, error: "El carrito está vacío" },
+				{ status: 400 },
+			);
+		}
 
-    if (
-      !email ||
-      !phone ||
-      !firstName ||
-      !lastName ||
-      !address ||
-      !city ||
-      !province ||
-      !postalCode
-    ) {
-      return NextResponse.json(
-        { success: false, error: "Faltan datos obligatorios" },
-        { status: 400 }
-      )
-    }
+		if (
+			!email ||
+			!phone ||
+			!firstName ||
+			!lastName ||
+			!address ||
+			!city ||
+			!province ||
+			!postalCode
+		) {
+			return NextResponse.json(
+				{ success: false, error: "Faltan datos obligatorios" },
+				{ status: 400 },
+			);
+		}
 
-    email      = sanitizeString(email)
-    phone      = sanitizeString(phone)
-    firstName  = sanitizeString(firstName)
-    lastName   = sanitizeString(lastName)
-    address    = sanitizeString(address)
-    city       = sanitizeString(city)
-    postalCode = sanitizeString(postalCode)
+		email = sanitizeString(email);
+		phone = sanitizeString(phone);
+		firstName = sanitizeString(firstName);
+		lastName = sanitizeString(lastName);
+		address = sanitizeString(address);
+		city = sanitizeString(city);
+		postalCode = sanitizeString(postalCode);
 
-    if (!isValidEmail(email)) {
-      return NextResponse.json({ success: false, error: "Email inválido" }, { status: 400 })
-    }
-    if (!isValidName(firstName) || !isValidName(lastName)) {
-      return NextResponse.json({ success: false, error: "El nombre solo puede contener letras y espacios" }, { status: 400 })
-    }
-    if (!isValidPhone(phone)) {
-      return NextResponse.json({ success: false, error: "El teléfono debe tener al menos 8 dígitos" }, { status: 400 })
-    }
-    if (!isValidPostal(postalCode)) {
-      return NextResponse.json({ success: false, error: "Código postal inválido" }, { status: 400 })
-    }
-    if (!VALID_PROVINCES.has(province)) {
-      return NextResponse.json({ success: false, error: "Provincia inválida" }, { status: 400 })
-    }
-    if (!VALID_SHIPPING_METHODS.has(shippingMethod)) {
-      return NextResponse.json({ success: false, error: "Método de envío inválido" }, { status: 400 })
-    }
-    if (!VALID_PAYMENT_METHODS.has(paymentInfo.method)) {
-      return NextResponse.json({ success: false, error: "Método de pago inválido" }, { status: 400 })
-    }
+		if (!isValidEmail(email)) {
+			return NextResponse.json(
+				{ success: false, error: "Email inválido" },
+				{ status: 400 },
+			);
+		}
+		if (!isValidName(firstName) || !isValidName(lastName)) {
+			return NextResponse.json(
+				{
+					success: false,
+					error: "El nombre solo puede contener letras y espacios",
+				},
+				{ status: 400 },
+			);
+		}
+		if (!isValidPhone(phone)) {
+			return NextResponse.json(
+				{ success: false, error: "El teléfono debe tener al menos 8 dígitos" },
+				{ status: 400 },
+			);
+		}
+		if (!isValidPostal(postalCode)) {
+			return NextResponse.json(
+				{ success: false, error: "Código postal inválido" },
+				{ status: 400 },
+			);
+		}
+		if (!VALID_PROVINCES.has(province)) {
+			return NextResponse.json(
+				{ success: false, error: "Provincia inválida" },
+				{ status: 400 },
+			);
+		}
+		if (!VALID_SHIPPING_METHODS.has(shippingMethod)) {
+			return NextResponse.json(
+				{ success: false, error: "Método de envío inválido" },
+				{ status: 400 },
+			);
+		}
+		if (!VALID_PAYMENT_METHODS.has(paymentInfo.method)) {
+			return NextResponse.json(
+				{ success: false, error: "Método de pago inválido" },
+				{ status: 400 },
+			);
+		}
 
-    const supabaseServer = await createSupabaseServerClient()
-    const userResult = await supabaseServer.auth.getUser()
+		const supabaseServer = await createSupabaseServerClient();
+		const userResult = await supabaseServer.auth.getUser();
 
-    const userId = userResult.data.user?.id ?? null
+		const userId = userResult.data.user?.id ?? null;
 
-    let validMember = false
+		let validMember = false;
 
-    if (memberValidated && memberName?.trim()) {
-      const { data: memberData, error: memberError } = await supabaseAdmin
-        .from("members")
-        .select("id, member_name")
-        .eq("member_name", memberName.trim())
-        .eq("is_active", true)
-        .maybeSingle()
+		if (memberValidated && memberName?.trim()) {
+			const { data: memberData, error: memberError } = await supabaseAdmin
+				.from("members")
+				.select("id, member_name, last_payment_at")
+				.eq("member_name", memberName.trim())
+				.eq("is_active", true)
+				.maybeSingle();
 
-      if (memberError) {
-        console.error("Error validating member:", memberError)
-        return NextResponse.json(
-          { success: false, error: "No se pudo validar el número de socio" },
-          { status: 500 }
-        )
-      }
+			if (memberError) {
+				console.error("Error validating member:", memberError);
+				return NextResponse.json(
+					{ success: false, error: "No se pudo validar el número de socio" },
+					{ status: 500 },
+				);
+			}
 
-      validMember = !!memberData
-    }
+			if (!memberData) {
+				return NextResponse.json(
+					{ success: false, error: "Nombre de socio inválido o inactivo" },
+					{ status: 400 },
+				);
+			}
 
-    const productIds = [...new Set(items.map((item) => item.product.id))]
+			if (!isMembershipCurrent(memberData.last_payment_at)) {
+				return NextResponse.json(
+					{
+						success: false,
+						error:
+							"Suscripción vencida. Presione el link de abajo para renovar su suscripción",
+					},
+					{ status: 400 },
+				);
+			}
 
-    const { data: productsData, error: productsError } = await supabaseAdmin
-      .from("products")
-      .select("id, name, price, member_price, images")
-      .in("id", productIds)
+			validMember = true;
+		}
 
-    if (productsError) {
-      console.error("Error loading products:", productsError)
-      return NextResponse.json(
-        { success: false, error: "No se pudieron validar los productos" },
-        { status: 500 }
-      )
-    }
+		const productIds = [...new Set(items.map((item) => item.product.id))];
 
-    const { data: stockData, error: stockError } = await supabaseAdmin
-      .from("product_stock")
-      .select("product_id, size, stock")
-      .in("product_id", productIds)
+		const { data: productsData, error: productsError } = await supabaseAdmin
+			.from("products")
+			.select("id, name, price, member_price, images")
+			.in("id", productIds);
 
-    if (stockError) {
-      console.error("Error loading stock:", stockError)
-      return NextResponse.json(
-        { success: false, error: "No se pudo validar el stock" },
-        { status: 500 }
-      )
-    }
+		if (productsError) {
+			console.error("Error loading products:", productsError);
+			return NextResponse.json(
+				{ success: false, error: "No se pudieron validar los productos" },
+				{ status: 500 },
+			);
+		}
 
-    const productsMap = new Map((productsData ?? []).map((p) => [p.id, p]))
+		const { data: stockData, error: stockError } = await supabaseAdmin
+			.from("product_stock")
+			.select("product_id, size, stock")
+			.in("product_id", productIds);
 
-    const stockMap = new Map<string, number>()
-    for (const row of stockData ?? []) {
-      const key = `${row.product_id}__${row.size}`
-      stockMap.set(key, Number(row.stock ?? 0))
-    }
+		if (stockError) {
+			console.error("Error loading stock:", stockError);
+			return NextResponse.json(
+				{ success: false, error: "No se pudo validar el stock" },
+				{ status: 500 },
+			);
+		}
 
-    let subtotal = 0
+		const productsMap = new Map((productsData ?? []).map((p) => [p.id, p]));
 
-    const validatedOrderItems = items.map((item) => {
-      const dbProduct = productsMap.get(item.product.id)
+		const stockMap = new Map<string, number>();
+		for (const row of stockData ?? []) {
+			const key = `${row.product_id}__${row.size}`;
+			stockMap.set(key, Number(row.stock ?? 0));
+		}
 
-      if (!dbProduct) {
-        throw new Error(`El producto "${item.product.name}" ya no existe.`)
-      }
+		let subtotal = 0;
 
-      const stockKey = `${item.product.id}__${item.selectedSize}`
-      const availableStock = stockMap.get(stockKey)
+		const validatedOrderItems = items.map((item) => {
+			const dbProduct = productsMap.get(item.product.id);
 
-      if (availableStock === undefined) {
-        throw new Error(
-          `El talle ${item.selectedSize} no está disponible para "${dbProduct.name}".`
-        )
-      }
+			if (!dbProduct) {
+				throw new Error(`El producto "${item.product.name}" ya no existe.`);
+			}
 
-      if (availableStock < item.quantity) {
-        throw new Error(
-          `No hay stock suficiente para "${dbProduct.name}" talle ${item.selectedSize}.`
-        )
-      }
+			const stockKey = `${item.product.id}__${item.selectedSize}`;
+			const availableStock = stockMap.get(stockKey);
 
-      const unitPrice =
-        validMember && dbProduct.member_price
-          ? dbProduct.member_price
-          : dbProduct.price
+			if (availableStock === undefined) {
+				throw new Error(
+					`El talle ${item.selectedSize} no está disponible para "${dbProduct.name}".`,
+				);
+			}
 
-      subtotal += unitPrice * item.quantity
+			if (availableStock < item.quantity) {
+				throw new Error(
+					`No hay stock suficiente para "${dbProduct.name}" talle ${item.selectedSize}.`,
+				);
+			}
 
-      return {
-        product_id: dbProduct.id,
-        product_name: dbProduct.name,
-        product_image: dbProduct.images?.[0] || null,
-        quantity: item.quantity,
-        price: unitPrice,
-        color: item.selectedColor,
-        size: item.selectedSize,
-      }
-    })
+			const unitPrice =
+				validMember && dbProduct.member_price
+					? dbProduct.member_price
+					: dbProduct.price;
 
-    const shippingCost = getShippingCost(subtotal, shippingMethod)
-    const total = subtotal + shippingCost
+			subtotal += unitPrice * item.quantity;
 
-    // === MERCADOPAGO: guardar sesión y crear preference — sin crear orden ===
-    if (paymentInfo.method === "mercadopago") {
-      const { data: session, error: sessionError } = await supabaseAdmin
-        .from("checkout_sessions")
-        .insert({
-          user_id: userId,
-          session_data: {
-            email,
-            phone,
-            firstName,
-            lastName,
-            address,
-            city,
-            province,
-            postalCode,
-            shippingMethod,
-            shippingCost,
-            subtotal,
-            total,
-            validMember,
-            memberName: validMember ? memberName?.trim() : null,
-            validatedOrderItems,
-            paymentInfo,
-          },
-        })
-        .select("id")
-        .single()
+			return {
+				product_id: dbProduct.id,
+				product_name: dbProduct.name,
+				product_image: dbProduct.images?.[0] || null,
+				quantity: item.quantity,
+				price: unitPrice,
+				color: item.selectedColor,
+				size: item.selectedSize,
+			};
+		});
 
-      if (sessionError) {
-        console.error("Error creando checkout_session:", sessionError)
-        return NextResponse.json(
-          { success: false, error: "Error al iniciar el pago" },
-          { status: 500 }
-        )
-      }
+		const shippingCost = getShippingCost(subtotal, shippingMethod);
+		const total = subtotal + shippingCost;
 
-      const baseUrl = process.env.NEXT_PUBLIC_URL || ""
-      const isLocalhost = !baseUrl || baseUrl.includes("localhost")
+		// === MERCADOPAGO: guardar sesión y crear preference — sin crear orden ===
+		if (paymentInfo.method === "mercadopago") {
+			const { data: session, error: sessionError } = await supabaseAdmin
+				.from("checkout_sessions")
+				.insert({
+					user_id: userId,
+					session_data: {
+						email,
+						phone,
+						firstName,
+						lastName,
+						address,
+						city,
+						province,
+						postalCode,
+						shippingMethod,
+						shippingCost,
+						subtotal,
+						total,
+						validMember,
+						memberName: validMember ? memberName?.trim() : null,
+						validatedOrderItems,
+						paymentInfo,
+					},
+				})
+				.select("id")
+				.single();
 
-      const preference = {
-        items: validatedOrderItems.map((item) => ({
-          id: item.product_id,
-          title: item.product_name,
-          currency_id: "ARS",
-          picture_url: item.product_image || "https://via.placeholder.com/300",
-          description: `${item.color} / ${item.size}`,
-          category_id: "products",
-          quantity: item.quantity,
-          unit_price: item.price,
-        })),
-        payer: {
-          name: firstName,
-          surname: lastName,
-          email,
-          phone: { area_code: phone.slice(1, 4), number: phone.slice(4) },
-          identification: { type: "DNI", number: "" },
-          address: { street_name: address, zip_code: postalCode },
-        },
-        back_urls: {
-          success: `${baseUrl}/account/orders`,
-          failure: `${baseUrl}/checkout?error=pago-fallo`,
-          pending: `${baseUrl}/checkout?info=pago-pendiente`,
-        },
-        ...(!isLocalhost && { auto_return: "approved" as "approved" }),
-        ...(!isLocalhost && {
-          notification_url: `${baseUrl}/api/webhooks/mercadopago`,
-        }),
-        external_reference: session.id,
-        payment_methods: {
-          excluded_payment_methods: [],
-          installments: 12,
-        },
-        shipments: {
-          cost: shippingCost,
-          mode: "not_specified",
-        },
-      }
+			if (sessionError) {
+				console.error("Error creando checkout_session:", sessionError);
+				return NextResponse.json(
+					{ success: false, error: "Error al iniciar el pago" },
+					{ status: 500 },
+				);
+			}
 
-      const mpPreference = new Preference(client)
-      const response = await mpPreference.create({ body: preference })
+			const baseUrl = process.env.NEXT_PUBLIC_URL || "";
+			const isLocalhost = !baseUrl || baseUrl.includes("localhost");
 
-      await supabaseAdmin
-        .from("checkout_sessions")
-        .update({ mp_preference_id: response.id })
-        .eq("id", session.id)
+			const preference = {
+				items: validatedOrderItems.map((item) => ({
+					id: item.product_id,
+					title: item.product_name,
+					currency_id: "ARS",
+					picture_url: item.product_image || "https://via.placeholder.com/300",
+					description: `${item.color} / ${item.size}`,
+					category_id: "products",
+					quantity: item.quantity,
+					unit_price: item.price,
+				})),
+				payer: {
+					name: firstName,
+					surname: lastName,
+					email,
+					phone: { area_code: phone.slice(1, 4), number: phone.slice(4) },
+					identification: { type: "DNI", number: "" },
+					address: { street_name: address, zip_code: postalCode },
+				},
+				back_urls: {
+					success: `${baseUrl}/account/orders`,
+					failure: `${baseUrl}/checkout?error=pago-fallo`,
+					pending: `${baseUrl}/checkout?info=pago-pendiente`,
+				},
+				...(!isLocalhost && { auto_return: "approved" as "approved" }),
+				...(!isLocalhost && {
+					notification_url: `${baseUrl}/api/webhooks/mercadopago`,
+				}),
+				external_reference: session.id,
+				payment_methods: {
+					excluded_payment_methods: [],
+					installments: 12,
+				},
+				shipments: {
+					cost: shippingCost,
+					mode: "not_specified",
+				},
+			};
 
-      return NextResponse.json({
-        success: true,
-        mpUrl: response.init_point,
-        message: "Redirigiendo a MercadoPago...",
-      })
-    }
+			const mpPreference = new Preference(client);
+			const response = await mpPreference.create({ body: preference });
 
-    const insertPayload = {
-      user_id: userId,
-      email,
-      first_name: firstName,
-      last_name: lastName,
-      address,
-      city,
-      province,
-      postal_code: postalCode,
-      shipping_method: shippingMethod,
-      shipping_cost: shippingCost,
-      total,
-      payment_method: paymentInfo.method,
-      payment_info: {
-        ...paymentInfo,
-        memberApplied: validMember,
-        memberName: validMember ? memberName?.trim() : null,
-      },
-      member_number: validMember ? memberName?.trim() : null,
-      member_validated: validMember,
-      status: (paymentInfo.method === "credit-card" || paymentInfo.method === "debit-card") ? "paid" : "pending",
-      phone,
-    }
+			await supabaseAdmin
+				.from("checkout_sessions")
+				.update({ mp_preference_id: response.id })
+				.eq("id", session.id);
 
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .insert(insertPayload)
-      .select("id, user_id, email, created_at")
-      .single()
+			return NextResponse.json({
+				success: true,
+				mpUrl: response.init_point,
+				message: "Redirigiendo a MercadoPago...",
+			});
+		}
 
-    if (orderError) {
-      console.error("Error creating order:", orderError)
-      return NextResponse.json(
-        { success: false, error: "Error al crear el pedido" },
-        { status: 500 }
-      )
-    }
+		const insertPayload = {
+			user_id: userId,
+			email,
+			first_name: firstName,
+			last_name: lastName,
+			address,
+			city,
+			province,
+			postal_code: postalCode,
+			shipping_method: shippingMethod,
+			shipping_cost: shippingCost,
+			total,
+			payment_method: paymentInfo.method,
+			payment_info: {
+				...paymentInfo,
+				memberApplied: validMember,
+				memberName: validMember ? memberName?.trim() : null,
+			},
+			member_number: validMember ? memberName?.trim() : null,
+			member_validated: validMember,
+			status:
+				paymentInfo.method === "credit-card" ||
+				paymentInfo.method === "debit-card"
+					? "paid"
+					: "pending",
+			phone,
+		};
 
-    const orderItems = validatedOrderItems.map((item) => ({
-      order_id: order.id,
-      ...item,
-    }))
+		const { data: order, error: orderError } = await supabaseAdmin
+			.from("orders")
+			.insert(insertPayload)
+			.select("id, user_id, email, created_at")
+			.single();
 
-    const { error: itemsError } = await supabaseAdmin
-      .from("order_items")
-      .insert(orderItems)
+		if (orderError) {
+			console.error("Error creating order:", orderError);
+			return NextResponse.json(
+				{ success: false, error: "Error al crear el pedido" },
+				{ status: 500 },
+			);
+		}
 
-    if (itemsError) {
-      console.error("Error creating order items:", itemsError)
-      await supabaseAdmin.from("orders").delete().eq("id", order.id)
-      return NextResponse.json(
-        { success: false, error: "Error al guardar los productos del pedido" },
-        { status: 500 }
-      )
-    }
+		const orderItems = validatedOrderItems.map((item) => ({
+			order_id: order.id,
+			...item,
+		}));
 
-    // Descontar stock de forma atómica para evitar race conditions
-    for (const item of validatedOrderItems) {
-      await supabaseAdmin.rpc("decrement_stock", {
-        p_product_id: item.product_id,
-        p_size: item.size,
-        p_quantity: item.quantity,
-      })
-    }
+		const { error: itemsError } = await supabaseAdmin
+			.from("order_items")
+			.insert(orderItems);
 
-    // Enviar email de confirmación
-    try {
-      if (paymentInfo.method === "transfer") {
-        await resend.emails.send({
-          from: "noreply@alboshop.com.ar",
-          to: email,
-          subject: `📋 Pedido #${order.id} recibido — CAI Tienda`,
-          html: `
+		if (itemsError) {
+			console.error("Error creating order items:", itemsError);
+			await supabaseAdmin.from("orders").delete().eq("id", order.id);
+			return NextResponse.json(
+				{ success: false, error: "Error al guardar los productos del pedido" },
+				{ status: 500 },
+			);
+		}
+
+		// Descontar stock de forma atómica para evitar race conditions
+		for (const item of validatedOrderItems) {
+			await supabaseAdmin.rpc("decrement_stock", {
+				p_product_id: item.product_id,
+				p_size: item.size,
+				p_quantity: item.quantity,
+			});
+		}
+
+		// Enviar email de confirmación
+		try {
+			if (paymentInfo.method === "transfer") {
+				await resend.emails.send({
+					from: "noreply@alboshop.com.ar",
+					to: email,
+					subject: `📋 Pedido #${order.id} recibido — CAI Tienda`,
+					html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
               <div style="background: #0f2f98; padding: 32px 24px; text-align: center;">
                 <img src="https://alboshop.com.ar/escudo.jpeg" alt="CAI" width="80" height="80" style="border-radius: 8px; margin-bottom: 16px;" />
@@ -440,45 +520,47 @@ export async function POST(request: Request) {
               </div>
             </div>
           `,
-        })
-      } else {
-        await sendOrderConfirmation({
-          to: email,
-          firstName,
-          orderId: order.id,
-          items: validatedOrderItems.map(item => ({
-            product_name: item.product_name,
-            quantity: item.quantity,
-            price: item.price,
-            color: item.color,
-            size: item.size,
-          })),
-          subtotal,
-          shippingCost,
-          total,
-          shippingMethod,
-          paymentMethod: paymentInfo.method,
-        })
-      }
-    } catch (emailError) {
-      console.error("Error enviando email de confirmación:", emailError)
-    }
+				});
+			} else {
+				await sendOrderConfirmation({
+					to: email,
+					firstName,
+					orderId: order.id,
+					items: validatedOrderItems.map((item) => ({
+						product_name: item.product_name,
+						quantity: item.quantity,
+						price: item.price,
+						color: item.color,
+						size: item.size,
+					})),
+					subtotal,
+					shippingCost,
+					total,
+					shippingMethod,
+					paymentMethod: paymentInfo.method,
+				});
+			}
+		} catch (emailError) {
+			console.error("Error enviando email de confirmación:", emailError);
+		}
 
-    // Notificación interna al admin
-    try {
-      const shippingLabels: Record<string, string> = {
-        pickup: "Retiro en local",
-        standard: "Envío estándar",
-        express: "Envío express",
-      }
-      const paymentLabels: Record<string, string> = {
-        transfer: "Transferencia bancaria",
-        mercadopago: "MercadoPago",
-        "credit-card": "Tarjeta de crédito",
-        "debit-card": "Tarjeta de débito",
-      }
+		// Notificación interna al admin
+		try {
+			const shippingLabels: Record<string, string> = {
+				pickup: "Retiro en local",
+				standard: "Envío estándar",
+				express: "Envío express",
+			};
+			const paymentLabels: Record<string, string> = {
+				transfer: "Transferencia bancaria",
+				mercadopago: "MercadoPago",
+				"credit-card": "Tarjeta de crédito",
+				"debit-card": "Tarjeta de débito",
+			};
 
-      const itemsRows = validatedOrderItems.map(item => `
+			const itemsRows = validatedOrderItems
+				.map(
+					(item) => `
         <tr>
           <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">${item.product_name}</td>
           <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${item.color}</td>
@@ -486,13 +568,15 @@ export async function POST(request: Request) {
           <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; text-align: center;">${item.quantity}</td>
           <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b; text-align: right;">$${item.price.toLocaleString("es-AR")}</td>
         </tr>
-      `).join("")
+      `,
+				)
+				.join("");
 
-      await resend.emails.send({
-        from: "noreply@alboshop.com.ar",
-        to: "alboshopcai@gmail.com",
-        subject: `🛒 Nuevo pedido #${order.id} — ${firstName} ${lastName}`,
-        html: `
+			await resend.emails.send({
+				from: "noreply@alboshop.com.ar",
+				to: "alboshopcai@gmail.com",
+				subject: `🛒 Nuevo pedido #${order.id} — ${firstName} ${lastName}`,
+				html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
             <div style="background: #0f2f98; padding: 32px 24px; text-align: center;">
               <img src="https://alboshop.com.ar/escudo.jpeg" alt="CAI" width="80" height="80" style="border-radius: 8px; margin-bottom: 16px;" />
@@ -553,43 +637,41 @@ export async function POST(request: Request) {
             </div>
           </div>
         `,
-      })
-    } catch (adminEmailError) {
-      console.error("Error enviando notificación al admin:", adminEmailError)
-    }
+			});
+		} catch (adminEmailError) {
+			console.error("Error enviando notificación al admin:", adminEmailError);
+		}
 
-    let redirectTo = "/account/orders"
+		let redirectTo = "/account/orders";
 
-    if (paymentInfo.method === "transfer") {
-      redirectTo = `/checkout/payment/transfer?orderId=${order.id}`
-    } else if (
-      paymentInfo.method === "credit-card" ||
-      paymentInfo.method === "debit-card"
-    ) {
-      redirectTo = `/checkout/payment/card?orderId=${order.id}&type=${paymentInfo.method}`
-    }
+		if (paymentInfo.method === "transfer") {
+			redirectTo = `/checkout/payment/transfer?orderId=${order.id}`;
+		} else if (
+			paymentInfo.method === "credit-card" ||
+			paymentInfo.method === "debit-card"
+		) {
+			redirectTo = `/checkout/payment/card?orderId=${order.id}&type=${paymentInfo.method}`;
+		}
 
-    return NextResponse.json({
-      success: true,
-      orderId: order.id,
-      subtotal,
-      shippingCost,
-      total,
-      memberApplied: validMember,
-      redirectTo,
-      message: "Pedido procesado exitosamente",
-    })
-  } catch (error) {
-    console.error("Checkout error:", error)
+		return NextResponse.json({
+			success: true,
+			orderId: order.id,
+			subtotal,
+			shippingCost,
+			total,
+			memberApplied: validMember,
+			redirectTo,
+			message: "Pedido procesado exitosamente",
+		});
+	} catch (error) {
+		console.error("Checkout error:", error);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Error al procesar el pedido"
+		const message =
+			error instanceof Error ? error.message : "Error al procesar el pedido";
 
-    return NextResponse.json(
-      { success: false, error: message },
-      { status: 500 }
-    )
-  }
+		return NextResponse.json(
+			{ success: false, error: message },
+			{ status: 500 },
+		);
+	}
 }
