@@ -50,6 +50,17 @@ export default async function HomePage() {
       {/* Hero Slider */}
       <Hero />
 
+      {/* Sale Strip */}
+      {saleProducts.length > 0 && (
+        <a
+          href="#ofertas"
+          className="flex items-center justify-center gap-3 bg-accent text-accent-foreground px-4 py-3 text-sm font-semibold hover:brightness-95 transition-all"
+        >
+          <span>🔥 PRODUCTOS EN OFERTA — Precios especiales por tiempo limitado</span>
+          <span className="underline underline-offset-2">Ver ofertas →</span>
+        </a>
+      )}
+
       {/* Category Banners */}
       <CategoryBanner />
 
@@ -73,12 +84,14 @@ export default async function HomePage() {
 
       {/* Sale Products */}
       {saleProducts.length > 0 && (
-        <ProductCarousel
-          title="Ofertas"
-          subtitle="PRODUCTOS EN OFERTA"
-          products={saleProducts}
-          viewAllHref="/category/oportunidades"
-        />
+        <div id="ofertas">
+          <ProductCarousel
+            title="Ofertas"
+            subtitle="PRODUCTOS EN OFERTA"
+            products={saleProducts}
+            viewAllHref="/category/oportunidades"
+          />
+        </div>
       )}
 
       {/* Extras / Accesorios */}
