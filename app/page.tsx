@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Indumentaria y Accesorios Oficiales | Albo Shop San Cayetano",
   description:
     "Comprá camisetas, buzos, camperas y accesorios oficiales del Club Atlético Independiente de San Cayetano. Precios exclusivos para socios. Envíos a todo el país.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Albo Shop | Tienda Oficial Club Atlético Independiente San Cayetano",
     description:

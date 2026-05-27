@@ -89,9 +89,9 @@ export function Hero() {
                 {slide.eyebrow}
               </p>
 
-              <h1 className="text-3xl font-extrabold leading-[0.95] text-white">
+              <h2 className="text-3xl font-extrabold leading-[0.95] text-white">
                 {slide.title}
-              </h1>
+              </h2>
 
               <p className="mt-3 max-w-[28ch] text-sm leading-5 text-white/85">
                 {slide.subtitle}
